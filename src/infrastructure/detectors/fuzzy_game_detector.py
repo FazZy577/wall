@@ -7,6 +7,7 @@ to identify games in listing text.
 import json
 import re
 import unicodedata
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
@@ -58,14 +59,10 @@ class FuzzyGameDetector(IGameDetector):
         """Initialize detector with game catalog.
 
         Args:
-            catalog_path: Path to game catalog JSON file.
-                         Defaults to data/game_catalog.json
+            catalog_path: Optional explicit game catalog JSON file. By default,
+                the catalog packaged with the detector is used.
         """
-        if catalog_path is None:
-            # Default catalog path relative to project root
-            catalog_path = Path(__file__).parent.parent.parent.parent / "data" / "game_catalog.json"
-
-        self.catalog_path = Path(catalog_path)
+        self.catalog_path = Path(catalog_path) if catalog_path is not None else None
         self.catalog = self._load_catalog()
 
     def _load_catalog(self) -> list[dict[str, Any]]:
@@ -78,12 +75,17 @@ class FuzzyGameDetector(IGameDetector):
             FileNotFoundError: If catalog file doesn't exist
             json.JSONDecodeError: If catalog is invalid JSON
         """
-        if not self.catalog_path.exists():
-            raise FileNotFoundError(f"Game catalog not found: {self.catalog_path}")
+        if self.catalog_path is not None:
+            if not self.catalog_path.exists():
+                raise FileNotFoundError(f"Game catalog not found: {self.catalog_path}")
+            with self.catalog_path.open(encoding="utf-8") as f:
+                catalog: list[dict[str, Any]] = json.load(f)
+                return catalog
 
-        with open(self.catalog_path, encoding="utf-8") as f:
-            catalog: list[dict[str, Any]] = json.load(f)
-            return catalog
+        catalog_resource = files("infrastructure.detectors.resources").joinpath("game_catalog.json")
+        with catalog_resource.open(encoding="utf-8") as f:
+            resource_catalog: list[dict[str, Any]] = json.load(f)
+            return resource_catalog
 
     def detect_games(self, listing_text: ListingText) -> list[DetectedGame]:
         """Detect games in listing text using fuzzy matching.

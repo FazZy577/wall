@@ -21,6 +21,20 @@ class TestFuzzyGameDetector:
         assert detector.catalog is not None
         assert len(detector.catalog) > 0
 
+    def test_packaged_catalog_is_independent_of_working_directory(
+        self,
+        tmp_path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Load and use the packaged catalog from an unrelated directory."""
+        monkeypatch.chdir(tmp_path)
+
+        detector = FuzzyGameDetector()
+        games = detector.detect_games(ListingText(title="GTA V PS4", description=""))
+
+        assert games
+        assert games[0].canonical_name == "Grand Theft Auto V"
+
     def test_normalize_text(self, detector: FuzzyGameDetector) -> None:
         """Test text normalization."""
         # Lowercase

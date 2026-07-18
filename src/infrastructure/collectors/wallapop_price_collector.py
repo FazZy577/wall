@@ -9,8 +9,8 @@ from typing import Any
 
 from domain.interfaces.comparable_filter import IComparableFilter, Listing
 from domain.interfaces.game_detector import DetectedGame, IGameDetector, ListingText
+from domain.interfaces.marketplace_search import IMarketplaceSearch
 from domain.interfaces.price_collector import ComparableListing, IPriceCollector
-from infrastructure.marketplaces.wallapop.client import WallapopClient
 
 logger = logging.getLogger(__name__)
 
@@ -28,18 +28,18 @@ class WallapopPriceCollector(IPriceCollector):
 
     def __init__(
         self,
-        wallapop_client: WallapopClient,
+        marketplace_search: IMarketplaceSearch,
         game_detector: IGameDetector,
         comparable_filter: IComparableFilter,
     ) -> None:
         """Initialize price collector.
 
         Args:
-            wallapop_client: Client for Wallapop API
+            marketplace_search: Marketplace listing search implementation
             game_detector: Game detection implementation
             comparable_filter: Comparable filtering implementation
         """
-        self.wallapop_client = wallapop_client
+        self.marketplace_search = marketplace_search
         self.game_detector = game_detector
         self.comparable_filter = comparable_filter
 
@@ -67,11 +67,11 @@ class WallapopPriceCollector(IPriceCollector):
 
         # Step 2: Search Wallapop
         try:
-            raw_listings = await self.wallapop_client.search_all_pages(
+            raw_listings = await self.marketplace_search.search_listings(
                 keywords=search_query,
                 latitude=latitude,
                 longitude=longitude,
-                max_results=max_results * 3 if max_results else None,  # Fetch extra to account for filtering
+                max_results=max_results * 3 if max_results else 100,
             )
             logger.info(f"Found {len(raw_listings)} raw listings from Wallapop")
         except Exception as e:
@@ -153,6 +153,7 @@ class WallapopPriceCollector(IPriceCollector):
         if "ea sports fc" in canonical or "fifa" in canonical:
             # Extract year
             import re
+
             year_match = re.search(r"\b(20\d{2}|2[0-9])\b", canonical)
             if year_match:
                 year = year_match.group(1)

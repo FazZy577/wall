@@ -56,3 +56,9 @@ htmlcov/
 # Project specific
 data/
 output/
+responses/
+response.json
+cURL.txt
+*.har
+playwright-profile/
+storage-state.json

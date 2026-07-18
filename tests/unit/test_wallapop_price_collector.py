@@ -8,11 +8,9 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from domain.interfaces.comparable_filter import Listing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
-    ListingText,
     Platform,
 )
 from domain.interfaces.price_collector import ComparableListing
@@ -21,9 +19,9 @@ from infrastructure.collectors.wallapop_price_collector import WallapopPriceColl
 
 @pytest.fixture
 def mock_wallapop_client() -> Mock:
-    """Create mock WallapopClient."""
+    """Create a mock marketplace search implementation."""
     client = Mock()
-    client.search_all_pages = AsyncMock()
+    client.search_listings = AsyncMock()
     return client
 
 
@@ -63,7 +61,7 @@ def price_collector(
 ) -> WallapopPriceCollector:
     """Create WallapopPriceCollector with mocks."""
     return WallapopPriceCollector(
-        wallapop_client=mock_wallapop_client,
+        marketplace_search=mock_wallapop_client,
         game_detector=mock_game_detector,
         comparable_filter=mock_comparable_filter,
     )
@@ -363,7 +361,7 @@ class TestCollectComparables:
     ) -> None:
         """Should collect valid comparables successfully."""
         # Mock Wallapop response
-        mock_wallapop_client.search_all_pages.return_value = [
+        mock_wallapop_client.search_listings.return_value = [
             {
                 "id": 1,
                 "title": "GTA V PS4",
@@ -408,7 +406,7 @@ class TestCollectComparables:
     ) -> None:
         """Should return empty list if no listings found."""
         # Mock empty Wallapop response
-        mock_wallapop_client.search_all_pages.return_value = []
+        mock_wallapop_client.search_listings.return_value = []
 
         result = await price_collector.collect_comparables(
             game=target_game,
@@ -429,7 +427,7 @@ class TestCollectComparables:
     ) -> None:
         """Should return empty list if all listings filtered out."""
         # Mock Wallapop response
-        mock_wallapop_client.search_all_pages.return_value = [
+        mock_wallapop_client.search_listings.return_value = [
             {
                 "id": 1,
                 "title": "Lote GTA V + FIFA 23",
@@ -465,7 +463,7 @@ class TestCollectComparables:
     ) -> None:
         """Should respect max_results parameter."""
         # Mock Wallapop response with 5 listings
-        mock_wallapop_client.search_all_pages.return_value = [
+        mock_wallapop_client.search_listings.return_value = [
             {
                 "id": i,
                 "title": f"GTA V PS4 {i}",
@@ -491,8 +489,8 @@ class TestCollectComparables:
         assert len(result) == 3
 
         # Verify Wallapop was called with 3x max_results to account for filtering
-        mock_wallapop_client.search_all_pages.assert_called_once()
-        call_args = mock_wallapop_client.search_all_pages.call_args
+        mock_wallapop_client.search_listings.assert_called_once()
+        call_args = mock_wallapop_client.search_listings.call_args
         assert call_args.kwargs["max_results"] == 9  # 3 * 3
 
     @pytest.mark.asyncio
@@ -504,7 +502,7 @@ class TestCollectComparables:
     ) -> None:
         """Should return empty list on Wallapop API error."""
         # Mock Wallapop to raise exception
-        mock_wallapop_client.search_all_pages.side_effect = Exception("API Error")
+        mock_wallapop_client.search_listings.side_effect = Exception("API Error")
 
         result = await price_collector.collect_comparables(
             game=target_game,
@@ -525,7 +523,7 @@ class TestCollectComparables:
     ) -> None:
         """Should continue processing after individual listing failures."""
         # Mock Wallapop response with 3 listings
-        mock_wallapop_client.search_all_pages.return_value = [
+        mock_wallapop_client.search_listings.return_value = [
             {
                 "id": 1,
                 "title": "GTA V PS4",
@@ -576,7 +574,7 @@ class TestCollectComparables:
     ) -> None:
         """Should pass generated search query to Wallapop client."""
         # Mock Wallapop response
-        mock_wallapop_client.search_all_pages.return_value = []
+        mock_wallapop_client.search_listings.return_value = []
 
         await price_collector.collect_comparables(
             game=target_game,
@@ -585,8 +583,8 @@ class TestCollectComparables:
         )
 
         # Verify search query
-        mock_wallapop_client.search_all_pages.assert_called_once()
-        call_args = mock_wallapop_client.search_all_pages.call_args
+        mock_wallapop_client.search_listings.assert_called_once()
+        call_args = mock_wallapop_client.search_listings.call_args
         assert call_args.kwargs["keywords"] == "gta v"  # short matched_text
         assert call_args.kwargs["latitude"] == 40.4168
         assert call_args.kwargs["longitude"] == -3.7038

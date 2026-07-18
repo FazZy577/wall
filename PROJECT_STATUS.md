@@ -4,6 +4,27 @@
 
 Platform for detecting arbitrage opportunities in second-hand marketplaces, starting with Wallapop and designed for multi-marketplace expansion.
 
+## P0 Wallapop Real Integration
+
+- **HTTP client**: retained as legacy/experimental. It targets the obsolete
+  `/api/v3/general/search` endpoint, which currently returns HTTP 403.
+- **Production search implementation**: `WallapopPlaywrightClient` captures only
+  `/api/v3/search/section`, reuses one Chromium session, supports bounded
+  pagination, and is injected through the common marketplace search port.
+- **Catalog**: `game_catalog.json` is packaged inside `src` and no longer depends
+  on the process working directory.
+- **Integration test**: opt-in live search with at most five returned listings.
+- **E2E test**: opt-in real pipeline from Playwright through market price
+  estimation, without persistence, lots, or `OpportunityScanner`.
+- **Live test activation**: requires `RUN_LIVE_WALLAPOP_TESTS=1`; normal pytest
+  runs skip live tests.
+- **Live validation (2026-07-18)**: integration and minimal E2E passed with
+  visible Chromium. The E2E captured 9 raw listings and produced 3 valid
+  comparables for GTA V.
+- **Next step**: execute and monitor the opt-in live suite periodically, then
+  address any frontend/API drift as a separate task. `SearchOrchestrator`
+  remains outside this P0 phase.
+
 ## ✅ What's Been Completed
 
 ### 1. Project Structure

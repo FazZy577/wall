@@ -1,12 +1,16 @@
-"""Wallapop HTTP client for API communication.
+"""Legacy Wallapop HTTP client for API communication.
 
-This module handles all HTTP communication with Wallapop's search API.
+This experimental client targets the obsolete ``/api/v3/general/search``
+endpoint, which currently returns HTTP 403. Production searches use
+``WallapopPlaywrightClient`` instead.
 """
 
 import asyncio
 from typing import Any
 
 import httpx
+
+from domain.interfaces.marketplace_search import IMarketplaceSearch
 
 
 class WallapopClientError(Exception):
@@ -24,10 +28,11 @@ class WallapopAPIError(WallapopClientError):
         super().__init__(f"Wallapop API error {status_code}: {message}")
 
 
-class WallapopClient:
-    """HTTP client for Wallapop API.
+class WallapopClient(IMarketplaceSearch):
+    """Legacy experimental HTTP client for Wallapop API.
 
-    Handles search requests with pagination, retries, and error handling.
+    Retained temporarily for compatibility and tests. It is not the production
+    implementation because its endpoint is obsolete and returns HTTP 403.
     """
 
     BASE_URL = "https://api.wallapop.com/api/v3/general/search"
@@ -123,12 +128,16 @@ class WallapopClient:
 
             except httpx.TimeoutException as e:
                 if attempt == self.max_retries - 1:
-                    raise WallapopClientError(f"Request timeout after {self.max_retries} attempts") from e
+                    raise WallapopClientError(
+                        f"Request timeout after {self.max_retries} attempts"
+                    ) from e
                 await asyncio.sleep(self.retry_delay)
 
             except httpx.NetworkError as e:
                 if attempt == self.max_retries - 1:
-                    raise WallapopClientError(f"Network error after {self.max_retries} attempts") from e
+                    raise WallapopClientError(
+                        f"Network error after {self.max_retries} attempts"
+                    ) from e
                 await asyncio.sleep(self.retry_delay)
 
             except WallapopAPIError:
@@ -188,6 +197,21 @@ class WallapopClient:
             start = next_start
 
         return all_listings
+
+    async def search_listings(
+        self,
+        keywords: str,
+        latitude: float,
+        longitude: float,
+        max_results: int,
+    ) -> list[dict[str, Any]]:
+        """Implement the common search port using the legacy endpoint."""
+        return await self.search_all_pages(
+            keywords=keywords,
+            latitude=latitude,
+            longitude=longitude,
+            max_results=max_results,
+        )
 
     def _extract_error_message(self, response: httpx.Response) -> str:
         """Extract error message from response.

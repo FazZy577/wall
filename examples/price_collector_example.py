@@ -15,7 +15,9 @@ from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platf
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 from infrastructure.filters.rule_based_comparable_filter import RuleBasedComparableFilter
-from infrastructure.marketplaces.wallapop.client import WallapopClient
+from infrastructure.marketplaces.wallapop.playwright_client import (
+    WallapopPlaywrightClient,
+)
 
 
 async def main() -> None:
@@ -39,13 +41,13 @@ async def main() -> None:
     print()
 
     # Initialize components
-    wallapop_client = WallapopClient()
+    wallapop_client = WallapopPlaywrightClient()
     game_detector = FuzzyGameDetector()
     comparable_filter = RuleBasedComparableFilter()
 
     # Create price collector
     price_collector = WallapopPriceCollector(
-        wallapop_client=wallapop_client,
+        marketplace_search=wallapop_client,
         game_detector=game_detector,
         comparable_filter=comparable_filter,
     )
