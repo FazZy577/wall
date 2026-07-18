@@ -1,0 +1,150 @@
+# Lot Opportunity Scanner
+
+## Responsabilidad del scanner
+
+`LotOpportunityScanner` orquesta el pipeline de valoración de un lote ya detectado. Recibe un `CandidateListing` con su lista de `DetectedGame` y procesa cada juego por separado.
+
+El scanner:
+
+- recorre `listing.detected_games` sin deduplicar;
+- busca comparables para cada juego mediante `PriceCollector`;
+- construye un `PriceDataset` solo con anuncios comparables;
+- calcula estadísticas iniciales;
+- elimina outliers;
+- recalcula estadísticas sobre el dataset limpio;
+- estima el precio de mercado;
+- crea un `GameValuation` por juego valorado;
+- registra fallos por juego sin detener todo el lote;
+- delega el análisis final en `LotOpportunityAnalyzer`.
+
+El scanner no decide `BUY`, `MAYBE` o `SKIP` y no calcula `opportunity_score`.
+
+## Responsabilidad del analyzer
+
+`LotOpportunityAnalyzer` recibe:
+
+- el `CandidateListing`;
+- las `GameValuation` obtenidas;
+- `total_detected_games`.
+
+El analyzer no busca comparables, no construye datasets, no calcula estadísticas de mercado y no conoce Wallapop ni Playwright.
+
+Su responsabilidad es calcular las métricas agregadas del lote y decidir:
+
+- `recommendation`;
+- `reason`;
+- `opportunity_score`.
+
+También compara `len(game_valuations)` con `total_detected_games` para saber si la valoración está completa.
+
+## Pipeline por juego
+
+```text
+DetectedGame
+    ↓
+PriceCollector
+    ↓
+PriceDatasetBuilder
+    ↓
+PriceStatistics
+    ↓
+OutlierRemoval
+    ↓
+PriceStatistics recalculadas
+    ↓
+MarketPriceEstimator
+    ↓
+GameValuation
+```
+
+Cada juego se valora de forma independiente. Un fallo en un juego se guarda como `GameValuationFailure` con la etapa exacta donde ocurrió.
+
+## Tratamiento de fallos parciales
+
+Un lote puede contener juegos que no se puedan valorar por falta de comparables, dataset vacío, errores estadísticos, errores de estimación o errores inesperados del pipeline.
+
+El scanner conserva:
+
+- `game_valuations`: juegos valorados correctamente;
+- `failures`: juegos que fallaron y etapa del fallo;
+- `total_detected_games`;
+- `successfully_valued_games`;
+- `failed_games`;
+- `is_complete`.
+
+Después, el analyzer produce igualmente un `LotOpportunity` cuando hay juegos detectados, pero marca el lote como incompleto si no se valoraron todos.
+
+## Por qué una valoración incompleta nunca puede ser BUY
+
+Si falta valorar algún juego, el valor total del lote puede estar subestimado o el texto puede incluir títulos ambiguos. Para evitar compras con información incompleta, una valoración parcial nunca puede producir `BUY`.
+
+La regla inicial es conservadora:
+
+- valoración completa: puede ser `BUY`, `MAYBE` o `SKIP` según beneficio, margen y confianza;
+- valoración incompleta con beneficio positivo: como máximo `MAYBE`;
+- valoración incompleta sin beneficio positivo: `SKIP`.
+
+## Por qué CandidateListing no entra en PriceDataset
+
+`CandidateListing` representa el anuncio que queremos comprar. `ComparableListing` representa anuncios externos usados como referencia de mercado.
+
+El precio del candidato no debe entrar en `PriceDataset` porque contaminaría la estimación del mercado. Para valorar un lote de 35 EUR, el dataset de cada juego debe construirse solo con comparables de ese juego, no con el precio del lote ni con el anuncio candidato.
+
+## Diferencia con OpportunityScanner
+
+`OpportunityScanner` analiza oportunidades individuales. Procesa un anuncio de un solo juego, estima su valor de mercado y detecta la oportunidad individual.
+
+`LotOpportunityScanner` analiza lotes. No compara el precio del lote contra un único juego, sino contra la suma de las valoraciones individuales de todos los juegos detectados.
+
+La separación queda así:
+
+- `OpportunityScanner`: candidato individual;
+- `LotOpportunityScanner`: candidato lote;
+- `OpportunityRanker`: ordenación posterior de oportunidades individuales;
+- `LotOpportunityAnalyzer`: reglas agregadas del lote.
+
+## Limitación actual sobre cantidades duplicadas
+
+El scanner procesa cada entrada de `detected_games`. No deduplica automáticamente juegos repetidos.
+
+Esto permite representar dos copias del mismo juego si aparecen como dos `DetectedGame`, pero el sistema todavía no interpreta cantidades explícitas del texto como `2x GTA V`. Esa normalización de cantidades queda pendiente para una capa futura de detección/enriquecimiento del candidato.
+
+## Futura integración con SearchOrchestrator
+
+El `SearchOrchestrator` futuro decidirá si cada anuncio detectado debe ir al pipeline individual o al pipeline de lotes.
+
+```text
+SearchOrchestrator futuro
+        │
+        ├── candidato individual
+        │       ↓
+        │   OpportunityScanner
+        │
+        └── lote
+                ↓
+        LotOpportunityScanner
+                ↓
+        LotOpportunityAnalyzer
+```
+
+El `SearchOrchestrator` no está implementado todavía. El pipeline de lotes queda preparado para recibir `CandidateListing` ya construidos y enriquecidos con `detected_games`.
+
+## Explicabilidad
+
+`LotScanResult.explain()` devuelve una explicación determinista con:
+
+- lote;
+- juegos detectados;
+- juegos valorados;
+- juegos fallidos;
+- valoración individual;
+- valor total de mercado;
+- precio del lote;
+- beneficio estimado;
+- margen;
+- ROI;
+- confianza agregada;
+- completion ratio;
+- opportunity score;
+- recommendation;
+- reason.

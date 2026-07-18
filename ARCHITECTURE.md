@@ -1,0 +1,282 @@
+# Arquitectura del Proyecto
+
+## Visión General
+
+Plataforma para detectar oportunidades de arbitraje en marketplaces de segunda mano, comenzando con Wallapop y preparada para expandirse a otros marketplaces (Vinted, Milanuncios, eBay, etc.).
+
+## Principios Arquitectónicos
+
+### Clean Architecture / Arquitectura Hexagonal
+
+El proyecto sigue los principios de Clean Architecture con tres capas principales:
+
+1. **Domain Layer** (Núcleo)
+   - Entidades del dominio
+   - Value Objects
+   - Interfaces (Ports)
+   - Lógica de negocio pura
+   - **Sin dependencias externas**
+
+2. **Application Layer** (Casos de Uso)
+   - Orquestación de casos de uso
+   - Coordinación entre dominio e infraestructura
+   - Depende solo del Domain Layer
+
+3. **Infrastructure Layer** (Adaptadores)
+   - Implementaciones concretas de interfaces
+   - Adaptadores de marketplace (Wallapop, Vinted, etc.)
+   - Repositorios de base de datos
+   - Clientes HTTP, etc.
+   - Depende de Domain y Application
+
+### Regla de Dependencias
+
+```
+Infrastructure → Application → Domain
+                              ↑
+                              |
+                    (no depende de nadie)
+```
+
+## Estructura del Proyecto
+
+```
+wallapop-arbitrage/
+├── src/
+│   ├── domain/                    # Capa de dominio
+│   │   ├── entities/              # Entidades del negocio
+│   │   │   ├── listing.py         # Anuncio normalizado
+│   │   │   ├── game.py            # Juego identificado
+│   │   │   ├── detected_game.py   # Relación Listing-Game
+│   │   │   ├── game_price.py      # Precio histórico
+│   │   │   └── opportunity.py     # Oportunidad de compra
+│   │   ├── value_objects/         # Value Objects inmutables
+│   │   │   ├── money.py
+│   │   │   ├── location.py
+│   │   │   └── price_range.py
+│   │   └── interfaces/            # Ports (interfaces)
+│   │       ├── marketplace_adapter.py
+│   │       ├── game_detector.py
+│   │       ├── pricing_engine.py
+│   │       └── repositories.py
+│   │
+│   ├── application/               # Capa de aplicación
+│   │   └── use_cases/
+│   │       ├── scan_marketplace.py
+│   │       ├── detect_games.py
+│   │       ├── analyze_opportunity.py
+│   │       └── get_top_opportunities.py
+│   │
+│   ├── infrastructure/            # Capa de infraestructura
+│   │   ├── marketplaces/
+│   │   │   └── wallapop/
+│   │   │       ├── client.py      # Cliente HTTP Wallapop
+│   │   │       └── adapter.py     # Implementa IMarketplaceAdapter
+│   │   └── repositories/
+│   │       └── (future DB repos)
+│   │
+│   └── shared/                    # Utilidades compartidas
+│
+├── tests/
+│   ├── unit/                      # Tests unitarios
+│   ├── integration/               # Tests de integración
+│   └── e2e/                       # Tests end-to-end
+│
+├── pyproject.toml                 # Configuración del proyecto
+├── .gitignore
+└── README.md
+```
+
+## Entidades del Dominio
+
+### Listing (Anuncio)
+Representa un anuncio normalizado de cualquier marketplace.
+
+**Propiedades:**
+- `id`: ListingId
+- `external_id`: ID del marketplace original
+- `marketplace`: Tipo de marketplace (WALLAPOP, VINTED, etc.)
+- `title`, `description`: Texto del anuncio
+- `price`: Money (cantidad + moneda)
+- `location`: Ubicación
+- `images`: Lista de URLs
+- `published_at`, `discovered_at`: Timestamps
+- `status`: Estado del anuncio (ACTIVE, SOLD, REMOVED)
+
+### Game (Juego)
+Representa un videojuego único en el catálogo.
+
+**Propiedades:**
+- `id`: GameId
+- `canonical_name`: Nombre normalizado
+- `platform`: Plataforma (PS4, XBOX_ONE, SWITCH, etc.)
+- `region`: Región (PAL, NTSC_U, etc.)
+- `aliases`: Nombres alternativos
+- `metadata`: Información adicional
+
+### DetectedGame
+Relación entre un Listing y los Games detectados en él.
+
+**Propiedades:**
+- `listing_id`, `game_id`: Referencias
+- `confidence`: Nivel de confianza (0.0 - 1.0)
+- `detection_method`: Método usado (TITLE_MATCH, IMAGE_OCR, etc.)
+- `condition`: Estado (SEALED, COMPLETE, LOOSE, etc.)
+- `quantity`: Cantidad detectada
+
+### GamePrice
+Snapshot del precio estimado de mercado de un juego.
+
+**Propiedades:**
+- `game_id`: Referencia al juego
+- `estimated_price`: Precio estimado
+- `price_range`: Rango (min, max, median, percentiles)
+- `sample_size`: Número de anuncios analizados
+- `calculated_at`: Timestamp del cálculo
+- `validity_period`: Tiempo de validez
+
+### Opportunity
+Análisis de rentabilidad de un anuncio.
+
+**Propiedades:**
+- `listing_id`: Referencia al anuncio
+- `detected_games`: Juegos detectados
+- `total_market_value`: Valor total estimado
+- `expected_profit`: Beneficio esperado
+- `profit_margin`, `roi`: Métricas
+- `confidence_score`: Nivel de confianza
+- `status`: Estado (NEW, REVIEWED, PURCHASED, etc.)
+
+## Interfaces (Ports)
+
+### IMarketplaceAdapter
+Obtiene anuncios de un marketplace externo.
+
+```python
+def search(query: SearchQuery) -> Iterator[RawListing]
+def get_listing(external_id: str) -> RawListing
+def get_marketplace_type() -> MarketplaceType
+```
+
+### IGameDetector
+Detecta juegos en un anuncio.
+
+```python
+def detect_games(listing: Listing) -> list[DetectedGame]
+```
+
+### IPricingEngine
+Calcula precios de mercado.
+
+```python
+def calculate_price(game: Game, condition: Condition) -> GamePrice
+def get_latest_price(game: Game, condition: Condition) -> GamePrice | None
+```
+
+### IRepository<T>
+Persistencia genérica.
+
+```python
+def save(entity: T) -> EntityId
+def get(entity_id: EntityId) -> T | None
+def find(criteria: Criteria) -> list[T]
+```
+
+## Flujo de Datos Principal
+
+```
+1. ScanMarketplaceUseCase
+   Marketplace API → RawListing → Listing normalizado → DB
+
+2. DetectGamesInListingUseCase
+   Listing → IGameDetector → DetectedGame → DB
+
+3. AnalyzeOpportunityUseCase
+   DetectedGame + IPricingEngine → Opportunity → DB
+
+4. GetTopOpportunitiesUseCase
+   Query DB → Ranking de Opportunities
+```
+
+## Estrategia de Implementación
+
+### Fase 1: Investigación ✅
+- Validar API de Wallapop
+- Documentar estructura de datos
+
+### Fase 2: Estructura Base ✅ (ACTUAL)
+- Configurar proyecto (uv, pyproject.toml)
+- Crear estructura de carpetas
+- Configurar herramientas (ruff, mypy, pytest)
+
+### Fase 3: Domain Layer
+- Implementar entidades
+- Implementar value objects
+- Definir interfaces
+
+### Fase 4: Wallapop Adapter
+- Implementar WallapopClient
+- Implementar WallapopAdapter
+- Tests de integración
+
+### Fase 5: Casos de Uso MVP
+- ScanMarketplaceUseCase
+- Persistencia básica (JSON/SQLite)
+- Verificación end-to-end
+
+### Fase 6+: Expansión
+- Detección de juegos
+- Motor de valoración
+- Análisis de oportunidades
+- Nuevos marketplaces
+
+## Decisiones Técnicas
+
+### Tecnologías
+- **Python 3.11+**: Lenguaje base
+- **uv**: Gestor de paquetes
+- **httpx**: Cliente HTTP async
+- **pydantic**: Validación y serialización
+- **pytest**: Testing framework
+- **ruff**: Linter y formatter
+- **mypy**: Type checking
+
+### Patrones de Diseño
+- **Dependency Injection**: Inyección de dependencias en casos de uso
+- **Repository Pattern**: Abstracción de persistencia
+- **Strategy Pattern**: Múltiples implementaciones de detectores/pricers
+- **Adapter Pattern**: Adaptadores de marketplace
+
+### Testing
+- **Unit tests**: Lógica de dominio aislada
+- **Integration tests**: Adaptadores con servicios externos
+- **E2E tests**: Flujo completo de casos de uso
+
+## Extensibilidad
+
+### Añadir un nuevo marketplace
+
+1. Crear `infrastructure/marketplaces/{marketplace}/`
+2. Implementar `{Marketplace}Client` (HTTP/scraping)
+3. Implementar `{Marketplace}Adapter` (IMarketplaceAdapter)
+4. Escribir tests de integración
+5. **No modificar el dominio**
+
+### Añadir un nuevo detector de juegos
+
+1. Crear clase que implemente `IGameDetector`
+2. Registrar en configuración
+3. Opcionalmente combinar con otros detectores
+
+### Añadir un nuevo pricing engine
+
+1. Crear clase que implemente `IPricingEngine`
+2. Configurar como implementación por defecto o alternativa
+
+## Notas Importantes
+
+- El dominio **nunca** debe importar de infrastructure
+- Cada marketplace devuelve `Listing` normalizado (mismo formato)
+- La IA es siempre opcional, no obligatoria
+- Priorizar almacenamiento de históricos sobre análisis en tiempo real
+- La arquitectura debe facilitar testing desde el día 1
