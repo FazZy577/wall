@@ -62,3 +62,6 @@ cURL.txt
 *.har
 playwright-profile/
 storage-state.json
+
+# Claude Code local configuration
+.openclaude/
