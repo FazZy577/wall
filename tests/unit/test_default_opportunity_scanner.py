@@ -9,6 +9,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     Recommendation,
 )
@@ -35,29 +36,28 @@ def sample_game() -> DetectedGame:
 
 
 @pytest.fixture
-def sample_listing(sample_game: DetectedGame) -> ComparableListing:
+def sample_listing(sample_game: DetectedGame) -> CandidateListing:
     """Create sample listing with detected game."""
-    return ComparableListing(
+    return CandidateListing(
         listing_id="test123",
         title="GTA V PS4",
         description="Great condition",
         price=12.0,
         currency="EUR",
-        detected_game=sample_game,
+        detected_games=[sample_game],
         url="https://wallapop.com/item/test123",
     )
 
 
 @pytest.fixture
-def listing_without_game() -> ComparableListing:
+def listing_without_game() -> CandidateListing:
     """Create listing without detected game."""
-    return ComparableListing(
+    return CandidateListing(
         listing_id="test456",
         title="Unknown Game",
         description="Some game",
         price=10.0,
         currency="EUR",
-        detected_game=None,
         url="https://wallapop.com/item/test456",
     )
 
@@ -77,9 +77,13 @@ def sample_comparable(sample_game: DetectedGame) -> ComparableListing:
 
 
 @pytest.fixture
-def mock_game_detector() -> Mock:
+def mock_game_detector(sample_game: DetectedGame) -> Mock:
     """Create mock game detector."""
-    return Mock()
+    detector = Mock()
+    detector.detect_games.side_effect = lambda text: (
+        [] if text.title == "Unknown Game" else [sample_game]
+    )
+    return detector
 
 
 @pytest.fixture
@@ -196,7 +200,7 @@ class TestScanListing:
     def test_complete_pipeline_success(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
         sample_comparable: ComparableListing,
         mock_price_collector: Mock,
@@ -241,7 +245,7 @@ class TestScanListing:
     def test_listing_without_game(
         self,
         scanner: DefaultOpportunityScanner,
-        listing_without_game: ComparableListing,
+        listing_without_game: CandidateListing,
     ) -> None:
         """Should skip listing without detected game."""
         result = scanner.scan_listing(listing_without_game)
@@ -253,7 +257,7 @@ class TestScanListing:
     def test_no_comparable_listings_empty_dataset(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should return None when dataset is empty after building."""
@@ -270,7 +274,7 @@ class TestScanListing:
     def test_pipeline_failure_returns_none(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
     ) -> None:
         """Should return None when pipeline fails with exception."""
         scanner._run_async.side_effect = Exception("Price collection error")
@@ -282,7 +286,7 @@ class TestScanListing:
     def test_price_collector_called_with_correct_params(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should call price collector with the detected game and coordinates."""
@@ -303,7 +307,7 @@ class TestScanMultiple:
     def test_multiple_listings_all_successful(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
         sample_comparable: ComparableListing,
         mock_price_collector: Mock,
@@ -316,13 +320,13 @@ class TestScanMultiple:
         """Should process multiple listings successfully."""
         # Create 3 listings
         listings = [
-            ComparableListing(
+            CandidateListing(
                 listing_id=f"test{i}",
                 title=f"GTA V PS4 - {i}",
                 description="",
                 price=10.0 + i,
                 currency="EUR",
-                detected_game=sample_game,
+                detected_games=[sample_game],
                 url=f"https://wallapop.com/item/test{i}",
             )
             for i in range(3)
@@ -367,9 +371,9 @@ class TestScanMultiple:
     def test_continues_after_failure(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
-        listing_without_game: ComparableListing,
+        listing_without_game: CandidateListing,
     ) -> None:
         """Should continue processing after individual failures."""
         # Mix: first has no game, second has game (but will get empty dataset)
@@ -393,10 +397,10 @@ class TestScanMultiple:
     def test_mixed_success_and_failure(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
         sample_comparable: ComparableListing,
-        listing_without_game: ComparableListing,
+        listing_without_game: CandidateListing,
         mock_dataset_builder: Mock,
         mock_statistics: Mock,
         mock_outlier_removal: Mock,
@@ -441,31 +445,31 @@ class TestScanMultiple:
     ) -> None:
         """Should not repeat collection for later listings of the same game."""
         listings = [
-            ComparableListing(
+            CandidateListing(
                 listing_id="good1",
                 title="GTA V PS4",
                 description="",
                 price=10.0,
                 currency="EUR",
-                detected_game=sample_game,
+                detected_games=[sample_game],
                 url="https://wallapop.com/item/good1",
             ),
-            ComparableListing(
+            CandidateListing(
                 listing_id="bad1",
                 title="GTA V PS4",
                 description="",
                 price=15.0,
                 currency="EUR",
-                detected_game=sample_game,
+                detected_games=[sample_game],
                 url="https://wallapop.com/item/bad1",
             ),
-            ComparableListing(
+            CandidateListing(
                 listing_id="good2",
                 title="GTA V PS4",
                 description="",
                 price=20.0,
                 currency="EUR",
-                detected_game=sample_game,
+                detected_games=[sample_game],
                 url="https://wallapop.com/item/good2",
             ),
         ]
@@ -531,7 +535,7 @@ class TestPipelineStageTracking:
     def test_game_detection_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
-        listing_without_game: ComparableListing,
+        listing_without_game: CandidateListing,
     ) -> None:
         """Should track GAME_DETECTION stage for listings without games."""
         result = scanner.scan_multiple([listing_without_game])
@@ -546,7 +550,7 @@ class TestPipelineStageTracking:
     def test_price_collection_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
     ) -> None:
         """Should track PRICE_COLLECTION stage when price collector fails."""
         scanner._run_async.side_effect = Exception("API error")
@@ -564,7 +568,7 @@ class TestPipelineStageTracking:
     def test_dataset_building_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should track DATASET_BUILDING stage for empty datasets."""
@@ -585,7 +589,7 @@ class TestPipelineStageTracking:
     def test_statistics_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         mock_statistics: Mock,
         mock_dataset_builder: Mock,
     ) -> None:
@@ -607,7 +611,7 @@ class TestPipelineStageTracking:
     def test_market_estimation_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         mock_dataset_builder: Mock,
         mock_statistics: Mock,
         mock_outlier_removal: Mock,
@@ -644,7 +648,7 @@ class TestScanResult:
     def test_scan_result_fields(
         self,
         scanner: DefaultOpportunityScanner,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
         sample_comparable: ComparableListing,
         mock_price_collector: Mock,
@@ -679,7 +683,7 @@ class TestScanResult:
     def test_scan_result_with_only_failures(
         self,
         scanner: DefaultOpportunityScanner,
-        listing_without_game: ComparableListing,
+        listing_without_game: CandidateListing,
     ) -> None:
         """Should return ScanResult with failures but no opportunities."""
         result = scanner.scan_multiple([listing_without_game, listing_without_game])

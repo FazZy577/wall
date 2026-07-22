@@ -8,12 +8,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.game_detector import DetectedGame
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     MarketPriceEstimate,
 )
-from domain.interfaces.price_collector import ComparableListing
 
 
 class Recommendation(StrEnum):
@@ -58,7 +58,7 @@ class ArbitrageOpportunity:
         created_at: Detection timestamp
     """
 
-    listing: ComparableListing
+    listing: CandidateListing
     game: DetectedGame
     market_price: float
     listing_price: float
@@ -127,7 +127,7 @@ class IArbitrageOpportunityDetector(ABC):
     @abstractmethod
     def detect(
         self,
-        listing: ComparableListing,
+        listing: CandidateListing,
         market_estimate: MarketPriceEstimate,
     ) -> ArbitrageOpportunity:
         """Detect if a listing is a profitable arbitrage opportunity.

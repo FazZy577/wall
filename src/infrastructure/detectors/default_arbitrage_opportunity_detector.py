@@ -6,6 +6,7 @@ against estimated market prices using configurable business rules.
 
 from datetime import UTC, datetime
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     IArbitrageOpportunityDetector,
@@ -13,7 +14,6 @@ from domain.interfaces.arbitrage_opportunity_detector import (
     Recommendation,
 )
 from domain.interfaces.market_price_estimator import MarketPriceEstimate
-from domain.interfaces.price_collector import ComparableListing
 
 
 class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
@@ -47,7 +47,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
     def detect(
         self,
-        listing: ComparableListing,
+        listing: CandidateListing,
         market_estimate: MarketPriceEstimate,
     ) -> ArbitrageOpportunity:
         """Detect if a listing is a profitable arbitrage opportunity.

@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -185,6 +186,7 @@ class TestListingProcessing:
 
         assert result is not None
         assert isinstance(result, ComparableListing)
+        assert not isinstance(result, CandidateListing)
         assert result.listing_id == "123456"
         assert result.title == "GTA V PS4"
         assert result.description == "Juego en buen estado"
@@ -192,6 +194,7 @@ class TestListingProcessing:
         assert result.currency == "EUR"
         assert result.detected_game == target_game
         assert result.url == "https://es.wallapop.com/item/gta-v-ps4-123456"
+        assert result.raw_listing is raw_listing
 
     def test_game_not_detected(
         self,

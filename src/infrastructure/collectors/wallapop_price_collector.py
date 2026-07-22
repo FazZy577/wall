@@ -238,4 +238,5 @@ class WallapopPriceCollector(IPriceCollector):
             currency=currency,
             detected_game=target_detected,
             url=url,
+            raw_listing=raw_listing,
         )

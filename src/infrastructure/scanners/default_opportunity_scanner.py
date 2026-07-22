@@ -8,11 +8,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, cast
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     IArbitrageOpportunityDetector,
 )
-from domain.interfaces.game_detector import DetectedGame, IGameDetector
+from domain.interfaces.game_detector import DetectedGame, IGameDetector, ListingText
 from domain.interfaces.market_price_estimator import (
     IMarketPriceEstimator,
     MarketPriceEstimate,
@@ -179,18 +180,21 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         context.valuations[key] = result
         return result
 
-    def scan_listing(self, listing: ComparableListing) -> ArbitrageOpportunity | None:
+    def scan_listing(self, listing: CandidateListing) -> ArbitrageOpportunity | None:
         """Scan one listing with a fresh, non-persistent valuation context."""
         context = _ScanExecutionContext()
         start_time = time.time()
 
         try:
             logger.info(f"Scanning listing: {listing.listing_id}")
-            if not listing.detected_game:
+            detected_games = self.game_detector.detect_games(
+                ListingText(title=listing.title, description=listing.description)
+            )
+            if not detected_games:
                 logger.warning(f"Listing {listing.listing_id} has no detected game")
                 return None
 
-            valuation = self._get_or_create_market_valuation(listing.detected_game, context)
+            valuation = self._get_or_create_market_valuation(detected_games[0], context)
             if valuation.failure is not None or valuation.estimate is None:
                 return None
 
@@ -208,7 +212,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             )
             return None
 
-    def scan_multiple(self, listings: list[ComparableListing]) -> ScanResult:
+    def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
         """Scan listings, reusing valuations only within this invocation."""
         start_time = time.time()
         context = _ScanExecutionContext()
@@ -220,7 +224,10 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             listing_start = time.time()
             logger.info(f"Scanning listing {index}/{len(listings)}")
 
-            if not listing.detected_game:
+            detected_games = self.game_detector.detect_games(
+                ListingText(title=listing.title, description=listing.description)
+            )
+            if not detected_games:
                 failures.append(
                     FailureInfo(
                         listing_id=listing.listing_id,
@@ -230,7 +237,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                 )
                 continue
 
-            valuation = self._get_or_create_market_valuation(listing.detected_game, context)
+            valuation = self._get_or_create_market_valuation(detected_games[0], context)
             if valuation.failure is not None:
                 failures.append(
                     FailureInfo(

@@ -7,6 +7,34 @@
 
 The Opportunity Scanner is a **pure orchestrator** that coordinates the complete arbitrage detection pipeline. It contains **NO business logic** — only coordination.
 
+## Candidate listings versus comparable listings
+
+`CandidateListing` answers: **What listing are we considering buying?** It can
+represent one game, a multi-game lot, or an ambiguous listing, and it has no
+required single platform. The scanner creates `ListingText` from its title and
+description; each returned `DetectedGame` owns its platform.
+
+`ComparableListing` answers: **What individual accepted listings do we use to
+estimate one game's market value?** These objects are produced by
+`PriceCollector` and are the only listing objects passed to
+`PriceDatasetBuilder`.
+
+```text
+CandidateListing (lot priced at 40 EUR)
+        |
+        +-- detects GTA V
+        |       +-- PriceCollector
+        |              +-- ComparableListing 12 EUR
+        |              +-- ComparableListing 15 EUR
+        |              +-- ComparableListing 18 EUR
+        |
+        +-- Arbitrage detector compares:
+                candidate price 40 EUR
+                against the game valuation
+```
+
+The candidate is never a market observation and cannot enter the price dataset.
+
 ## Execution-scoped valuation reuse (P1.1)
 
 Previously, `scan_multiple()` ran the complete market valuation pipeline once per
@@ -60,11 +88,11 @@ identities require five valuations rather than up to 100.
 ## Pipeline Flow
 
 ```
-Input: ComparableListing (with detected_game)
+Input: CandidateListing
   │
   ▼
 ┌─────────────────────────────────┐
-│ 1. GameDetector                 │  Verify game is detected in listing
+│ 1. GameDetector                 │  Detect from ListingText title/description
 │    Stage: GAME_DETECTION        │  If no game → skip listing
 └──────────────┬──────────────────┘
                │ game: DetectedGame
@@ -77,7 +105,7 @@ Input: ComparableListing (with detected_game)
                ▼
 ┌─────────────────────────────────┐
 │ 3. PriceDatasetBuilder          │  Build price dataset from
-│    Stage: DATASET_BUILDING      │  original + comparable listings
+│    Stage: DATASET_BUILDING      │  comparable listings only
 └──────────────┬──────────────────┘
                │ dataset: PriceDataset
                ▼
@@ -384,7 +412,7 @@ The scanner is designed to be called by a higher-level orchestrator:
 │                                          │
 │  1. Scrape Wallapop                      │
 │  2. Detect games in listings             │
-│  3. Build ComparableListings             │
+│  3. Build CandidateListings              │
 │  4. Call OpportunityScanner.scan_multiple│
 │  5. Rank opportunities by score          │
 │  6. Notify user / store results          │

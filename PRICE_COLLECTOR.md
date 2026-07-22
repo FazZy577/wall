@@ -12,6 +12,12 @@ The Price Collector module obtains **comparable listings** for a video game by o
 
 **Scope:** This module does NOT calculate prices or statistics. It only collects and validates listings.
 
+`ComparableListing` is exclusively an individual accepted market reference.
+It is not the `CandidateListing` being considered for purchase. The collector
+returns only comparables; candidate listings never enter the comparable filter
+or this module's output. Each comparable also retains its own `raw_listing`
+payload independently from any candidate raw data.
+
 ## Architecture
 
 The module follows **Clean Architecture** principles:
@@ -97,6 +103,7 @@ class ComparableListing:
     currency: str            # Currency code (e.g., "EUR")
     detected_game: DetectedGame  # Game detected in this listing
     url: str                 # Direct URL to listing
+    raw_listing: dict[str, Any]  # Original comparable marketplace payload
 ```
 
 ## Usage

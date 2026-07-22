@@ -2,6 +2,7 @@
 
 from unittest.mock import Mock
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from domain.interfaces.price_collector import ComparableListing
 from infrastructure.dataset_builders.default_price_dataset_builder import (
@@ -28,7 +29,19 @@ def _game() -> DetectedGame:
     )
 
 
-def _listing(identifier: str, price: float) -> ComparableListing:
+def _candidate(identifier: str, price: float) -> CandidateListing:
+    return CandidateListing(
+        listing_id=identifier,
+        title="GTA V PS4",
+        description="",
+        price=price,
+        currency="EUR",
+        url=f"https://example.test/{identifier}",
+        raw_listing={"kind": "candidate", "id": identifier},
+    )
+
+
+def _comparable(identifier: str, price: float) -> ComparableListing:
     return ComparableListing(
         listing_id=identifier,
         title="GTA V PS4",
@@ -37,6 +50,7 @@ def _listing(identifier: str, price: float) -> ComparableListing:
         currency="EUR",
         detected_game=_game(),
         url=f"https://example.test/{identifier}",
+        raw_listing={"kind": "comparable", "id": identifier},
     )
 
 
@@ -53,15 +67,17 @@ class _OfflineCollector:
     ) -> list[ComparableListing]:
         del game, latitude, longitude, max_results
         self.calls += 1
-        return [_listing(f"comparable-{index}", 30.0) for index in range(20)]
+        return [_comparable(f"comparable-{index}", 30.0) for index in range(20)]
 
 
 def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() -> None:
     collector = _OfflineCollector()
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
     detector = Mock(wraps=DefaultArbitrageOpportunityDetector())
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
     scanner = DefaultOpportunityScanner(
-        game_detector=Mock(),
+        game_detector=game_detector,
         price_collector=collector,
         dataset_builder=DefaultPriceDatasetBuilder(),
         statistics=DefaultPriceStatistics(),
@@ -69,7 +85,7 @@ def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() ->
         market_estimator=estimator,
         arbitrage_detector=detector,
     )
-    candidates = [_listing("candidate-5", 5.0), _listing("candidate-25", 25.0)]
+    candidates = [_candidate("candidate-5", 5.0), _candidate("candidate-25", 25.0)]
 
     result = scanner.scan_multiple(candidates)
 
@@ -81,3 +97,51 @@ def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() ->
     assert [opportunity.estimated_profit for opportunity in result.opportunities] == [25.0, 5.0]
     assert [opportunity.roi_percentage for opportunity in result.opportunities] == [500.0, 20.0]
     assert result.opportunities[0].recommendation != result.opportunities[1].recommendation
+    assert result.opportunities[0].listing is candidates[0]
+    assert result.opportunities[0].listing.raw_listing["kind"] == "candidate"
+
+
+def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
+    candidate = CandidateListing(
+        listing_id="lot-30",
+        title="Lote GTA V + RDR2",
+        description="",
+        price=30.0,
+        currency="EUR",
+        url="https://example.test/lot-30",
+        raw_listing={"kind": "candidate", "price": 30.0},
+    )
+    comparables = [
+        _comparable("gta-12", 12.0),
+        _comparable("gta-15", 15.0),
+        _comparable("gta-18", 18.0),
+    ]
+    collector = Mock()
+    builder = Mock(wraps=DefaultPriceDatasetBuilder())
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    scanner = DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=builder,
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        arbitrage_detector=DefaultArbitrageOpportunityDetector(),
+    )
+    scanner._run_async = Mock(return_value=comparables)
+
+    opportunity = scanner.scan_listing(candidate)
+
+    dataset_input = builder.build.call_args.args[0]
+    assert dataset_input == comparables
+    assert all(isinstance(item, ComparableListing) for item in dataset_input)
+    assert candidate not in dataset_input
+    assert [item.price for item in dataset_input] == [12.0, 15.0, 18.0]
+    assert opportunity is not None
+    assert opportunity.listing is candidate
+    assert opportunity.listing_price == 30.0
+    assert opportunity.market_price == 15.0
+    assert opportunity.estimated_profit == -15.0
+    assert opportunity.listing.raw_listing == {"kind": "candidate", "price": 30.0}
+    assert comparables[0].raw_listing == {"kind": "comparable", "id": "gta-12"}

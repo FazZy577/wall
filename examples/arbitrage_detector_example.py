@@ -16,6 +16,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     Recommendation,
@@ -27,7 +28,6 @@ from domain.interfaces.market_price_estimator import (
     MarketPriceEstimate,
     ReasonCode as EstimateReasonCode,
 )
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
@@ -38,15 +38,15 @@ def create_listing(
     title: str,
     price: float,
     game: DetectedGame,
-) -> ComparableListing:
+) -> CandidateListing:
     """Helper to create a listing."""
-    return ComparableListing(
+    return CandidateListing(
         listing_id=listing_id,
         title=title,
         description="",
         price=price,
         currency="EUR",
-        detected_game=game,
+        detected_games=[game],
         url=f"https://wallapop.com/item/{listing_id}",
     )
 
@@ -86,7 +86,9 @@ def print_opportunity_summary(opportunity: ArbitrageOpportunity) -> None:
     print(f"  Expected Profit: EUR {opportunity.estimated_profit:.2f}")
     print(f"  Profit Margin: {opportunity.profit_margin_percentage:.1f}%")
     print(f"  ROI: {opportunity.roi_percentage:.1f}%")
-    print(f"  Confidence: {opportunity.confidence_score:.2f} ({opportunity.confidence_level.upper()})")
+    print(
+        f"  Confidence: {opportunity.confidence_score:.2f} ({opportunity.confidence_level.upper()})"
+    )
     print(f"  Opportunity Score: {opportunity.opportunity_score:.1f}/100")
     print(f"  DECISION: {opportunity.recommendation.upper()} ({opportunity.reason})")
     print()

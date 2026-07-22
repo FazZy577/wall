@@ -7,8 +7,10 @@ without performing any statistical calculations.
 import logging
 from datetime import UTC, datetime
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.price_collector import ComparableListing
 from domain.interfaces.price_dataset_builder import (
+    InvalidComparableListingError,
     IPriceDatasetBuilder,
     PriceDataset,
     PriceObservation,
@@ -51,6 +53,11 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             # Empty dataset
             logger.warning("No comparable listings provided")
             return self._build_empty_dataset()
+
+        if any(isinstance(listing, CandidateListing) for listing in comparable_listings):
+            raise InvalidComparableListingError(
+                "CandidateListing cannot be used as a market comparable"
+            )
 
         # Cast to ComparableListing for type safety
         listings = [listing for listing in comparable_listings if isinstance(listing, ComparableListing)]

@@ -4,7 +4,8 @@ Defines the contract for price collection implementations.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 from domain.interfaces.game_detector import DetectedGame
 
@@ -30,6 +31,7 @@ class ComparableListing:
     currency: str
     detected_game: DetectedGame
     url: str
+    raw_listing: dict[str, Any] = field(default_factory=dict)
 
 
 class IPriceCollector(ABC):

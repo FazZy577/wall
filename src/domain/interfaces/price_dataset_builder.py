@@ -10,6 +10,10 @@ from datetime import datetime
 from domain.interfaces.game_detector import DetectedGame
 
 
+class InvalidComparableListingError(TypeError):
+    """Raised when a non-comparable domain type crosses the market boundary."""
+
+
 @dataclass
 class PriceObservation:
     """A single price observation extracted from a marketplace listing.

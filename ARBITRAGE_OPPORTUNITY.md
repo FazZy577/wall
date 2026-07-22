@@ -5,7 +5,10 @@
 
 ## Overview
 
-The Arbitrage Opportunity Detector evaluates whether a marketplace listing represents a profitable resale opportunity by comparing the listing price against an estimated market price.
+The Arbitrage Opportunity Detector evaluates whether a `CandidateListing`
+represents a profitable resale opportunity by comparing its acquisition price
+against an estimated market price built exclusively from `ComparableListing`
+objects. The stored `ArbitrageOpportunity.listing` is the original candidate.
 
 It provides a **BUY**, **MAYBE**, or **SKIP** recommendation based on configurable business rules.
 
@@ -194,7 +197,7 @@ Reason: undervalued
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `listing` | `ComparableListing` | Original listing from marketplace |
+| `listing` | `CandidateListing` | Original listing considered for purchase |
 | `game` | `DetectedGame` | Game detected in the listing |
 | `market_price` | `float` | Estimated market price (EUR) |
 | `listing_price` | `float` | Price in the listing (EUR) |
@@ -462,7 +465,7 @@ class MLArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
     
     def detect(
         self,
-        listing: ComparableListing,
+        listing: CandidateListing,
         market_estimate: MarketPriceEstimate,
     ) -> ArbitrageOpportunity:
         # Custom ML-based logic

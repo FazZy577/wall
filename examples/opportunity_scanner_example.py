@@ -15,6 +15,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -172,35 +173,34 @@ def main() -> None:
     )
 
     # A listing priced well below market → should be BUY
-    cheap_listing = ComparableListing(
+    cheap_listing = CandidateListing(
         listing_id="listing_001",
         title="GTA V PS4 - Cheap!",
         description="Good condition, quick sale",
         price=5.0,
         currency="EUR",
-        detected_game=gta_v,
+        detected_games=[gta_v],
         url="https://wallapop.com/item/listing_001",
     )
 
     # A listing priced near market → should be MAYBE or SKIP
-    expensive_listing = ComparableListing(
+    expensive_listing = CandidateListing(
         listing_id="listing_002",
         title="COD BO6 PS4 - Premium",
         description="Like new, collector's edition",
         price=45.0,
         currency="EUR",
-        detected_game=cod,
+        detected_games=[cod],
         url="https://wallapop.com/item/listing_002",
     )
 
     # A listing without a detected game → will be skipped
-    unknown_listing = ComparableListing(
+    unknown_listing = CandidateListing(
         listing_id="listing_003",
         title="Random stuff",
         description="Various items",
         price=10.0,
         currency="EUR",
-        detected_game=None,
         url="https://wallapop.com/item/listing_003",
     )
 
@@ -208,7 +208,7 @@ def main() -> None:
 
     print(f"  Created {len(listings)} listings:")
     for item in listings:
-        game_name = item.detected_game.canonical_name if item.detected_game else "NONE"
+        game_name = item.detected_games[0].canonical_name if item.detected_games else "NONE"
         print(f"    - {item.listing_id}: {item.title} (€{item.price:.2f}, game={game_name})")
     print()
 

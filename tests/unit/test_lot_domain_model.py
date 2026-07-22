@@ -610,13 +610,13 @@ class TestDatasetContamination:
         game = _make_game("GTA V")
         from domain.interfaces.price_collector import ComparableListing
 
-        candidate = ComparableListing(
+        candidate = CandidateListing(
             listing_id="candidate001",
             title="GTA V PS4 - Candidate",
             description="",
             price=40.0,  # This is the candidate price - should NOT be in dataset
             currency="EUR",
-            detected_game=game,
+            detected_games=[game],
             url="https://example.com/candidate001",
         )
 
@@ -644,6 +644,7 @@ class TestDatasetContamination:
             arbitrage_detector=Mock(),
         )
         scanner._run_async = Mock(return_value=comparables)
+        scanner.game_detector.detect_games.return_value = [game]
 
         # Capture what is passed to dataset_builder.build()
         captured_listings: list = []
@@ -671,9 +672,7 @@ class TestDatasetContamination:
         scanner.scan_listing(candidate)
 
         # Verify: candidate price (40.0) should NOT be in the dataset
-        prices_in_dataset = [
-            getattr(lst, "price", None) for lst in captured_listings
-        ]
+        prices_in_dataset = [getattr(lst, "price", None) for lst in captured_listings]
         assert 40.0 not in prices_in_dataset, (
             f"Candidate price 40.0 found in dataset! Prices: {prices_in_dataset}"
         )
@@ -693,13 +692,13 @@ class TestDatasetContamination:
         game = _make_game("GTA V")
         from domain.interfaces.price_collector import ComparableListing
 
-        candidate = ComparableListing(
+        candidate = CandidateListing(
             listing_id="candidate002",
             title="GTA V PS4 - Candidate",
             description="",
             price=40.0,  # Candidate price - should NOT be in dataset
             currency="EUR",
-            detected_game=game,
+            detected_games=[game],
             url="https://example.com/candidate002",
         )
 
@@ -727,6 +726,7 @@ class TestDatasetContamination:
             arbitrage_detector=Mock(),
         )
         scanner._run_async = Mock(return_value=comparables)
+        scanner.game_detector.detect_games.return_value = [game]
 
         captured_listings: list = []
 
@@ -750,11 +750,8 @@ class TestDatasetContamination:
 
         scanner.scan_listing(candidate)
 
-        prices_in_dataset = [
-            getattr(lst, "price", None) for lst in captured_listings
-        ]
+        prices_in_dataset = [getattr(lst, "price", None) for lst in captured_listings]
         assert 40.0 not in prices_in_dataset, (
-            f"Candidate price 40.0 found in small dataset! "
-            f"Prices: {prices_in_dataset}"
+            f"Candidate price 40.0 found in small dataset! Prices: {prices_in_dataset}"
         )
         assert len(captured_listings) == 3

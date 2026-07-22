@@ -9,6 +9,7 @@ from datetime import datetime
 
 import pytest
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -24,7 +25,6 @@ from domain.interfaces.opportunity_ranker import (
     RankingStrategy,
     UnsupportedRankingStrategyError,
 )
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 
 # ---------------------------------------------------------------------------
@@ -61,13 +61,13 @@ def _make_opportunity(
 
     All parameters are keyword-only to avoid positional confusion.
     """
-    listing = ComparableListing(
+    listing = CandidateListing(
         listing_id=listing_id,
         title=title,
         description="Good condition",
         price=listing_price,
         currency="EUR",
-        detected_game=_make_game(),
+        detected_games=[_make_game()],
         url=f"https://wallapop.com/item/{listing_id}",
     )
     return ArbitrageOpportunity(
@@ -122,9 +122,7 @@ class TestConstructor:
 class TestRecommendationOrdering:
     """Test that Recommendation is the primary sort key."""
 
-    def test_buy_before_skip_regardless_of_score(
-        self, ranker: DefaultOpportunityRanker
-    ) -> None:
+    def test_buy_before_skip_regardless_of_score(self, ranker: DefaultOpportunityRanker) -> None:
         """BUY score 75 should appear before SKIP score 90."""
         opps = [
             _make_opportunity(
@@ -146,9 +144,7 @@ class TestRecommendationOrdering:
         assert result.ordered_opportunities[0].listing.listing_id == "buy_low"
         assert result.ordered_opportunities[1].listing.listing_id == "skip_high"
 
-    def test_maybe_before_skip_regardless_of_score(
-        self, ranker: DefaultOpportunityRanker
-    ) -> None:
+    def test_maybe_before_skip_regardless_of_score(self, ranker: DefaultOpportunityRanker) -> None:
         """MAYBE should appear before SKIP regardless of score."""
         opps = [
             _make_opportunity(
@@ -311,9 +307,7 @@ class TestSkipFiltering:
         assert result.best_score == 0.0
         assert result.average_score == 0.0
 
-    def test_skip_never_displaces_buy_with_limit(
-        self, ranker: DefaultOpportunityRanker
-    ) -> None:
+    def test_skip_never_displaces_buy_with_limit(self, ranker: DefaultOpportunityRanker) -> None:
         """With limit, SKIP should never push BUY out of the TOP."""
         opps = [
             _make_opportunity(
@@ -509,9 +503,7 @@ class TestTieBreaking:
 class TestDeterminism:
     """Test that ranking is always deterministic."""
 
-    def test_identical_results_on_repeated_calls(
-        self, ranker: DefaultOpportunityRanker
-    ) -> None:
+    def test_identical_results_on_repeated_calls(self, ranker: DefaultOpportunityRanker) -> None:
         """Should produce identical results every time."""
         opps = [
             _make_opportunity(

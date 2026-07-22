@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from domain.interfaces.opportunity_scanner import PipelineStage
 from domain.interfaces.price_collector import ComparableListing
@@ -18,10 +19,27 @@ def game(
     return DetectedGame(name, alias, platform, 1.0, DetectionMethod.ALIAS_MATCH)
 
 
-def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -> ComparableListing:
+def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -> CandidateListing:
+    return CandidateListing(
+        listing_id=identifier,
+        title=(
+            f"{detected_game.matched_text} {detected_game.canonical_name} "
+            f"{detected_game.platform.value}"
+        ),
+        description="",
+        price=price,
+        currency="EUR",
+        detected_games=[detected_game],
+        url=f"https://example.test/{identifier}",
+    )
+
+
+def comparable(
+    identifier: str, detected_game: DetectedGame, price: float = 20.0
+) -> ComparableListing:
     return ComparableListing(
         listing_id=identifier,
-        title=detected_game.matched_text,
+        title=f"{detected_game.matched_text} {detected_game.platform.value}",
         description="",
         price=price,
         currency="EUR",
@@ -52,7 +70,14 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
         market_estimator=dependencies["estimator"],
         arbitrage_detector=dependencies["detector"],
     )
-    scanner._run_async = Mock(return_value=[listing("comparable", game(), 20.0)])
+    scanner._run_async = Mock(return_value=[comparable("comparable", game())])
+    scanner.game_detector.detect_games.side_effect = lambda text: (
+        [game(platform=Platform.PS5)]
+        if "ps5" in text.title.casefold()
+        else [game("Red Dead Redemption 2", alias="RDR2")]
+        if "red dead redemption 2" in text.title.casefold()
+        else [game()]
+    )
     dataset = Mock(sample_size=5)
     dependencies["builder"].build.return_value = dataset
     dependencies["statistics"].calculate.return_value = Mock()
@@ -65,7 +90,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
         confidence_score=0.8,
     )
 
-    def make_opportunity(candidate: ComparableListing, estimate: Mock) -> Mock:
+    def make_opportunity(candidate: CandidateListing, estimate: Mock) -> Mock:
         return Mock(
             listing=candidate,
             listing_price=candidate.price,
@@ -187,7 +212,7 @@ def test_failure_for_one_game_does_not_contaminate_another(
     scanner, mocks = cache_scanner
     scanner._run_async.side_effect = [
         RuntimeError("GTA failed"),
-        [listing("comp", game("Red Dead Redemption 2"), 20.0)],
+        [comparable("comp", game("Red Dead Redemption 2"), 20.0)],
     ]
     result = scanner.scan_multiple(
         [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2"))]

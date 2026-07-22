@@ -9,11 +9,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     Recommendation,
 )
-from domain.interfaces.price_collector import ComparableListing
 
 
 class PipelineStage(StrEnum):
@@ -207,7 +207,7 @@ class IOpportunityScanner(ABC):
     """
 
     @abstractmethod
-    def scan_listing(self, listing: ComparableListing) -> ArbitrageOpportunity | None:
+    def scan_listing(self, listing: CandidateListing) -> ArbitrageOpportunity | None:
         """Scan a single listing through the complete pipeline.
 
         Args:
@@ -219,7 +219,7 @@ class IOpportunityScanner(ABC):
         pass
 
     @abstractmethod
-    def scan_multiple(self, listings: list[ComparableListing]) -> ScanResult:
+    def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
         """Scan multiple listings through the complete pipeline.
 
         Continues processing even if individual listings fail.

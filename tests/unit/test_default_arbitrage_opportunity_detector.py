@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 import pytest
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     Recommendation,
@@ -23,7 +24,6 @@ from domain.interfaces.market_price_estimator import (
     MarketPriceEstimate,
     ReasonCode as EstimateReasonCode,
 )
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
@@ -48,15 +48,15 @@ def sample_game() -> DetectedGame:
 
 
 @pytest.fixture
-def sample_listing(sample_game: DetectedGame) -> ComparableListing:
+def sample_listing(sample_game: DetectedGame) -> CandidateListing:
     """Create sample listing."""
-    return ComparableListing(
+    return CandidateListing(
         listing_id="test123",
         title="GTA V PS4",
         description="Great condition",
         price=12.0,
         currency="EUR",
-        detected_game=sample_game,
+        detected_games=[sample_game],
         url="https://wallapop.com/item/test123",
     )
 
@@ -98,13 +98,13 @@ class TestNewFields:
     ) -> None:
         """Should calculate market discount correctly."""
         # Market: 40€, Listing: 20€ → 50% discount
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=20.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -123,7 +123,7 @@ class TestNewFields:
     def test_break_even_price_equals_listing_price(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should set break_even_price equal to listing_price."""
@@ -142,7 +142,7 @@ class TestNewFields:
     def test_opportunity_score_range(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should calculate opportunity_score in range 0-100."""
@@ -164,13 +164,13 @@ class TestNewFields:
     ) -> None:
         """Should give high score to excellent deals."""
         # Market: 40€, Listing: 10€ → 75% margin, 30€ profit, ROI 300%
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=10.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -194,13 +194,13 @@ class TestNewFields:
     ) -> None:
         """Should give low score to poor deals."""
         # Overpriced listing
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=30.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -224,24 +224,24 @@ class TestNewFields:
     ) -> None:
         """Should rank better deals with higher scores."""
         # Deal 1: Good (Market: 30€, Listing: 15€ → 50% margin, 15€ profit)
-        listing1 = ComparableListing(
+        listing1 = CandidateListing(
             listing_id="deal1",
             title="GTA V PS4 - Good Deal",
             description="",
             price=15.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/deal1",
         )
 
         # Deal 2: Excellent (Market: 40€, Listing: 10€ → 75% margin, 30€ profit)
-        listing2 = ComparableListing(
+        listing2 = CandidateListing(
             listing_id="deal2",
             title="GTA V PS4 - Excellent Deal",
             description="",
             price=10.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/deal2",
         )
 
@@ -265,7 +265,7 @@ class TestBuyRecommendation:
     def test_clear_buy_opportunity(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should recommend BUY when all criteria are met."""
@@ -288,7 +288,7 @@ class TestBuyRecommendation:
     def test_high_profit_buy(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should recommend BUY for high profit margins."""
@@ -317,13 +317,13 @@ class TestSkipRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should SKIP when listing price exceeds market price."""
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=25.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -343,7 +343,7 @@ class TestSkipRecommendation:
     def test_low_confidence(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should SKIP when confidence is below threshold."""
@@ -368,13 +368,13 @@ class TestSkipRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should SKIP when listing price is zero or negative."""
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=0.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -401,13 +401,13 @@ class TestMaybeRecommendation:
     ) -> None:
         """Should return MAYBE when profit is positive but below threshold."""
         # Listing: 12€, Market: 18€, Profit: 6€ (< 10€ threshold)
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=12.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -442,13 +442,13 @@ class TestMaybeRecommendation:
         # Listing: 32€, Market: 40€, Profit: 8€, Margin: 20% → LOW_EXPECTED_PROFIT
         # Listing: 32€, Market: 44€, Profit: 12€, Margin: 27.3% → BUY
         # Listing: 34€, Market: 44€, Profit: 10€, Margin: 22.7% → should be MAYBE/FAIR_PRICE
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=34.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -473,7 +473,7 @@ class TestProfitabilityCalculations:
     def test_profit_calculation(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should calculate profit correctly."""
@@ -492,7 +492,7 @@ class TestProfitabilityCalculations:
     def test_margin_calculation(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should calculate profit margin correctly."""
@@ -511,7 +511,7 @@ class TestProfitabilityCalculations:
     def test_roi_calculation(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should calculate ROI correctly."""
@@ -534,7 +534,7 @@ class TestFieldPropagation:
     def test_all_fields_present(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should populate all fields correctly."""
@@ -577,7 +577,7 @@ class TestCustomThresholds:
 
     def test_custom_min_profit(
         self,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should use custom minimum profit threshold."""
@@ -605,13 +605,13 @@ class TestCustomThresholds:
         # Custom threshold: 40% instead of 25%
         detector = DefaultArbitrageOpportunityDetector(min_margin_percent=40.0)
 
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=16.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -634,7 +634,7 @@ class TestExplainMethod:
     def test_explain_returns_string(
         self,
         detector: DefaultArbitrageOpportunityDetector,
-        sample_listing: ComparableListing,
+        sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should return formatted explanation string."""
@@ -665,13 +665,13 @@ class TestRealWorldScenarios:
         sample_game: DetectedGame,
     ) -> None:
         """Test excellent deal: cheap listing, high market price."""
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=8.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 
@@ -695,13 +695,13 @@ class TestRealWorldScenarios:
         sample_game: DetectedGame,
     ) -> None:
         """Test listing at market price (no arbitrage)."""
-        listing = ComparableListing(
+        listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
             price=15.0,
             currency="EUR",
-            detected_game=sample_game,
+            detected_games=[sample_game],
             url="https://wallapop.com/item/test123",
         )
 

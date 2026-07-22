@@ -11,6 +11,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -22,7 +23,6 @@ from domain.interfaces.game_detector import (
     Platform,
 )
 from domain.interfaces.opportunity_ranker import RankingStrategy
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 
 
@@ -51,13 +51,13 @@ def _make_opportunity(
 ) -> ArbitrageOpportunity:
     """Create an ArbitrageOpportunity for example purposes."""
     game = _make_game(title)
-    listing = ComparableListing(
+    listing = CandidateListing(
         listing_id=listing_id,
         title=title,
         description="Good condition",
         price=listing_price,
         currency="EUR",
-        detected_game=game,
+        detected_games=[game],
         url=f"https://wallapop.com/item/{listing_id}",
     )
     return ArbitrageOpportunity(
@@ -274,7 +274,9 @@ def main() -> None:
     # Verify
     top_80s = [o for o in result.ordered_opportunities if o.opportunity_score == 80.0]
     if len(top_80s) == 2:
-        print(f"  Confirmed: {top_80s[0].listing.listing_id} is before {top_80s[1].listing.listing_id}")
+        print(
+            f"  Confirmed: {top_80s[0].listing.listing_id} is before {top_80s[1].listing.listing_id}"
+        )
         print()
 
     # =========================================================================
