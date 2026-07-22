@@ -216,3 +216,8 @@ OpportunityRanker.rank(lot_opportunities)
 - [Opportunity Scanner](OPPORTUNITY_SCANNER.md) — Individual game pipeline
 - [Opportunity Ranker](OPPORTUNITY_RANKER.md) — Ranking logic
 - [Arbitrage Opportunity](ARBITRAGE_OPPORTUNITY.md) — Individual opportunity entity
+# P1.6 detection ownership
+
+`CandidateListing` is marketplace input only and has no `detected_games`,
+`game_count`, or `is_lot` state. Whether it represents a lot is established by
+the `GameDetector` result inside the appropriate application use case.

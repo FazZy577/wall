@@ -161,3 +161,13 @@ El `SearchOrchestrator` no está implementado todavía. El pipeline de lotes que
 - opportunity score;
 - recommendation;
 - reason.
+# P1.6: detector-owned lot contents
+
+The lot scanner receives `IGameDetector` by constructor injection and detects
+games from `ListingText(title, description)`. `CandidateListing` no longer
+stores detected games. Detector results are deduplicated in stable order by
+normalized `canonical_name` plus `Platform.value`, then valued sequentially.
+
+A zero-game result produces a `GAME_DETECTION` failure carrying the candidate
+`listing_id` and does not call the collector or analyzer. Before each dataset
+is built, a comparable with the candidate's own `listing_id` is excluded.

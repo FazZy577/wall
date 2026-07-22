@@ -206,3 +206,8 @@ uv run ruff check src tests && uv run mypy src && uv run pytest
 **Project Status**: ✅ **Ready for Domain Implementation**
 
 All infrastructure is in place. The project is ready to start implementing the domain layer.
+# P1.6 unified listing analysis
+
+Candidate game state has been removed. Detection now occurs once at the
+application boundary for both scanner flows, multi-game candidates are routed
+explicitly to the lot scanner, and own-listing comparables are excluded.

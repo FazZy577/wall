@@ -8,9 +8,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from domain.entities.detected_game import DetectedGame
-
-
 @dataclass
 class CandidateListing:
     """A marketplace listing considered as a purchase candidate.
@@ -26,7 +23,6 @@ class CandidateListing:
         price: Listed price in currency
         currency: Currency code (e.g., "EUR")
         url: Direct URL to the listing
-        detected_games: Games detected in this listing (may be multiple for lots)
         raw_listing: Original raw data from marketplace (immutable)
         published_at: When the listing was published (None if unknown)
         seller_id: Marketplace seller identifier (None if unknown)
@@ -38,7 +34,6 @@ class CandidateListing:
     price: float
     currency: str
     url: str
-    detected_games: list[DetectedGame] = field(default_factory=list)
     raw_listing: dict[str, Any] = field(default_factory=dict)
     published_at: datetime | None = None
     seller_id: str | None = None
@@ -53,13 +48,3 @@ class CandidateListing:
             raise ValueError(f"price must be >= 0, got {self.price}")
         if not self.currency:
             raise ValueError("currency must not be empty")
-
-    @property
-    def is_lot(self) -> bool:
-        """True when the listing contains more than one detected game."""
-        return len(self.detected_games) > 1
-
-    @property
-    def game_count(self) -> int:
-        """Number of games detected in this listing."""
-        return len(self.detected_games)

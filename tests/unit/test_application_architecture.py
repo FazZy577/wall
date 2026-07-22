@@ -186,6 +186,10 @@ def test_application_has_no_manual_event_loop_bridge() -> None:
         "_run_async",
         "run_sync",
         "scan_sync",
+        "asyncio.gather",
+        "create_task",
+        "TaskGroup",
+        "as_completed",
     }
     occurrences: list[tuple[Path, str]] = []
 

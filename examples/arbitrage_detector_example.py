@@ -26,6 +26,8 @@ from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     EstimationStrategy,
     MarketPriceEstimate,
+)
+from domain.interfaces.market_price_estimator import (
     ReasonCode as EstimateReasonCode,
 )
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
@@ -37,7 +39,7 @@ def create_listing(
     listing_id: str,
     title: str,
     price: float,
-    game: DetectedGame,
+    _game: DetectedGame,
 ) -> CandidateListing:
     """Helper to create a listing."""
     return CandidateListing(
@@ -46,7 +48,6 @@ def create_listing(
         description="",
         price=price,
         currency="EUR",
-        detected_games=[game],
         url=f"https://wallapop.com/item/{listing_id}",
     )
 

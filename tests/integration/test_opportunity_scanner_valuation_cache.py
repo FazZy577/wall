@@ -1,4 +1,4 @@
-"""Offline regression test for execution-scoped market valuation reuse."""
+"""Offline regression test for execution-scoped comparable collection reuse."""
 
 from unittest.mock import AsyncMock, Mock
 
@@ -74,7 +74,7 @@ class _OfflineCollector:
 
 @pytest.mark.asyncio
 
-async def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() -> None:
+async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formulas() -> None:
     collector = _OfflineCollector()
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
     detector = Mock(wraps=DefaultArbitrageOpportunityDetector())
@@ -94,9 +94,9 @@ async def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formula
     result = await scanner.scan_multiple(candidates)
 
     assert collector.calls == 1
-    assert estimator.estimate.call_count == 1
+    assert estimator.estimate.call_count == 2
     assert detector.detect.call_count == 2
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 1)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
     assert [opportunity.market_price for opportunity in result.opportunities] == [30.0, 30.0]
     assert [opportunity.estimated_profit for opportunity in result.opportunities] == [25.0, 5.0]
     assert [opportunity.roi_percentage for opportunity in result.opportunities] == [500.0, 20.0]

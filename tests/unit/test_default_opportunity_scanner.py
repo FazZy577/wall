@@ -44,7 +44,6 @@ def sample_listing(sample_game: DetectedGame) -> CandidateListing:
         description="Great condition",
         price=12.0,
         currency="EUR",
-        detected_games=[sample_game],
         url="https://wallapop.com/item/test123",
     )
 
@@ -330,7 +329,6 @@ class TestScanMultiple:
                 description="",
                 price=10.0 + i,
                 currency="EUR",
-                detected_games=[sample_game],
                 url=f"https://wallapop.com/item/test{i}",
             )
             for i in range(3)
@@ -417,8 +415,8 @@ class TestScanMultiple:
     ) -> None:
         """Should handle mix of successes and failures."""
         listings = [
-            listing_without_game,  # No game → fail
-            sample_listing,  # Has game → success
+            listing_without_game,  # No game в†’ fail
+            sample_listing,  # Has game в†’ success
         ]
 
         _setup_successful_pipeline_mocks(
@@ -441,7 +439,7 @@ class TestScanMultiple:
         assert len(result.failures) == 1
 
     @pytest.mark.asyncio
-    async def test_repeated_game_reuses_successful_valuation(
+    async def test_repeated_game_reuses_comparable_collection(
         self,
         scanner: DefaultOpportunityScanner,
         sample_game: DetectedGame,
@@ -459,7 +457,6 @@ class TestScanMultiple:
                 description="",
                 price=10.0,
                 currency="EUR",
-                detected_games=[sample_game],
                 url="https://wallapop.com/item/good1",
             ),
             CandidateListing(
@@ -468,7 +465,6 @@ class TestScanMultiple:
                 description="",
                 price=15.0,
                 currency="EUR",
-                detected_games=[sample_game],
                 url="https://wallapop.com/item/bad1",
             ),
             CandidateListing(
@@ -477,7 +473,6 @@ class TestScanMultiple:
                 description="",
                 price=20.0,
                 currency="EUR",
-                detected_games=[sample_game],
                 url="https://wallapop.com/item/good2",
             ),
         ]
@@ -533,8 +528,8 @@ class TestScanMultiple:
         assert len(result.opportunities) == 3
         assert len(result.failures) == 0
         assert call_count[0] == 1
-        assert result.valuation_cache_misses == 1
-        assert result.valuation_cache_hits == 2
+        assert result.comparable_cache_misses == 1
+        assert result.comparable_cache_hits == 2
 
 
 class TestPipelineStageTracking:
@@ -737,3 +732,55 @@ async def test_scanner_runs_inside_an_already_active_event_loop(
 
     assert result.successful == 1
     mock_price_collector.collect_comparables.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_multiple_games_are_rejected_before_price_collection(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_game: DetectedGame,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+) -> None:
+    second_game = DetectedGame(
+        canonical_name="Red Dead Redemption 2",
+        matched_text="rdr2",
+        platform=Platform.PS4,
+        confidence=1.0,
+        detection_method=DetectionMethod.EXACT_MATCH,
+    )
+    mock_game_detector.detect_games.side_effect = None
+    mock_game_detector.detect_games.return_value = [sample_game, second_game]
+
+    result = await scanner.scan_multiple([sample_listing])
+
+    assert result.failed == 1
+    assert result.failures[0].stage is PipelineStage.GAME_DETECTION
+    assert result.failures[0].reason == "Multiple games detected; use LotOpportunityScanner"
+    mock_price_collector.collect_comparables.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_candidate_ids_are_excluded_from_market_comparables(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_comparable: ComparableListing,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+) -> None:
+    own_listing = ComparableListing(
+        listing_id=sample_listing.listing_id,
+        title=sample_listing.title,
+        description=sample_listing.description,
+        price=sample_listing.price,
+        currency=sample_listing.currency,
+        detected_game=sample_comparable.detected_game,
+        url=sample_listing.url,
+    )
+    mock_price_collector.collect_comparables.return_value = [own_listing, sample_comparable]
+    empty_dataset = Mock(sample_size=0)
+    mock_dataset_builder.build.return_value = empty_dataset
+
+    await scanner.scan_multiple([sample_listing])
+
+    mock_dataset_builder.build.assert_called_once_with([sample_comparable])

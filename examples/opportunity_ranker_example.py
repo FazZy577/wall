@@ -57,7 +57,6 @@ def _make_opportunity(
         description="Good condition",
         price=listing_price,
         currency="EUR",
-        detected_games=[game],
         url=f"https://wallapop.com/item/{listing_id}",
     )
     return ArbitrageOpportunity(
@@ -186,7 +185,7 @@ def main() -> None:
             listing_id="lst_008",
             title="NBA 2K25 PS4 (Steelbook)",
             opportunity_score=80.0,
-            estimated_profit=18.0,  # Higher profit → wins tie-break
+            estimated_profit=18.0,  # Higher profit в†’ wins tie-break
             confidence_score=0.80,
             roi_percentage=80.0,
             market_discount_percentage=30.0,
@@ -201,7 +200,7 @@ def main() -> None:
         print(
             f"    {opp.listing.listing_id}: {opp.listing.title[:30]:30s} "
             f"score={opp.opportunity_score:5.1f} "
-            f"profit=€{opp.estimated_profit:6.2f} "
+            f"profit=в‚¬{opp.estimated_profit:6.2f} "
             f"{opp.recommendation.upper()}"
         )
     print()
@@ -265,8 +264,8 @@ def main() -> None:
     print()
 
     print("  Two opportunities with score=80.0:")
-    print("    lst_007 (NBA 2K25):          profit=€10.00")
-    print("    lst_008 (NBA 2K25 Steelbook): profit=€18.00")
+    print("    lst_007 (NBA 2K25):          profit=в‚¬10.00")
+    print("    lst_008 (NBA 2K25 Steelbook): profit=в‚¬18.00")
     print()
     print("  Result: lst_008 ranks HIGHER because tie-break #1 is estimated_profit.")
     print()
@@ -300,7 +299,7 @@ def main() -> None:
     print("  - Tie-breaking is fully deterministic.")
     print("  - Counts are over ALL received, not just returned.")
     print("  - limit applies AFTER sorting.")
-    print("  - Empty input → best_score=None, average_score=None.")
+    print("  - Empty input в†’ best_score=None, average_score=None.")
     print()
 
 

@@ -332,3 +332,12 @@ def find(criteria: Criteria) -> list[T]
 - La IA es siempre opcional, no obligatoria
 - Priorizar almacenamiento de históricos sobre análisis en tiempo real
 - La arquitectura debe facilitar testing desde el día 1
+# P1.6 analysis flow
+
+Both application scanners create `ListingText` from a candidate and invoke the
+domain `IGameDetector`. The individual use case accepts exactly one detected
+game; the lot use case accepts and stably deduplicates multiple detected games.
+Neither use case treats the candidate itself as a market comparable.
+There is no automatic router between these use cases. Physical quantities
+such as "2 copies of GTA V" are not modeled; canonical duplicates represent
+one valuation identity.

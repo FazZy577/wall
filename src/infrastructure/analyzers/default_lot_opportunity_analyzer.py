@@ -157,7 +157,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         is_complete = total_detected_games > 0 and valued_count == total_detected_games
 
         # Rule 1: No games detected
-        if not listing.detected_games:
+        if total_detected_games == 0:
             return Recommendation.SKIP, LotReasonCode.NO_GAMES_DETECTED
 
         # Rule 2: Invalid lot price

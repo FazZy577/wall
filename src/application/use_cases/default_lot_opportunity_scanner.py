@@ -21,6 +21,7 @@ from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
+from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
 from domain.interfaces.outlier_removal import IOutlierRemoval
@@ -47,6 +48,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
 
     def __init__(
         self,
+        game_detector: IGameDetector,
         price_collector: IPriceCollector,
         dataset_builder: IPriceDatasetBuilder,
         statistics: IPriceStatistics,
@@ -70,6 +72,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             latitude: Latitude for marketplace search (default: Barcelona)
             longitude: Longitude for marketplace search (default: Barcelona)
         """
+        self.game_detector = game_detector
         self.price_collector = price_collector
         self.dataset_builder = dataset_builder
         self.statistics = statistics
@@ -93,18 +96,33 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         """
         start_time = time.time()
 
-        total_detected_games = listing.game_count
+        detected_games = self._deduplicate_games(
+            self.game_detector.detect_games(
+                ListingText(title=listing.title, description=listing.description)
+            )
+        )
+        total_detected_games = len(detected_games)
         game_valuations: list[GameValuation] = []
         failures: list[GameValuationFailure] = []
 
+        if not detected_games:
+            failures.append(
+                GameValuationFailure(
+                    game=None,
+                    stage=LotPipelineStage.GAME_DETECTION,
+                    reason="No games detected in listing",
+                    listing_id=listing.listing_id,
+                )
+            )
+
         # Process each game
-        for i, game in enumerate(listing.detected_games, 1):
+        for i, game in enumerate(detected_games, 1):
             logger.info(
                 f"Valuing game {i}/{total_detected_games}: "
                 f"{game.canonical_name} ({game.platform})"
             )
 
-            valuation, failure = await self._value_game(game)
+            valuation, failure = await self._value_game(game, listing.listing_id)
 
             if valuation is not None:
                 game_valuations.append(valuation)
@@ -134,11 +152,27 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             game_valuations=game_valuations,
             failures=failures,
             total_detected_games=total_detected_games,
+            detected_games=detected_games,
             start_time=start_time,
         )
 
+    @staticmethod
+    def _deduplicate_games(games: list[DetectedGame]) -> list[DetectedGame]:
+        """Keep first occurrence of each normalized game identity."""
+        unique: list[DetectedGame] = []
+        seen: set[tuple[str, str]] = set()
+        for game in games:
+            key = (
+                " ".join(game.canonical_name.strip().casefold().split()),
+                game.platform.value,
+            )
+            if key not in seen:
+                seen.add(key)
+                unique.append(game)
+        return unique
+
     async def _value_game(
-        self, game: DetectedGame
+        self, game: DetectedGame, candidate_listing_id: str
     ) -> tuple[GameValuation | None, GameValuationFailure | None]:
         """Run the full valuation pipeline for a single game.
 
@@ -169,12 +203,22 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 latitude=self.latitude,
                 longitude=self.longitude,
             )
+            comparables = [
+                comparable
+                for comparable in comparables
+                if not (
+                    candidate_listing_id
+                    and comparable.listing_id
+                    and comparable.listing_id == candidate_listing_id
+                )
+            ]
 
             if not comparables:
                 return None, GameValuationFailure(
                     game=game,
                     stage=LotPipelineStage.PRICE_COLLECTION,
                     reason="No comparable listings found",
+                    listing_id=candidate_listing_id,
                 )
 
             # Step 2: Dataset Building (comparables ONLY)
@@ -185,6 +229,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 return None, GameValuationFailure(
                     game=game,
                     stage=LotPipelineStage.DATASET_BUILDING,
+                    listing_id=candidate_listing_id,
                     reason="Empty dataset — no valid observations",
                 )
 
@@ -237,6 +282,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 stage=current_stage,
                 reason=f"Error during {current_stage}",
                 error_message=str(e),
+                listing_id=candidate_listing_id,
             )
 
     @staticmethod
@@ -246,6 +292,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         game_valuations: list[GameValuation],
         failures: list[GameValuationFailure],
         total_detected_games: int,
+        detected_games: list[DetectedGame],
         start_time: float,
     ) -> LotScanResult:
         """Build the LotScanResult from collected data."""
@@ -268,4 +315,5 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             is_complete=is_complete,
             processing_time=processing_time,
             created_at=datetime.now(UTC),
+            detected_games=detected_games,
         )

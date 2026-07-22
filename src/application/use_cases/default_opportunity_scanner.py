@@ -13,6 +13,7 @@ from application.interfaces.opportunity_scanner import (
     ScanResult,
 )
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
@@ -35,8 +36,8 @@ DEFAULT_LONGITUDE = 2.1686
 
 
 @dataclass(frozen=True)
-class _ValuationCacheKey:
-    """Stable identity for a game valuation within one execution."""
+class _ComparableCacheKey:
+    """Stable identity for comparable collection within one execution."""
 
     canonical_name: str
     platform: str
@@ -59,11 +60,21 @@ class _ValuationResult:
     failure: _ValuationFailure | None = None
 
 
+@dataclass(frozen=True)
+class _ComparableCollectionResult:
+    """Cached network result, independent of any candidate listing."""
+
+    comparables: list[ComparableListing] | None = None
+    failure: _ValuationFailure | None = None
+
+
 @dataclass
 class _ScanExecutionContext:
-    """Valuation cache and metrics owned by one public scan call."""
+    """Comparable cache and metrics owned by one public scan call."""
 
-    valuations: dict[_ValuationCacheKey, _ValuationResult] = field(default_factory=dict)
+    comparable_collections: dict[
+        _ComparableCacheKey, _ComparableCollectionResult
+    ] = field(default_factory=dict)
     cache_hits: int = 0
     cache_misses: int = 0
 
@@ -94,23 +105,23 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         self.longitude = longitude
 
     @staticmethod
-    def _build_valuation_cache_key(game: DetectedGame) -> _ValuationCacheKey:
-        """Build an alias-independent, platform-sensitive valuation key."""
+    def _build_comparable_cache_key(game: DetectedGame) -> _ComparableCacheKey:
+        """Build an alias-independent, platform-sensitive collection key."""
         normalized_name = " ".join(game.canonical_name.strip().casefold().split())
-        return _ValuationCacheKey(normalized_name, game.platform.value)
+        return _ComparableCacheKey(normalized_name, game.platform.value)
 
-    async def _get_or_create_market_valuation(
+    async def _get_or_collect_comparables(
         self,
         game: DetectedGame,
         context: _ScanExecutionContext,
-    ) -> _ValuationResult:
-        """Return the execution-cached valuation outcome for a game."""
-        key = self._build_valuation_cache_key(game)
-        cached = context.valuations.get(key)
+    ) -> _ComparableCollectionResult:
+        """Collect comparables once per game identity and execution."""
+        key = self._build_comparable_cache_key(game)
+        cached = context.comparable_collections.get(key)
         if cached is not None:
             context.cache_hits += 1
             logger.debug(
-                "Valuation cache HIT: %s / %s",
+                "Comparable cache HIT: %s / %s",
                 game.canonical_name,
                 game.platform.value,
             )
@@ -118,20 +129,55 @@ class DefaultOpportunityScanner(IOpportunityScanner):
 
         context.cache_misses += 1
         logger.debug(
-            "Valuation cache MISS: %s / %s",
+            "Comparable cache MISS: %s / %s",
             game.canonical_name,
             game.platform.value,
         )
-        current_stage = PipelineStage.PRICE_COLLECTION
+        try:
+            result = _ComparableCollectionResult(
+                comparables=await self.price_collector.collect_comparables(
+                    game=game,
+                    latitude=self.latitude,
+                    longitude=self.longitude,
+                )
+            )
+        except Exception as error:
+            result = _ComparableCollectionResult(
+                failure=_ValuationFailure(
+                    stage=PipelineStage.PRICE_COLLECTION,
+                    reason=f"Error during {PipelineStage.PRICE_COLLECTION}",
+                    error_message=str(error),
+                )
+            )
+        context.comparable_collections[key] = result
+        return result
+
+    async def _get_or_create_market_valuation(
+        self,
+        game: DetectedGame,
+        context: _ScanExecutionContext,
+        candidate_listing_id: str,
+    ) -> _ValuationResult:
+        """Build a candidate-specific valuation from cached comparables."""
+        collection = await self._get_or_collect_comparables(game, context)
+        if collection.failure is not None:
+            return _ValuationResult(failure=collection.failure)
+        if collection.comparables is None:
+            raise RuntimeError("Comparable collection has neither data nor failure")
+
+        current_stage = PipelineStage.DATASET_BUILDING
 
         try:
-            comparables = await self.price_collector.collect_comparables(
-                game=game,
-                latitude=self.latitude,
-                longitude=self.longitude,
-            )
+            comparables = [
+                comparable
+                for comparable in collection.comparables
+                if not (
+                    candidate_listing_id
+                    and comparable.listing_id
+                    and comparable.listing_id == candidate_listing_id
+                )
+            ]
 
-            current_stage = PipelineStage.DATASET_BUILDING
             dataset = self.dataset_builder.build(cast(list[object], comparables))
             if dataset.sample_size == 0:
                 result = _ValuationResult(
@@ -140,7 +186,6 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                         reason="Empty dataset - no valid observations",
                     )
                 )
-                context.valuations[key] = result
                 return result
 
             current_stage = PipelineStage.STATISTICS
@@ -168,7 +213,6 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                 )
             )
 
-        context.valuations[key] = result
         return result
 
     async def scan_listing(
@@ -186,9 +230,16 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             if not detected_games:
                 logger.warning(f"Listing {listing.listing_id} has no detected game")
                 return None
+            if len(detected_games) > 1:
+                logger.warning(
+                    "Listing %s contains multiple games; use LotOpportunityScanner",
+                    listing.listing_id,
+                )
+                return None
+            (detected_game,) = detected_games
 
             valuation = await self._get_or_create_market_valuation(
-                detected_games[0], context
+                detected_game, context, listing.listing_id
             )
             if valuation.failure is not None or valuation.estimate is None:
                 return None
@@ -231,9 +282,19 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                     )
                 )
                 continue
+            if len(detected_games) > 1:
+                failures.append(
+                    FailureInfo(
+                        listing_id=listing.listing_id,
+                        stage=PipelineStage.GAME_DETECTION,
+                        reason="Multiple games detected; use LotOpportunityScanner",
+                    )
+                )
+                continue
+            (detected_game,) = detected_games
 
             valuation = await self._get_or_create_market_valuation(
-                detected_games[0], context
+                detected_game, context, listing.listing_id
             )
             if valuation.failure is not None:
                 failures.append(
@@ -279,6 +340,6 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             failures=failures,
             processing_time=processing_time,
             created_at=datetime.now(UTC),
-            valuation_cache_hits=context.cache_hits,
-            valuation_cache_misses=context.cache_misses,
+            comparable_cache_hits=context.cache_hits,
+            comparable_cache_misses=context.cache_misses,
         )

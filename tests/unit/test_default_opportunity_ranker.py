@@ -67,7 +67,6 @@ def _make_opportunity(
         description="Good condition",
         price=listing_price,
         currency="EUR",
-        detected_games=[_make_game()],
         url=f"https://wallapop.com/item/{listing_id}",
     )
     return ArbitrageOpportunity(
@@ -327,7 +326,7 @@ class TestSkipFiltering:
             ),
         ]
 
-        # With include_skip=False, limit=2 → both BUYs returned
+        # With include_skip=False, limit=2 в†’ both BUYs returned
         result = ranker.rank(opps, limit=2, include_skip=False)
 
         ids = [o.listing.listing_id for o in result.ordered_opportunities]
@@ -335,7 +334,7 @@ class TestSkipFiltering:
         assert "skip_high" not in ids
         assert result.total_returned == 2
 
-        # With include_skip=True, limit=2 → BUY first, then SKIP
+        # With include_skip=True, limit=2 в†’ BUY first, then SKIP
         # The SKIP at 95 still comes AFTER both BUYs because Recommendation is primary
         result2 = ranker.rank(opps, limit=2, include_skip=True)
 

@@ -1,10 +1,11 @@
-"""P1.1 tests for execution-scoped valuation reuse."""
+"""P1.1/P1.6 tests for execution-scoped comparable collection reuse."""
 
+from dataclasses import fields
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.interfaces.opportunity_scanner import PipelineStage
+from application.interfaces.opportunity_scanner import PipelineStage, ScanResult
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
@@ -29,7 +30,6 @@ def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -
         description="",
         price=price,
         currency="EUR",
-        detected_games=[detected_game],
         url=f"https://example.test/{identifier}",
     )
 
@@ -46,6 +46,13 @@ def comparable(
         detected_game=detected_game,
         url=f"https://example.test/{identifier}",
     )
+
+
+def test_scan_result_exposes_only_comparable_cache_metrics() -> None:
+    field_names = {field.name for field in fields(ScanResult)}
+    cache_fields = {name for name in field_names if "cache_" in name}
+
+    assert cache_fields == {"comparable_cache_hits", "comparable_cache_misses"}
 
 
 @pytest.fixture
@@ -108,7 +115,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
 
 @pytest.mark.asyncio
 
-async def test_same_game_runs_valuation_once(
+async def test_same_game_collects_once_and_values_each_candidate(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
@@ -118,13 +125,15 @@ async def test_same_game_runs_valuation_once(
 
     assert scanner.price_collector.collect_comparables.await_count == 1
     assert mocks["collector"].collect_comparables.await_count == 1
-    assert mocks["builder"].build.call_count == 1
-    assert mocks["statistics"].calculate.call_count == 2
-    assert mocks["outliers"].remove_outliers.call_count == 1
-    assert mocks["estimator"].estimate.call_count == 1
+    assert mocks["builder"].build.call_count == 5
+    assert mocks["statistics"].calculate.call_count == 10
+    assert mocks["outliers"].remove_outliers.call_count == 5
+    assert mocks["estimator"].estimate.call_count == 5
     assert mocks["detector"].detect.call_count == 5
-    assert result.valuation_cache_misses == 1
-    assert result.valuation_cache_hits == 4
+    assert result.comparable_cache_misses == 1
+    assert result.comparable_cache_hits == 4
+    assert result.comparable_cache_misses == 1
+    assert result.comparable_cache_hits == 4
 
 
 @pytest.mark.asyncio
@@ -137,7 +146,7 @@ async def test_different_games_have_different_valuations(
         [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2", alias="RDR2"))]
     )
     assert scanner.price_collector.collect_comparables.await_count == 2
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 0)
 
 
 @pytest.mark.asyncio
@@ -150,7 +159,7 @@ async def test_same_name_on_different_platforms_is_not_shared(
         [listing("ps4", game()), listing("ps5", game(platform=Platform.PS5))]
     )
     assert scanner.price_collector.collect_comparables.await_count == 2
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 0)
 
 
 @pytest.mark.asyncio
@@ -166,7 +175,7 @@ async def test_aliases_and_normalized_canonical_name_share_valuation(
     ]
     result = await scanner.scan_multiple([listing(str(i), value) for i, value in enumerate(games)])
     assert scanner.price_collector.collect_comparables.await_count == 1
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 2)
 
 
 @pytest.mark.asyncio
@@ -192,8 +201,8 @@ async def test_separate_batch_scans_do_not_share_cache(
     first = await scanner.scan_multiple(candidates)
     second = await scanner.scan_multiple(candidates)
     assert scanner.price_collector.collect_comparables.await_count == 2
-    assert (first.valuation_cache_misses, first.valuation_cache_hits) == (1, 1)
-    assert (second.valuation_cache_misses, second.valuation_cache_hits) == (1, 1)
+    assert (first.comparable_cache_misses, first.comparable_cache_hits) == (1, 1)
+    assert (second.comparable_cache_misses, second.comparable_cache_hits) == (1, 1)
 
 
 @pytest.mark.asyncio
@@ -222,7 +231,7 @@ async def test_failed_valuation_is_reused_with_each_listing_id(
     assert [failure.listing_id for failure in result.failures] == ["0", "1", "2"]
     assert all(failure.stage == PipelineStage.PRICE_COLLECTION for failure in result.failures)
     assert all(failure.error_message == "collector unavailable" for failure in result.failures)
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 2)
 
 
 @pytest.mark.asyncio
@@ -241,7 +250,7 @@ async def test_failure_for_one_game_does_not_contaminate_another(
     assert result.failed == 1
     assert result.successful == 1
     assert mocks["detector"].detect.call_count == 1
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 0)
 
 
 @pytest.mark.asyncio
@@ -251,7 +260,7 @@ async def test_empty_list_has_zero_cache_metrics(
 ) -> None:
     scanner, _ = cache_scanner
     result = await scanner.scan_multiple([])
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (0, 0)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (0, 0)
 
 
 @pytest.mark.asyncio
@@ -268,6 +277,58 @@ async def test_mixed_scenario_has_three_unique_valuations(
     result = await scanner.scan_multiple(candidates)
     assert mocks["collector"].collect_comparables.await_count == 3
     assert scanner.price_collector.collect_comparables.await_count == 3
-    assert mocks["estimator"].estimate.call_count == 3
+    assert mocks["estimator"].estimate.call_count == 10
     assert mocks["detector"].detect.call_count == 10
-    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (3, 7)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (3, 7)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (3, 7)
+
+
+@pytest.mark.asyncio
+async def test_each_candidate_excludes_only_itself_from_cached_comparables(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    detected_game = game()
+    candidates = [listing("A", detected_game), listing("B", detected_game)]
+    market = [
+        comparable("A", detected_game, 10.0),
+        comparable("B", detected_game, 12.0),
+        comparable("C", detected_game, 14.0),
+        comparable("D", detected_game, 16.0),
+    ]
+    mocks["collector"].collect_comparables.return_value = market
+
+    result = await scanner.scan_multiple(candidates)
+
+    assert mocks["collector"].collect_comparables.await_count == 1
+    assert [item.listing_id for item in mocks["builder"].build.call_args_list[0].args[0]] == [
+        "B",
+        "C",
+        "D",
+    ]
+    assert [item.listing_id for item in mocks["builder"].build.call_args_list[1].args[0]] == [
+        "A",
+        "C",
+        "D",
+    ]
+    assert mocks["estimator"].estimate.call_count == 2
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+
+
+@pytest.mark.asyncio
+async def test_absent_candidate_and_empty_comparable_ids_are_preserved(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    detected_game = game()
+    market = [
+        comparable("", detected_game, 10.0),
+        comparable("A", detected_game, 12.0),
+        comparable("B", detected_game, 14.0),
+        comparable("C", detected_game, 16.0),
+    ]
+    mocks["collector"].collect_comparables.return_value = market
+
+    await scanner.scan_listing(listing("E", detected_game))
+
+    assert mocks["builder"].build.call_args.args[0] == market

@@ -20,7 +20,13 @@ from application.use_cases.default_lot_opportunity_scanner import (
 )
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
-from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.game_detector import (
+    DetectedGame,
+    DetectionMethod,
+    IGameDetector,
+    ListingText,
+    Platform,
+)
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     EstimationStrategy,
@@ -181,6 +187,13 @@ def make_game(name: str) -> DetectedGame:
     )
 
 
+class FakeGameDetector(IGameDetector):
+    """Return the games encoded by this deterministic example."""
+
+    def detect_games(self, _listing_text: ListingText) -> list[DetectedGame]:
+        return [make_game("GTA V"), make_game("RDR2"), make_game("Spider-Man")]
+
+
 async def main() -> None:
     """Run the deterministic lot scanner example."""
     listing = CandidateListing(
@@ -190,14 +203,10 @@ async def main() -> None:
         price=35.0,
         currency="EUR",
         url="https://example.com/lot-example-001",
-        detected_games=[
-            make_game("GTA V"),
-            make_game("RDR2"),
-            make_game("Spider-Man"),
-        ],
     )
 
     scanner = DefaultLotOpportunityScanner(
+        game_detector=FakeGameDetector(),
         price_collector=FakePriceCollector(
             {
                 "GTA V": 15.0,

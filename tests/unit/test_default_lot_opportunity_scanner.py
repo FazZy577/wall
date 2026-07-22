@@ -36,6 +36,17 @@ def _make_game(name: str) -> DetectedGame:
     )
 
 
+def _make_game_for_platform(name: str, platform: Platform) -> DetectedGame:
+    game = _make_game(name)
+    return DetectedGame(
+        canonical_name=game.canonical_name,
+        matched_text=game.matched_text,
+        platform=platform,
+        confidence=game.confidence,
+        detection_method=game.detection_method,
+    )
+
+
 def _make_comparable(game: DetectedGame, price: float, listing_id: str) -> ComparableListing:
     return ComparableListing(
         listing_id=listing_id,
@@ -51,6 +62,29 @@ def _make_comparable(game: DetectedGame, price: float, listing_id: str) -> Compa
 @pytest.fixture
 def mock_price_collector() -> AsyncMock:
     return AsyncMock()
+
+
+@pytest.fixture
+def mock_game_detector() -> Mock:
+    detector = Mock()
+
+    def detect(listing_text: object) -> list[DetectedGame]:
+        title = str(getattr(listing_text, "title", ""))
+        if title == "No games":
+            return []
+        if "Two GTA V copies" in title:
+            game = _make_game("GTA V")
+            return [game, game]
+        if "GTA V RDR2 Spider-Man" in title:
+            return [_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")]
+        if "GTA V RDR2" in title or title == "2 games":
+            return [_make_game("GTA V"), _make_game("RDR2")]
+        if title.startswith("3 games"):
+            return [_make_game("A"), _make_game("B"), _make_game("C")]
+        return [_make_game("GTA V")]
+
+    detector.detect_games.side_effect = detect
+    return detector
 
 
 @pytest.fixture
@@ -80,6 +114,7 @@ def mock_lot_analyzer() -> Mock:
 
 @pytest.fixture
 def scanner(
+    mock_game_detector: Mock,
     mock_price_collector: Mock,
     mock_dataset_builder: Mock,
     mock_statistics: Mock,
@@ -88,6 +123,7 @@ def scanner(
     mock_lot_analyzer: Mock,
 ) -> DefaultLotOpportunityScanner:
     return DefaultLotOpportunityScanner(
+        game_detector=mock_game_detector,
         price_collector=mock_price_collector,
         dataset_builder=mock_dataset_builder,
         statistics=mock_statistics,
@@ -171,7 +207,6 @@ class TestFullPipeline:
             price=35.0,
             currency="EUR",
             url="https://example.com/lot001",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         _setup_pipeline_mocks(
@@ -215,7 +250,6 @@ class TestFullPipeline:
             price=30.0,
             currency="EUR",
             url="https://example.com/lot002",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         _setup_pipeline_mocks(
@@ -255,7 +289,6 @@ class TestFullPipeline:
             price=20.0,
             currency="EUR",
             url="https://example.com/lot003",
-            detected_games=[_make_game("GTA V")],
         )
 
         _setup_pipeline_mocks(
@@ -293,7 +326,6 @@ class TestFullPipeline:
             price=20.0,
             currency="EUR",
             url="https://example.com/lot004",
-            detected_games=[_make_game("GTA V")],
         )
 
         _setup_pipeline_mocks(
@@ -332,7 +364,6 @@ class TestFullPipeline:
             price=35.0,
             currency="EUR",
             url="https://example.com/lot005",
-            detected_games=[_make_game("A"), _make_game("B"), _make_game("C")],
         )
 
         _setup_pipeline_mocks(
@@ -379,7 +410,6 @@ class TestFailureHandling:
             price=30.0,
             currency="EUR",
             url="https://example.com/fail1",
-            detected_games=[_make_game("A"), _make_game("B"), _make_game("C")],
         )
 
         # Game B fails price collection, A and C succeed
@@ -450,7 +480,6 @@ class TestFailureHandling:
             price=20.0,
             currency="EUR",
             url="https://example.com/fail_est",
-            detected_games=[_make_game("A")],
         )
 
         comparables = [_make_comparable(_make_game("A"), 12.0, "comp_1")]
@@ -499,7 +528,6 @@ class TestFailureHandling:
             price=20.0,
             currency="EUR",
             url="https://example.com/analyzer_fail",
-            detected_games=[_make_game("A")],
         )
 
         _setup_pipeline_mocks(
@@ -525,6 +553,7 @@ class TestFailureHandling:
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_lot_analyzer: Mock,
+        mock_price_collector: AsyncMock,
     ) -> None:
         """Empty detected_games should produce safe result."""
         candidate = CandidateListing(
@@ -545,6 +574,9 @@ class TestFailureHandling:
         assert result.total_detected_games == 0
         assert result.successfully_valued_games == 0
         assert result.is_complete is False
+        assert result.failures[0].stage is LotPipelineStage.GAME_DETECTION
+        assert result.failures[0].listing_id == candidate.listing_id
+        mock_price_collector.collect_comparables.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_original_detected_games_not_modified(
@@ -556,9 +588,12 @@ class TestFailureHandling:
         mock_outlier_removal: Mock,
         mock_market_estimator: Mock,
         mock_lot_analyzer: Mock,
+        mock_game_detector: Mock,
     ) -> None:
         """detected_games list should not be modified by the scanner."""
         games = [_make_game("A"), _make_game("B")]
+        mock_game_detector.detect_games.side_effect = None
+        mock_game_detector.detect_games.return_value = games
         candidate = CandidateListing(
             listing_id="immutable",
             title="Immutable test",
@@ -566,46 +601,6 @@ class TestFailureHandling:
             price=20.0,
             currency="EUR",
             url="https://example.com/immutable",
-            detected_games=games,
-        )
-
-        _setup_pipeline_mocks(
-            scanner,
-            mock_price_collector,
-            mock_dataset_builder,
-            mock_statistics,
-            mock_outlier_removal,
-            mock_market_estimator,
-            mock_lot_analyzer,
-            comparable_prices=[12.0, 15.0],
-        )
-
-        await scanner.scan_lot(candidate)
-
-        assert len(candidate.detected_games) == 2
-        assert candidate.detected_games is games
-
-    @pytest.mark.asyncio
-    async def test_no_silent_deduplication(
-        self,
-        scanner: DefaultLotOpportunityScanner,
-        mock_price_collector: Mock,
-        mock_dataset_builder: Mock,
-        mock_statistics: Mock,
-        mock_outlier_removal: Mock,
-        mock_market_estimator: Mock,
-        mock_lot_analyzer: Mock,
-    ) -> None:
-        """Duplicate games should not be silently removed."""
-        gta = _make_game("GTA V")
-        candidate = CandidateListing(
-            listing_id="dup",
-            title="Two GTA V copies",
-            description="",
-            price=30.0,
-            currency="EUR",
-            url="https://example.com/dup",
-            detected_games=[gta, gta],  # Two copies
         )
 
         _setup_pipeline_mocks(
@@ -621,10 +616,46 @@ class TestFailureHandling:
 
         result = await scanner.scan_lot(candidate)
 
-        # Both copies should be processed
-        assert result.total_detected_games == 2
-        assert result.successfully_valued_games == 2
-        assert scanner.price_collector.collect_comparables.await_count == 2
+        assert result.detected_games == games
+        assert mock_game_detector.detect_games.return_value is games
+
+    @pytest.mark.asyncio
+    async def test_duplicate_detected_games_are_deduplicated(
+        self,
+        scanner: DefaultLotOpportunityScanner,
+        mock_price_collector: Mock,
+        mock_dataset_builder: Mock,
+        mock_statistics: Mock,
+        mock_outlier_removal: Mock,
+        mock_market_estimator: Mock,
+        mock_lot_analyzer: Mock,
+    ) -> None:
+        """Duplicate detector results should be valued once."""
+        candidate = CandidateListing(
+            listing_id="dup",
+            title="Two GTA V copies",
+            description="",
+            price=30.0,
+            currency="EUR",
+            url="https://example.com/dup",
+        )
+
+        _setup_pipeline_mocks(
+            scanner,
+            mock_price_collector,
+            mock_dataset_builder,
+            mock_statistics,
+            mock_outlier_removal,
+            mock_market_estimator,
+            mock_lot_analyzer,
+            comparable_prices=[12.0, 15.0],
+        )
+
+        result = await scanner.scan_lot(candidate)
+
+        assert result.total_detected_games == 1
+        assert result.successfully_valued_games == 1
+        assert scanner.price_collector.collect_comparables.await_count == 1
 
 
 class TestLotScanExplanation:
@@ -647,7 +678,6 @@ class TestLotScanExplanation:
             price=35.0,
             currency="EUR",
             url="https://example.com/explain_lot",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         _setup_pipeline_mocks(
@@ -710,10 +740,51 @@ async def test_lot_scanner_runs_inside_an_already_active_event_loop(
         price=10.0,
         currency="EUR",
         url="https://example.test/active-loop-lot",
-        detected_games=[_make_game("GTA V")],
     )
 
     result = await scanner.scan_lot(candidate)
 
     assert result.successfully_valued_games == 1
     mock_price_collector.collect_comparables.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_lot_candidate_is_excluded_from_market_comparables(
+    scanner: DefaultLotOpportunityScanner,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+) -> None:
+    game = _make_game("GTA V")
+    candidate = CandidateListing(
+        listing_id="candidate-id",
+        title="GTA V PS4",
+        description="",
+        price=10.0,
+        currency="EUR",
+        url="https://example.test/candidate-id",
+    )
+    own_listing = _make_comparable(game, 10.0, candidate.listing_id)
+    gta_1 = _make_comparable(game, 12.0, "gta-1")
+    gta_2 = _make_comparable(game, 15.0, "gta-2")
+    mock_price_collector.collect_comparables.return_value = [
+        own_listing,
+        gta_1,
+        gta_2,
+    ]
+    mock_dataset_builder.build.return_value = Mock(sample_size=0)
+
+    await scanner.scan_lot(candidate)
+
+    mock_dataset_builder.build.assert_called_once_with([gta_1, gta_2])
+
+
+def test_lot_game_identity_normalizes_aliases_but_separates_platforms() -> None:
+    ps4_aliases = [
+        DetectedGame(" Grand  Theft Auto V ", alias, Platform.PS4, 1.0, DetectionMethod.ALIAS_MATCH)
+        for alias in ("GTA V", "GTA5", "Grand Theft Auto V")
+    ]
+    ps5 = _make_game_for_platform("Grand Theft Auto V", Platform.PS5)
+
+    unique = DefaultLotOpportunityScanner._deduplicate_games([*ps4_aliases, ps5])
+
+    assert unique == [ps4_aliases[0], ps5]

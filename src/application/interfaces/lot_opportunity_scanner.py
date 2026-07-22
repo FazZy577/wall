@@ -5,7 +5,7 @@ for candidate listings that may contain multiple games (lots).
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 
@@ -19,6 +19,7 @@ class LotPipelineStage(StrEnum):
     """Pipeline stages for lot valuation tracking."""
 
     VALIDATION = "validation"
+    GAME_DETECTION = "game_detection"
     PRICE_COLLECTION = "price_collection"
     DATASET_BUILDING = "dataset_building"
     STATISTICS = "statistics"
@@ -40,10 +41,11 @@ class GameValuationFailure:
         error_message: Technical error message (optional)
     """
 
-    game: DetectedGame
+    game: DetectedGame | None
     stage: LotPipelineStage
     reason: str
     error_message: str | None = None
+    listing_id: str = ""
 
 
 @dataclass
@@ -73,6 +75,7 @@ class LotScanResult:
     is_complete: bool
     processing_time: float
     created_at: datetime
+    detected_games: list[DetectedGame] = field(default_factory=list)
 
     def explain(self) -> str:
         """Generate deterministic human-readable lot scan explanation."""
@@ -90,7 +93,7 @@ class LotScanResult:
         lines.append("DETECTED GAMES")
         lines.append("-" * 60)
         lines.append(f"Total Detected Games: {self.total_detected_games}")
-        for index, game in enumerate(self.listing.detected_games, 1):
+        for index, game in enumerate(self.detected_games, 1):
             lines.append(f"{index}. {game.canonical_name} ({game.platform})")
         lines.append("")
         lines.append("VALUATION STATUS")
@@ -124,6 +127,13 @@ class LotScanResult:
         lines.append("-" * 60)
         if self.failures:
             for failure in self.failures:
+                if failure.game is None:
+                    lines.append(
+                        f"- {failure.listing_id}: {failure.stage} - {failure.reason}"
+                    )
+                    if failure.error_message:
+                        lines.append(f"  Error: {failure.error_message}")
+                    continue
                 lines.append(
                     f"- {failure.game.canonical_name}: {failure.stage} — {failure.reason}"
                 )

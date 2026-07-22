@@ -81,6 +81,47 @@ def analyzer() -> DefaultLotOpportunityAnalyzer:
     return DefaultLotOpportunityAnalyzer()
 
 
+@pytest.mark.parametrize(
+    ("prices", "expected"),
+    [
+        (
+            [15.0, 20.0, 10.0],
+            (45.0, 5.0, 11.1, 12.5, Recommendation.MAYBE, LotReasonCode.FAIR_VALUE_LOT, 41.8),
+        ),
+        (
+            [15.0, 20.0],
+            (35.0, -5.0, -14.3, -12.5, Recommendation.SKIP, LotReasonCode.INCOMPLETE_VALUATION, 26.0),
+        ),
+        (
+            [],
+            (0.0, -40.0, 0.0, -100.0, Recommendation.SKIP, LotReasonCode.INCOMPLETE_VALUATION, 0.0),
+        ),
+    ],
+)
+def test_p16_detection_source_change_preserves_economic_results(
+    analyzer: DefaultLotOpportunityAnalyzer,
+    prices: list[float],
+    expected: tuple[float, float, float, float, Recommendation, LotReasonCode, float],
+) -> None:
+    candidate = CandidateListing("lot-40", "Lot", "", 40.0, "EUR", "https://test/lot")
+    valuations = [
+        _make_valuation(f"Game {index}", price)
+        for index, price in enumerate(prices)
+    ]
+
+    opportunity = analyzer.analyze(candidate, valuations, total_detected_games=3)
+
+    assert (
+        opportunity.total_market_value,
+        opportunity.estimated_profit,
+        opportunity.profit_margin_percentage,
+        opportunity.roi_percentage,
+        opportunity.recommendation,
+        opportunity.reason,
+        opportunity.opportunity_score,
+    ) == expected
+
+
 # ---------------------------------------------------------------------------
 # Clear BUY
 # ---------------------------------------------------------------------------
@@ -88,7 +129,7 @@ def analyzer() -> DefaultLotOpportunityAnalyzer:
 
 class TestBuyRecommendation:
     def test_clear_buy_lot(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """35€ lot with 53€ market value → BUY."""
+        """35в‚¬ lot with 53в‚¬ market value в†’ BUY."""
         candidate = CandidateListing(
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
@@ -96,7 +137,6 @@ class TestBuyRecommendation:
             price=35.0,
             currency="EUR",
             url="https://example.com/lot001",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -110,14 +150,14 @@ class TestBuyRecommendation:
         # total_market_value = 53, profit = 18, margin = 33.96%
         assert lot.total_market_value == 53.0
         assert lot.estimated_profit == 18.0
-        assert lot.profit_margin_percentage == 34.0  # 18/53*100 = 33.96... → 34.0
+        assert lot.profit_margin_percentage == 34.0  # 18/53*100 = 33.96... в†’ 34.0
         assert lot.roi_percentage == 51.4  # 18/35*100 = 51.4
         assert lot.recommendation == Recommendation.BUY
         assert lot.reason == LotReasonCode.UNDERVALUED_LOT
 
 
 # ---------------------------------------------------------------------------
-# Margin below threshold → MAYBE
+# Margin below threshold в†’ MAYBE
 # ---------------------------------------------------------------------------
 
 
@@ -125,7 +165,7 @@ class TestMarginThreshold:
     def test_margin_below_threshold_returns_maybe(
         self, analyzer: DefaultLotOpportunityAnalyzer
     ) -> None:
-        """40€ lot with 53€ market value → margin 24.5% < 25% → MAYBE."""
+        """40в‚¬ lot with 53в‚¬ market value в†’ margin 24.5% < 25% в†’ MAYBE."""
         candidate = CandidateListing(
             listing_id="lot002",
             title="Lote PS4 GTA V RDR2 Spider-Man",
@@ -133,7 +173,6 @@ class TestMarginThreshold:
             price=40.0,
             currency="EUR",
             url="https://example.com/lot002",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -147,19 +186,19 @@ class TestMarginThreshold:
         # total_market_value = 53, profit = 13, margin = 24.5%
         assert lot.total_market_value == 53.0
         assert lot.estimated_profit == 13.0
-        assert lot.profit_margin_percentage == 24.5  # 13/53*100 = 24.5283... → 24.5
+        assert lot.profit_margin_percentage == 24.5  # 13/53*100 = 24.5283... в†’ 24.5
         assert lot.recommendation == Recommendation.MAYBE
         assert lot.reason == LotReasonCode.FAIR_VALUE_LOT
 
 
 # ---------------------------------------------------------------------------
-# Overpriced → SKIP
+# Overpriced в†’ SKIP
 # ---------------------------------------------------------------------------
 
 
 class TestOverpriced:
     def test_overpriced_lot(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """100€ lot with 25€ market value → SKIP."""
+        """100в‚¬ lot with 25в‚¬ market value в†’ SKIP."""
         candidate = CandidateListing(
             listing_id="overpriced",
             title="Overpriced Lot",
@@ -167,7 +206,6 @@ class TestOverpriced:
             price=100.0,
             currency="EUR",
             url="https://example.com/overpriced",
-            detected_games=[_make_game("GTA V"), _make_game("FIFA")],
         )
 
         valuations = [
@@ -183,7 +221,7 @@ class TestOverpriced:
         assert lot.reason == LotReasonCode.OVERPRICED_LOT
 
     def test_fair_value_exact(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Price exactly equals market value → SKIP/FAIR_VALUE_LOT."""
+        """Price exactly equals market value в†’ SKIP/FAIR_VALUE_LOT."""
         candidate = CandidateListing(
             listing_id="fair",
             title="Fair Value Lot",
@@ -191,7 +229,6 @@ class TestOverpriced:
             price=35.0,
             currency="EUR",
             url="https://example.com/fair",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         valuations = [
@@ -214,7 +251,7 @@ class TestOverpriced:
 
 class TestLowConfidence:
     def test_low_aggregate_confidence(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Confidence 0.30 < 0.50 → SKIP."""
+        """Confidence 0.30 < 0.50 в†’ SKIP."""
         candidate = CandidateListing(
             listing_id="lowconf",
             title="Low confidence lot",
@@ -222,7 +259,6 @@ class TestLowConfidence:
             price=30.0,
             currency="EUR",
             url="https://example.com/lowconf",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         valuations = [
@@ -244,7 +280,7 @@ class TestLowConfidence:
 
 class TestIncompleteValuation:
     def test_incomplete_positive_profit(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """2 of 3 valued, known profit positive → MAYBE."""
+        """2 of 3 valued, known profit positive в†’ MAYBE."""
         candidate = CandidateListing(
             listing_id="incomplete",
             title="Partial lot",
@@ -252,7 +288,6 @@ class TestIncompleteValuation:
             price=30.0,
             currency="EUR",
             url="https://example.com/incomplete",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -267,7 +302,7 @@ class TestIncompleteValuation:
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
     def test_incomplete_negative_profit(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """2 of 3 valued, known profit negative → SKIP."""
+        """2 of 3 valued, known profit negative в†’ SKIP."""
         candidate = CandidateListing(
             listing_id="incomplete_neg",
             title="Bad partial lot",
@@ -275,7 +310,6 @@ class TestIncompleteValuation:
             price=50.0,
             currency="EUR",
             url="https://example.com/incomplete_neg",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -290,7 +324,7 @@ class TestIncompleteValuation:
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
     def test_no_valuations(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """No games valued → SKIP/INCOMPLETE_VALUATION."""
+        """No games valued в†’ SKIP/INCOMPLETE_VALUATION."""
         candidate = CandidateListing(
             listing_id="no_vals",
             title="Failed lot",
@@ -298,7 +332,6 @@ class TestIncompleteValuation:
             price=30.0,
             currency="EUR",
             url="https://example.com/no_vals",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         lot = analyzer.analyze(candidate, [], 2)
@@ -314,7 +347,7 @@ class TestIncompleteValuation:
 
 class TestEdgeCases:
     def test_no_games_detected(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Empty detected_games → SKIP/NO_GAMES_DETECTED."""
+        """Empty detected_games в†’ SKIP/NO_GAMES_DETECTED."""
         candidate = CandidateListing(
             listing_id="nogames",
             title="Unknown",
@@ -330,7 +363,7 @@ class TestEdgeCases:
         assert lot.reason == LotReasonCode.NO_GAMES_DETECTED
 
     def test_zero_price(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Price 0 → SKIP/INVALID_LOT_PRICE."""
+        """Price 0 в†’ SKIP/INVALID_LOT_PRICE."""
         candidate = CandidateListing(
             listing_id="free",
             title="Free games",
@@ -338,7 +371,6 @@ class TestEdgeCases:
             price=0.0,
             currency="EUR",
             url="https://example.com/free",
-            detected_games=[_make_game("GTA V")],
         )
 
         valuations = [_make_valuation("GTA V", 15.0)]
@@ -364,7 +396,6 @@ class TestOpportunityScore:
             price=35.0,
             currency="EUR",
             url="https://example.com/score",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -388,7 +419,6 @@ class TestOpportunityScore:
             price=10.0,
             currency="EUR",
             url="https://example.com/incomplete",
-            detected_games=[_make_game("A"), _make_game("B"), _make_game("C")],
         )
 
         # Only 1 of 3 valued, but very profitable
@@ -396,7 +426,7 @@ class TestOpportunityScore:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # Must NOT be BUY — incomplete
+        # Must NOT be BUY вЂ” incomplete
         assert lot.recommendation != Recommendation.BUY
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
@@ -411,7 +441,6 @@ class TestOpportunityScore:
             price=10.0,
             currency="EUR",
             url="https://example.com/lowconf",
-            detected_games=[_make_game("A"), _make_game("B")],
         )
 
         # Very profitable but low confidence
@@ -422,6 +451,6 @@ class TestOpportunityScore:
 
         lot = analyzer.analyze(candidate, valuations, 2)
 
-        # Must NOT be BUY — low confidence
+        # Must NOT be BUY вЂ” low confidence
         assert lot.recommendation != Recommendation.BUY
         assert lot.reason == LotReasonCode.LOW_AGGREGATE_CONFIDENCE

@@ -168,7 +168,7 @@ async def test_detection_and_lot_contracts_share_canonical_game_types() -> None:
     lot_hints = get_type_hints(ILotOpportunityScanner.scan_lot)
     valuation_hints = get_type_hints(GameValuation)
 
-    assert candidate_hints["detected_games"] == list[DetectedGame]
+    assert "detected_games" not in candidate_hints
     assert detector_hints["listing_text"] is ListingText
     assert detector_hints["return"] == list[DetectedGame]
     assert lot_hints["listing"] is CandidateListing
@@ -251,3 +251,28 @@ async def test_scanner_detects_games_from_candidate_text_without_candidate_platf
     assert text.title == candidate.title
     assert text.description == candidate.description
     assert not hasattr(candidate, "platform")
+
+
+def test_candidate_listing_never_accepts_or_reads_detected_games() -> None:
+    repository_root = Path(__file__).parents[2]
+    violations: list[str] = []
+    for folder in ("src", "tests", "examples"):
+        for source_file in (repository_root / folder).rglob("*.py"):
+            tree = ast.parse(source_file.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call):
+                    function_name = getattr(node.func, "id", None)
+                    if function_name == "CandidateListing" and any(
+                        keyword.arg == "detected_games" for keyword in node.keywords
+                    ):
+                        violations.append(str(source_file.relative_to(repository_root)))
+                if (
+                    folder == "src"
+                    and isinstance(node, ast.Attribute)
+                    and node.attr == "detected_games"
+                    and isinstance(node.value, ast.Name)
+                    and node.value.id in {"candidate", "listing"}
+                ):
+                    violations.append(str(source_file.relative_to(repository_root)))
+
+    assert violations == []

@@ -79,7 +79,6 @@ class TestCandidateListing:
     @pytest.mark.asyncio
     async def test_single_game_candidate(self) -> None:
         """Should create candidate with one game."""
-        game = _make_game("GTA V")
         candidate = CandidateListing(
             listing_id="lst001",
             title="GTA V PS4",
@@ -87,22 +86,15 @@ class TestCandidateListing:
             price=15.0,
             currency="EUR",
             url="https://example.com/lst001",
-            detected_games=[game],
         )
 
         assert candidate.listing_id == "lst001"
         assert candidate.price == 15.0
-        assert candidate.is_lot is False
-        assert candidate.game_count == 1
+        assert not hasattr(candidate, "detected_games")
 
     @pytest.mark.asyncio
     async def test_lot_with_three_games(self) -> None:
         """Should create lot candidate with three games."""
-        games = [
-            _make_game("GTA V"),
-            _make_game("RDR2"),
-            _make_game("Spider-Man"),
-        ]
         candidate = CandidateListing(
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
@@ -110,11 +102,9 @@ class TestCandidateListing:
             price=40.0,
             currency="EUR",
             url="https://example.com/lot001",
-            detected_games=games,
         )
 
-        assert candidate.is_lot is True
-        assert candidate.game_count == 3
+        assert not hasattr(candidate, "is_lot")
 
     @pytest.mark.asyncio
     async def test_empty_games_is_not_lot(self) -> None:
@@ -128,8 +118,7 @@ class TestCandidateListing:
             url="https://example.com/empty001",
         )
 
-        assert candidate.is_lot is False
-        assert candidate.game_count == 0
+        assert not hasattr(candidate, "game_count")
 
     @pytest.mark.asyncio
     async def test_two_games_is_lot(self) -> None:
@@ -141,11 +130,9 @@ class TestCandidateListing:
             price=25.0,
             currency="EUR",
             url="https://example.com/lot2",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
-        assert candidate.is_lot is True
-        assert candidate.game_count == 2
+        assert not hasattr(candidate, "detected_games")
 
     @pytest.mark.asyncio
     async def test_empty_listing_id_raises(self) -> None:
@@ -361,7 +348,6 @@ class TestLotOpportunity:
             price=40.0,
             currency="EUR",
             url="https://example.com/lot001",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         valuations = [
@@ -383,7 +369,7 @@ class TestLotOpportunity:
         assert lot.lot_price == 40.0
         # estimated_profit = 53 - 40 = 13
         assert lot.estimated_profit == 13.0
-        # profit_margin = 13 / 53 * 100 = 24.5283... ≈ 24.5
+        # profit_margin = 13 / 53 * 100 = 24.5283... в‰€ 24.5
         assert lot.profit_margin_percentage == 24.5
         # roi = 13 / 40 * 100 = 32.5
         assert lot.roi_percentage == 32.5
@@ -400,7 +386,6 @@ class TestLotOpportunity:
             price=100.0,
             currency="EUR",
             url="https://example.com/overpriced",
-            detected_games=[_make_game("GTA V"), _make_game("FIFA")],
         )
 
         valuations = [
@@ -431,7 +416,6 @@ class TestLotOpportunity:
             price=30.0,
             currency="EUR",
             url="https://example.com/lowconf",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2")],
         )
 
         valuations = [
@@ -487,7 +471,6 @@ class TestLotOpportunity:
             price=0.0,
             currency="EUR",
             url="https://example.com/free",
-            detected_games=[_make_game("GTA V")],
         )
 
         valuations = [
@@ -505,7 +488,7 @@ class TestLotOpportunity:
         assert lot.lot_price == 0.0
         assert lot.total_market_value == 15.0
         assert lot.estimated_profit == 15.0
-        # roi = 15 / 0 → edge case → 0.0
+        # roi = 15 / 0 в†’ edge case в†’ 0.0
         assert lot.roi_percentage == 0.0
         assert lot.profit_margin_percentage == 100.0
 
@@ -519,7 +502,6 @@ class TestLotOpportunity:
             price=30.0,
             currency="EUR",
             url="https://example.com/incomplete",
-            detected_games=[_make_game("GTA V"), _make_game("RDR2"), _make_game("Spider-Man")],
         )
 
         # Only 2 of 3 games valued
@@ -549,7 +531,6 @@ class TestLotOpportunity:
             price=50.0,
             currency="EUR",
             url="https://example.com/test",
-            detected_games=[_make_game("A"), _make_game("B"), _make_game("C"), _make_game("D")],
         )
 
         valuations = [
@@ -580,7 +561,6 @@ class TestLotOpportunity:
             price=10.0,
             currency="EUR",
             url="https://example.com/zero",
-            detected_games=[_make_game("Bad Game")],
         )
 
         valuations = [
@@ -643,7 +623,6 @@ class TestDatasetContamination:
             description="",
             price=40.0,  # This is the candidate price - should NOT be in dataset
             currency="EUR",
-            detected_games=[game],
             url="https://example.com/candidate001",
         )
 
@@ -726,7 +705,6 @@ class TestDatasetContamination:
             description="",
             price=40.0,  # Candidate price - should NOT be in dataset
             currency="EUR",
-            detected_games=[game],
             url="https://example.com/candidate002",
         )
 
