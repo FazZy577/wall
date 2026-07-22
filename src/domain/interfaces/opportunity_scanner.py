@@ -58,6 +58,8 @@ class ScanResult:
         failures: Detailed information about each failure
         processing_time: Time taken to process (seconds)
         created_at: Scan timestamp
+        valuation_cache_hits: Later listings that reused a valuation outcome
+        valuation_cache_misses: Unique game valuations attempted
     """
 
     total_processed: int
@@ -67,6 +69,8 @@ class ScanResult:
     failures: list[FailureInfo]
     processing_time: float
     created_at: datetime
+    valuation_cache_hits: int = 0
+    valuation_cache_misses: int = 0
 
 
 class RankingStrategy(StrEnum):

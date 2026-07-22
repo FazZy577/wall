@@ -429,7 +429,7 @@ class TestScanMultiple:
         assert len(result.opportunities) == 1
         assert len(result.failures) == 1
 
-    def test_module_error_does_not_stop_others(
+    def test_repeated_game_reuses_successful_valuation(
         self,
         scanner: DefaultOpportunityScanner,
         sample_game: DetectedGame,
@@ -439,7 +439,7 @@ class TestScanMultiple:
         mock_market_estimator: Mock,
         mock_arbitrage_detector: Mock,
     ) -> None:
-        """Should continue processing when one listing causes a module error."""
+        """Should not repeat collection for later listings of the same game."""
         listings = [
             ComparableListing(
                 listing_id="good1",
@@ -470,7 +470,7 @@ class TestScanMultiple:
             ),
         ]
 
-        # First call succeeds, second fails, third succeeds
+        # A hypothetical second collection would fail, but must never occur.
         call_count = [0]
 
         def run_async_side_effect(coro: object) -> list[ComparableListing]:
@@ -516,12 +516,13 @@ class TestScanMultiple:
         result = scanner.scan_multiple(listings)
 
         assert result.total_processed == 3
-        assert result.successful == 2
-        assert result.failed == 1
-        assert len(result.opportunities) == 2
-        assert len(result.failures) == 1
-        # The failure should be at PRICE_COLLECTION stage
-        assert result.failures[0].stage == PipelineStage.PRICE_COLLECTION
+        assert result.successful == 3
+        assert result.failed == 0
+        assert len(result.opportunities) == 3
+        assert len(result.failures) == 0
+        assert call_count[0] == 1
+        assert result.valuation_cache_misses == 1
+        assert result.valuation_cache_hits == 2
 
 
 class TestPipelineStageTracking:

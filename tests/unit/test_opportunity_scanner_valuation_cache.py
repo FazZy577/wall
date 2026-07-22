@@ -1,0 +1,223 @@
+"""P1.1 tests for execution-scoped valuation reuse."""
+
+from unittest.mock import Mock
+
+import pytest
+
+from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.opportunity_scanner import PipelineStage
+from domain.interfaces.price_collector import ComparableListing
+from infrastructure.scanners.default_opportunity_scanner import DefaultOpportunityScanner
+
+
+def game(
+    name: str = "Grand Theft Auto V",
+    platform: Platform = Platform.PS4,
+    alias: str = "GTA V",
+) -> DetectedGame:
+    return DetectedGame(name, alias, platform, 1.0, DetectionMethod.ALIAS_MATCH)
+
+
+def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -> ComparableListing:
+    return ComparableListing(
+        listing_id=identifier,
+        title=detected_game.matched_text,
+        description="",
+        price=price,
+        currency="EUR",
+        detected_game=detected_game,
+        url=f"https://example.test/{identifier}",
+    )
+
+
+@pytest.fixture
+def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
+    dependencies = {
+        name: Mock()
+        for name in (
+            "collector",
+            "builder",
+            "statistics",
+            "outliers",
+            "estimator",
+            "detector",
+        )
+    }
+    scanner = DefaultOpportunityScanner(
+        game_detector=Mock(),
+        price_collector=dependencies["collector"],
+        dataset_builder=dependencies["builder"],
+        statistics=dependencies["statistics"],
+        outlier_removal=dependencies["outliers"],
+        market_estimator=dependencies["estimator"],
+        arbitrage_detector=dependencies["detector"],
+    )
+    scanner._run_async = Mock(return_value=[listing("comparable", game(), 20.0)])
+    dataset = Mock(sample_size=5)
+    dependencies["builder"].build.return_value = dataset
+    dependencies["statistics"].calculate.return_value = Mock()
+    dependencies["outliers"].remove_outliers.return_value = Mock(
+        clean_dataset=dataset,
+        removed_count=0,
+    )
+    dependencies["estimator"].estimate.return_value = Mock(
+        estimated_price=20.0,
+        confidence_score=0.8,
+    )
+
+    def make_opportunity(candidate: ComparableListing, estimate: Mock) -> Mock:
+        return Mock(
+            listing=candidate,
+            listing_price=candidate.price,
+            market_estimate=estimate,
+            recommendation="BUY",
+            opportunity_score=100.0 - candidate.price,
+        )
+
+    dependencies["detector"].detect.side_effect = make_opportunity
+    return scanner, dependencies
+
+
+def test_same_game_runs_valuation_once(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    candidates = [listing(str(index), game(), 5.0 + index) for index in range(5)]
+
+    result = scanner.scan_multiple(candidates)
+
+    assert scanner._run_async.call_count == 1
+    assert mocks["collector"].collect_comparables.call_count == 1
+    assert mocks["builder"].build.call_count == 1
+    assert mocks["statistics"].calculate.call_count == 2
+    assert mocks["outliers"].remove_outliers.call_count == 1
+    assert mocks["estimator"].estimate.call_count == 1
+    assert mocks["detector"].detect.call_count == 5
+    assert result.valuation_cache_misses == 1
+    assert result.valuation_cache_hits == 4
+
+
+def test_different_games_have_different_valuations(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    result = scanner.scan_multiple(
+        [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2", alias="RDR2"))]
+    )
+    assert scanner._run_async.call_count == 2
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+
+
+def test_same_name_on_different_platforms_is_not_shared(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    result = scanner.scan_multiple(
+        [listing("ps4", game()), listing("ps5", game(platform=Platform.PS5))]
+    )
+    assert scanner._run_async.call_count == 2
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+
+
+def test_aliases_and_normalized_canonical_name_share_valuation(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    games = [
+        game(" Grand Theft  Auto V ", alias="GTA V"),
+        game("grand theft auto v", alias="GTA5"),
+        game("GRAND THEFT AUTO V", alias="Grand Theft Auto V"),
+    ]
+    result = scanner.scan_multiple([listing(str(i), value) for i, value in enumerate(games)])
+    assert scanner._run_async.call_count == 1
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
+
+
+def test_candidate_prices_are_detected_individually(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    candidates = [listing(str(price), game(), price) for price in (5.0, 10.0, 14.0)]
+    result = scanner.scan_multiple(candidates)
+    assert [call.args[0] for call in mocks["detector"].detect.call_args_list] == candidates
+    assert [opportunity.listing_price for opportunity in result.opportunities] == [5.0, 10.0, 14.0]
+    assert len({id(call.args[1]) for call in mocks["detector"].detect.call_args_list}) == 1
+
+
+def test_separate_batch_scans_do_not_share_cache(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    candidates = [listing("one", game()), listing("two", game())]
+    first = scanner.scan_multiple(candidates)
+    second = scanner.scan_multiple(candidates)
+    assert scanner._run_async.call_count == 2
+    assert (first.valuation_cache_misses, first.valuation_cache_hits) == (1, 1)
+    assert (second.valuation_cache_misses, second.valuation_cache_hits) == (1, 1)
+
+
+def test_separate_single_scans_do_not_share_cache(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    candidate = listing("one", game())
+    assert scanner.scan_listing(candidate) is not None
+    assert scanner.scan_listing(candidate) is not None
+    assert scanner._run_async.call_count == 2
+
+
+def test_failed_valuation_is_reused_with_each_listing_id(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    scanner._run_async.side_effect = RuntimeError("collector unavailable")
+    candidates = [listing(str(index), game()) for index in range(3)]
+    result = scanner.scan_multiple(candidates)
+    assert scanner._run_async.call_count == 1
+    assert mocks["builder"].build.call_count == 0
+    assert [failure.listing_id for failure in result.failures] == ["0", "1", "2"]
+    assert all(failure.stage == PipelineStage.PRICE_COLLECTION for failure in result.failures)
+    assert all(failure.error_message == "collector unavailable" for failure in result.failures)
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
+
+
+def test_failure_for_one_game_does_not_contaminate_another(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    scanner._run_async.side_effect = [
+        RuntimeError("GTA failed"),
+        [listing("comp", game("Red Dead Redemption 2"), 20.0)],
+    ]
+    result = scanner.scan_multiple(
+        [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2"))]
+    )
+    assert result.failed == 1
+    assert result.successful == 1
+    assert mocks["detector"].detect.call_count == 1
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
+
+
+def test_empty_list_has_zero_cache_metrics(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, _ = cache_scanner
+    result = scanner.scan_multiple([])
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (0, 0)
+
+
+def test_mixed_scenario_has_three_unique_valuations(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    candidates = (
+        [listing(f"gta-ps4-{i}", game()) for i in range(6)]
+        + [listing(f"rdr-{i}", game("Red Dead Redemption 2")) for i in range(2)]
+        + [listing(f"gta-ps5-{i}", game(platform=Platform.PS5)) for i in range(2)]
+    )
+    result = scanner.scan_multiple(candidates)
+    assert mocks["collector"].collect_comparables.call_count == 3
+    assert scanner._run_async.call_count == 3
+    assert mocks["estimator"].estimate.call_count == 3
+    assert mocks["detector"].detect.call_count == 10
+    assert (result.valuation_cache_misses, result.valuation_cache_hits) == (3, 7)

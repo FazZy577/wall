@@ -7,6 +7,37 @@
 
 The Opportunity Scanner is a **pure orchestrator** that coordinates the complete arbitrage detection pipeline. It contains **NO business logic** — only coordination.
 
+## Execution-scoped valuation reuse (P1.1)
+
+Previously, `scan_multiple()` ran the complete market valuation pipeline once per
+candidate. This created an N+1 pattern: 100 candidate listings for five repeated
+game identities could trigger up to 100 collections and valuations.
+
+Each invocation of `scan_multiple()` now creates a private in-memory context. A
+game identity is its normalized canonical name (`strip`, `casefold`, collapsed
+whitespace) plus `Platform.value`. Aliases that resolve to the same canonical
+name and platform share a valuation; the same name on PS4 and PS5 does not.
+
+The cached outcome covers `PriceCollector`, `PriceDatasetBuilder`, initial
+statistics, `OutlierRemoval`, recalculated statistics, and
+`MarketPriceEstimator`. It stores the resulting `MarketPriceEstimate`, or the
+original stage/reason/error details if valuation fails. A cached failure still
+produces a separate `FailureInfo` with the correct candidate `listing_id`.
+
+`ArbitrageOpportunity`, recommendation, candidate price, and opportunity score
+are never cached. `ArbitrageOpportunityDetector` continues to run for every
+processable candidate, so candidates sharing a market estimate can receive
+different profitability metrics and recommendations.
+
+The context exists only for one call. It is not an instance attribute, global
+cache, persistent cache, or TTL cache. Separate calls to `scan_multiple()` and
+every call to `scan_listing()` perform fresh valuations. `ScanResult` exposes
+`valuation_cache_misses` (unique valuations attempted) and
+`valuation_cache_hits` (later successful or failed outcomes reused).
+
+After P1.1, 100 candidates covering five unique canonical-name/platform
+identities require five valuations rather than up to 100.
+
 ## Critical Design Principle
 
 ⚠️ **This module does NOT contain:**
@@ -212,6 +243,8 @@ for opp in sorted(result.opportunities, key=lambda x: x.opportunity_score, rever
 | `failures` | `list[FailureInfo]` | Details of each failure |
 | `processing_time` | `float` | Total processing time (seconds) |
 | `created_at` | `datetime` | Scan timestamp (UTC) |
+| `valuation_cache_hits` | `int` | Later candidates reusing a valuation outcome |
+| `valuation_cache_misses` | `int` | Unique game valuations attempted |
 
 ### FailureInfo
 
