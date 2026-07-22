@@ -10,6 +10,7 @@ from enum import StrEnum
 
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
+from domain.entities.resale_economics import EconomicBreakdown
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     MarketPriceEstimate,
@@ -45,11 +46,11 @@ class ArbitrageOpportunity:
         game: Detected game in this listing
         market_price: Estimated market price
         listing_price: Price in the listing
-        estimated_profit: Expected profit (market_price - listing_price)
-        profit_margin_percentage: Profit margin (profit / market_price)
-        roi_percentage: Return on investment (profit / listing_price)
+        estimated_profit: Net expected profit from the economic breakdown
+        profit_margin_percentage: Net profit / expected sale revenue
+        roi_percentage: Net profit / total acquisition cost
         market_discount_percentage: Discount vs market ((market - listing) / market * 100)
-        break_even_price: Price needed to break even (initially equals listing_price)
+        break_even_price: Required gross sale revenue to break even (P1.8 naming pending)
         confidence_score: Confidence in market price estimate
         confidence_level: Human-readable confidence level
         opportunity_score: Numeric score 0-100 for ranking opportunities
@@ -73,6 +74,7 @@ class ArbitrageOpportunity:
     recommendation: Recommendation
     reason: ReasonCode
     created_at: datetime
+    economic_breakdown: EconomicBreakdown
 
     def explain(self) -> str:
         """Generate human-readable explanation of the opportunity.
@@ -92,6 +94,13 @@ class ArbitrageOpportunity:
         lines.append("-" * 60)
         lines.append(f"Listing Price: EUR {self.listing_price:.2f}")
         lines.append(f"Estimated Market Price: EUR {self.market_price:.2f}")
+        lines.append(
+            f"Expected Sale Revenue: EUR {self.economic_breakdown.expected_sale_revenue:.2f}"
+        )
+        lines.append(
+            f"Selling Costs and Buffer: EUR "
+            f"{self.economic_breakdown.selling_fees + self.economic_breakdown.fixed_selling_costs + self.economic_breakdown.safety_buffer:.2f}"
+        )
         lines.append(f"Expected Profit: EUR {self.estimated_profit:.2f}")
         lines.append("")
         lines.append("PROFITABILITY METRICS")

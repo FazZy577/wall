@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -75,6 +76,9 @@ def _make_opportunity(
         recommendation=recommendation,
         reason=ReasonCode.UNDERVALUED,
         created_at=datetime.now(),
+        economic_breakdown=ResaleEconomicPolicy.neutral().calculate(
+            [market_price], listing_price
+        ),
     )
 
 

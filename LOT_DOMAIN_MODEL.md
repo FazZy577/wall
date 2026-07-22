@@ -221,3 +221,9 @@ OpportunityRanker.rank(lot_opportunities)
 `CandidateListing` is marketplace input only and has no `detected_games`,
 `game_count`, or `is_lot` state. Whether it represents a lot is established by
 the `GameDetector` result inside the appropriate application use case.
+# P1.7 economic breakdown
+
+`LotOpportunity` contains one mandatory `EconomicBreakdown`. Gross market
+value remains available, while profit, margin, and ROI use net proceeds,
+expected sale revenue, and total acquisition cost respectively. Net proceeds
+and profit may be negative.

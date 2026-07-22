@@ -4,10 +4,12 @@ Tests arbitrage opportunity detection with various scenarios.
 """
 
 from datetime import UTC, datetime
+from unittest.mock import Mock
 
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
     ReasonCode,
     Recommendation,
@@ -33,7 +35,7 @@ from infrastructure.detectors.default_arbitrage_opportunity_detector import (
 @pytest.fixture
 def detector() -> DefaultArbitrageOpportunityDetector:
     """Create detector with default thresholds."""
-    return DefaultArbitrageOpportunityDetector()
+    return DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
 
 
 @pytest.fixture
@@ -90,6 +92,50 @@ def create_market_estimate(
 
 class TestNewFields:
     """Test new fields: market_discount_percentage and break_even_price."""
+
+    def test_required_net_economic_case(self, sample_game: DetectedGame) -> None:
+        listing = CandidateListing("economic", "GTA V", "", 10.0, "EUR", "url")
+        estimate = create_market_estimate(
+            sample_game, 20.0, 0.8, ConfidenceLevel.HIGH
+        )
+        configured_policy = ResaleEconomicPolicy(3.0, 0.10, 1.0, 2.0, 0.05)
+        breakdown = configured_policy.calculate([20.0], 10.0)
+        policy = Mock(spec=ResaleEconomicPolicy)
+        policy.calculate.return_value = breakdown
+
+        result = DefaultArbitrageOpportunityDetector(policy).detect(listing, estimate)
+
+        policy.calculate.assert_called_once_with(
+            reference_item_prices=[20.0], acquisition_price=10.0
+        )
+        assert result.economic_breakdown is breakdown
+        assert result.economic_breakdown.net_profit == pytest.approx(1.45)
+        assert result.estimated_profit == pytest.approx(1.45)
+        assert result.roi_percentage == pytest.approx(1.45 / 12 * 100)
+        assert result.profit_margin_percentage == pytest.approx(1.45 / 17 * 100)
+        assert result.market_discount_percentage == 50.0
+        assert result.break_even_price == pytest.approx(13 / 0.85)
+
+    def test_cost_policy_can_legitimately_lower_recommendation(
+        self, sample_game: DetectedGame
+    ) -> None:
+        listing = CandidateListing("same", "GTA V", "", 5.0, "EUR", "url")
+        estimate = create_market_estimate(
+            sample_game, 30.0, 0.8, ConfidenceLevel.HIGH
+        )
+        neutral = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
+        costly = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy(10.0, 0.20, 2.0, 5.0, 0.10)
+        )
+
+        neutral_result = neutral.detect(listing, estimate)
+        costly_result = costly.detect(listing, estimate)
+
+        assert neutral_result.market_price == costly_result.market_price == 30.0
+        assert neutral_result.listing is costly_result.listing is listing
+        assert neutral_result.recommendation is Recommendation.BUY
+        assert costly_result.recommendation is Recommendation.MAYBE
+        assert costly_result.opportunity_score < neutral_result.opportunity_score
 
     def test_market_discount_percentage_calculation(
         self,
@@ -573,7 +619,9 @@ class TestCustomThresholds:
     ) -> None:
         """Should use custom minimum profit threshold."""
         # Custom threshold: 15в‚¬ instead of 10в‚¬
-        detector = DefaultArbitrageOpportunityDetector(min_profit_eur=15.0)
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_profit_eur=15.0
+        )
 
         market_estimate = create_market_estimate(
             game=sample_game,
@@ -594,7 +642,9 @@ class TestCustomThresholds:
     ) -> None:
         """Should use custom minimum margin threshold."""
         # Custom threshold: 40% instead of 25%
-        detector = DefaultArbitrageOpportunityDetector(min_margin_percent=40.0)
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_margin_percent=40.0
+        )
 
         listing = CandidateListing(
             listing_id="test123",

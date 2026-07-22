@@ -11,6 +11,7 @@ import pytest
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotReasonCode
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import (
     DetectedGame,
@@ -78,7 +79,7 @@ def _make_valuation(
 
 @pytest.fixture
 def analyzer() -> DefaultLotOpportunityAnalyzer:
-    return DefaultLotOpportunityAnalyzer()
+    return DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
 
 
 @pytest.mark.parametrize(
@@ -111,7 +112,7 @@ def test_p16_detection_source_change_preserves_economic_results(
 
     opportunity = analyzer.analyze(candidate, valuations, total_detected_games=3)
 
-    assert (
+    actual = (
         opportunity.total_market_value,
         opportunity.estimated_profit,
         opportunity.profit_margin_percentage,
@@ -119,7 +120,52 @@ def test_p16_detection_source_change_preserves_economic_results(
         opportunity.recommendation,
         opportunity.reason,
         opportunity.opportunity_score,
-    ) == expected
+    )
+    assert actual[:4] == pytest.approx(expected[:4], abs=0.02)
+    assert actual[4:] == expected[4:]
+
+
+def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+    )
+    candidate = CandidateListing("lot", "Lot", "", 40.0, "EUR", "url")
+    valuations = [
+        _make_valuation("GTA V", 15.0),
+        _make_valuation("RDR2", 20.0),
+        _make_valuation("FIFA 24", 10.0),
+    ]
+
+    opportunity = analyzer.analyze(candidate, valuations, 3)
+
+    assert opportunity.economic_breakdown.expected_item_sale_prices == (12.0, 17.0, 7.0)
+    assert opportunity.economic_breakdown.expected_sale_revenue == 36.0
+    assert opportunity.economic_breakdown.net_profit == -4.0
+    assert opportunity.estimated_profit == -4.0
+    assert opportunity.economic_breakdown.item_count == 3
+
+
+def test_partial_and_empty_valuations_only_charge_successful_items() -> None:
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy(3.0, 0.0, 1.0, 2.0, 0.0)
+    )
+    candidate = CandidateListing("lot", "Lot", "", 40.0, "EUR", "url")
+    valuations = [_make_valuation("GTA V", 15.0), _make_valuation("RDR2", 20.0)]
+
+    partial = analyzer.analyze(candidate, valuations, 3)
+    empty = analyzer.analyze(candidate, [], 3)
+
+    assert partial.economic_breakdown.item_count == 2
+    assert partial.economic_breakdown.expected_item_sale_prices == (12.0, 17.0)
+    assert partial.economic_breakdown.fixed_selling_costs == 2.0
+    assert partial.economic_breakdown.acquisition_overhead == 2.0
+    assert partial.reason is LotReasonCode.INCOMPLETE_VALUATION
+    assert empty.economic_breakdown.reference_market_value == 0
+    assert empty.economic_breakdown.item_count == 0
+    assert empty.economic_breakdown.total_acquisition_cost == 42.0
+    assert empty.economic_breakdown.net_profit == -42.0
+    assert empty.recommendation is Recommendation.SKIP
+    assert empty.reason is LotReasonCode.INCOMPLETE_VALUATION
 
 
 # ---------------------------------------------------------------------------
@@ -150,8 +196,8 @@ class TestBuyRecommendation:
         # total_market_value = 53, profit = 18, margin = 33.96%
         assert lot.total_market_value == 53.0
         assert lot.estimated_profit == 18.0
-        assert lot.profit_margin_percentage == 34.0  # 18/53*100 = 33.96... в†’ 34.0
-        assert lot.roi_percentage == 51.4  # 18/35*100 = 51.4
+        assert lot.profit_margin_percentage == pytest.approx(18 / 53 * 100)
+        assert lot.roi_percentage == pytest.approx(18 / 35 * 100)
         assert lot.recommendation == Recommendation.BUY
         assert lot.reason == LotReasonCode.UNDERVALUED_LOT
 
@@ -186,7 +232,7 @@ class TestMarginThreshold:
         # total_market_value = 53, profit = 13, margin = 24.5%
         assert lot.total_market_value == 53.0
         assert lot.estimated_profit == 13.0
-        assert lot.profit_margin_percentage == 24.5  # 13/53*100 = 24.5283... в†’ 24.5
+        assert lot.profit_margin_percentage == pytest.approx(13 / 53 * 100)
         assert lot.recommendation == Recommendation.MAYBE
         assert lot.reason == LotReasonCode.FAIR_VALUE_LOT
 

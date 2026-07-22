@@ -10,6 +10,7 @@ from application.use_cases.default_lot_opportunity_scanner import (
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
@@ -89,7 +90,9 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
     )
     collector = _Collector(candidate.listing_id)
     builder = Mock(wraps=DefaultPriceDatasetBuilder())
-    analyzer = Mock(wraps=DefaultLotOpportunityAnalyzer())
+    analyzer = Mock(
+        wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
+    )
     scanner = DefaultLotOpportunityScanner(
         game_detector=_Detector(games),
         price_collector=collector,
@@ -114,4 +117,3 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
         for call in builder.build.call_args_list
     )
     assert candidate.raw_listing == {"kind": "candidate"}
-

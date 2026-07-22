@@ -11,6 +11,7 @@ import pytest
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
+from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import (
     DetectedGame,
@@ -65,6 +66,15 @@ def _make_market_estimate(
         coefficient_of_variation=0.25,
         game=game,
         created_at=datetime.now(),
+    )
+
+
+def _economic_breakdown(
+    candidate: CandidateListing, valuations: list[GameValuation]
+) -> EconomicBreakdown:
+    return ResaleEconomicPolicy.neutral().calculate(
+        [valuation.estimated_market_value for valuation in valuations],
+        candidate.price,
     )
 
 
@@ -362,6 +372,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.BUY,
             reason=LotReasonCode.UNDERVALUED_LOT,
             opportunity_score=85.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         # total_market_value = 15 + 20 + 18 = 53
@@ -370,7 +381,7 @@ class TestLotOpportunity:
         # estimated_profit = 53 - 40 = 13
         assert lot.estimated_profit == 13.0
         # profit_margin = 13 / 53 * 100 = 24.5283... в‰€ 24.5
-        assert lot.profit_margin_percentage == 24.5
+        assert lot.profit_margin_percentage == pytest.approx(13 / 53 * 100)
         # roi = 13 / 40 * 100 = 32.5
         assert lot.roi_percentage == 32.5
         # aggregate_confidence = (0.85 + 0.90 + 0.80) / 3 = 0.85
@@ -399,6 +410,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.SKIP,
             reason=LotReasonCode.OVERPRICED_LOT,
             opportunity_score=10.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         assert lot.total_market_value == 25.0
@@ -429,6 +441,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.SKIP,
             reason=LotReasonCode.LOW_AGGREGATE_CONFIDENCE,
             opportunity_score=20.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         assert lot.aggregate_confidence_score == 0.3
@@ -453,6 +466,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.SKIP,
             reason=LotReasonCode.NO_GAMES_DETECTED,
             opportunity_score=0.0,
+            economic_breakdown=_economic_breakdown(candidate, []),
         )
 
         assert lot.total_market_value == 0.0
@@ -483,6 +497,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.SKIP,
             reason=LotReasonCode.INVALID_LOT_PRICE,
             opportunity_score=0.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         assert lot.lot_price == 0.0
@@ -516,6 +531,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.MAYBE,
             reason=LotReasonCode.INCOMPLETE_VALUATION,
             opportunity_score=40.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         assert lot.total_market_value == 35.0
@@ -546,6 +562,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.MAYBE,
             reason=LotReasonCode.LOW_AGGREGATE_CONFIDENCE,
             opportunity_score=50.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         # (1.0 + 0.5 + 0.5 + 0.0) / 4 = 0.5
@@ -573,6 +590,7 @@ class TestLotOpportunity:
             recommendation=Recommendation.SKIP,
             reason=LotReasonCode.OVERPRICED_LOT,
             opportunity_score=5.0,
+            economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
         assert lot.total_market_value == 0.0

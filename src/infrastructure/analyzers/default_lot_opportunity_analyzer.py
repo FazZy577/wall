@@ -11,6 +11,7 @@ import logging
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 
@@ -51,6 +52,9 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
     # Public API
     # ------------------------------------------------------------------
 
+    def __init__(self, economic_policy: ResaleEconomicPolicy) -> None:
+        self.economic_policy = economic_policy
+
     def analyze(
         self,
         listing: CandidateListing,
@@ -66,15 +70,21 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
         Returns:
             LotOpportunity with recommendation, reason, and score
-        """
-        # Compute aggregate metrics
-        total_market_value = sum(
-            v.estimated_market_value for v in game_valuations
-        )
-        lot_price = listing.price
-        estimated_profit = total_market_value - lot_price
+    """
 
-        profit_margin = self._compute_margin(total_market_value, estimated_profit)
+        # Compute aggregate metrics
+        economic_breakdown = self.economic_policy.calculate(
+            reference_item_prices=[
+                valuation.estimated_market_value for valuation in game_valuations
+            ],
+            acquisition_price=listing.price,
+        )
+        estimated_profit = economic_breakdown.net_profit
+
+        profit_margin = self._compute_margin(
+            economic_breakdown.expected_sale_revenue,
+            estimated_profit,
+        )
         aggregate_confidence = self._compute_aggregate_confidence(game_valuations)
 
         # Determine recommendation and reason
@@ -103,6 +113,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             recommendation=recommendation,
             reason=reason,
             opportunity_score=opportunity_score,
+            economic_breakdown=economic_breakdown,
         )
 
     # ------------------------------------------------------------------
@@ -110,17 +121,10 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _compute_margin(total_market_value: float, estimated_profit: float) -> float:
+    def _compute_margin(expected_sale_revenue: float, estimated_profit: float) -> float:
         """Compute profit margin percentage."""
-        if total_market_value > 0:
-            return round(estimated_profit / total_market_value * 100, 1)
-        return 0.0
-
-    @staticmethod
-    def _compute_roi(lot_price: float, estimated_profit: float) -> float:
-        """Compute ROI percentage."""
-        if lot_price > 0:
-            return round(estimated_profit / lot_price * 100, 1)
+        if expected_sale_revenue > 0:
+            return estimated_profit / expected_sale_revenue * 100
         return 0.0
 
     @staticmethod

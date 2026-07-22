@@ -7,6 +7,7 @@ import pytest
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -77,7 +78,9 @@ class _OfflineCollector:
 async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formulas() -> None:
     collector = _OfflineCollector()
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
-    detector = Mock(wraps=DefaultArbitrageOpportunityDetector())
+    detector = Mock(
+        wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
+    )
     game_detector = Mock()
     game_detector.detect_games.return_value = [_game()]
     scanner = DefaultOpportunityScanner(
@@ -133,7 +136,9 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
         statistics=DefaultPriceStatistics(),
         outlier_removal=DefaultOutlierRemoval(),
         market_estimator=DefaultMarketPriceEstimator(),
-        arbitrage_detector=DefaultArbitrageOpportunityDetector(),
+        arbitrage_detector=DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral()
+        ),
     )
     scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
 

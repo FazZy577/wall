@@ -12,6 +12,7 @@ from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
+from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportunityDetector
 from domain.interfaces.game_detector import IGameDetector
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
@@ -20,8 +21,40 @@ from domain.interfaces.outlier_removal import IOutlierRemoval
 from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import IPriceDatasetBuilder
 from domain.interfaces.price_statistics import IPriceStatistics
+from infrastructure.analyzers.default_lot_opportunity_analyzer import (
+    DefaultLotOpportunityAnalyzer,
+)
+from infrastructure.detectors.default_arbitrage_opportunity_detector import (
+    DefaultArbitrageOpportunityDetector,
+)
 
 SRC_ROOT = Path(__file__).parents[2] / "src"
+
+
+def test_economic_policy_is_canonical_and_required_by_economic_components() -> None:
+    detector_parameter = inspect.signature(
+        DefaultArbitrageOpportunityDetector
+    ).parameters["economic_policy"]
+    analyzer_parameter = inspect.signature(DefaultLotOpportunityAnalyzer).parameters[
+        "economic_policy"
+    ]
+
+    assert ResaleEconomicPolicy.__module__ == "domain.entities.resale_economics"
+    assert EconomicBreakdown.__module__ == "domain.entities.resale_economics"
+    assert detector_parameter.default is inspect.Parameter.empty
+    assert analyzer_parameter.default is inspect.Parameter.empty
+
+    application_calls: list[Path] = []
+    for source_file in (SRC_ROOT / "application").rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        if any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "ResaleEconomicPolicy"
+            for node in ast.walk(tree)
+        ):
+            application_calls.append(source_file)
+    assert application_calls == []
 
 
 def _imports_beneath(root: Path) -> list[tuple[Path, str]]:

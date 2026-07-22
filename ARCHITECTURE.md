@@ -341,3 +341,9 @@ Neither use case treats the candidate itself as a market comparable.
 There is no automatic router between these use cases. Physical quantities
 such as "2 copies of GTA V" are not modeled; canonical duplicates represent
 one valuation identity.
+# P1.7 economic policy
+
+`domain/entities/resale_economics.py` is the single canonical definition of
+`ResaleEconomicPolicy` and `EconomicBreakdown`. Infrastructure detectors and
+analyzers require the policy through constructor injection. Application
+scanners neither construct nor configure it.

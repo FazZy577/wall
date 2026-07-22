@@ -20,6 +20,7 @@ from application.use_cases.default_lot_opportunity_scanner import (
 )
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -218,7 +219,10 @@ async def main() -> None:
         statistics=FakePriceStatistics(),
         outlier_removal=FakeOutlierRemoval(),
         market_estimator=FakeMarketPriceEstimator(),
-        lot_analyzer=DefaultLotOpportunityAnalyzer(),
+        # Explicit example policy: 3 EUR below market for each valued game.
+        lot_analyzer=DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+        ),
     )
 
     result = await scanner.scan_lot(listing)

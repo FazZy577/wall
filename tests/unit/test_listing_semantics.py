@@ -190,6 +190,8 @@ async def test_canonical_domain_symbols_have_single_class_definition() -> None:
         "GameValuation",
         "Platform",
         "DetectionMethod",
+        "ResaleEconomicPolicy",
+        "EconomicBreakdown",
     }
     definitions: dict[str, list[Path]] = {name: [] for name in canonical_symbols}
 
@@ -207,6 +209,8 @@ async def test_canonical_domain_symbols_have_single_class_definition() -> None:
         "GameValuation": [Path("domain/entities/game_valuation.py")],
         "Platform": [Path("domain/entities/detected_game.py")],
         "DetectionMethod": [Path("domain/entities/detected_game.py")],
+        "ResaleEconomicPolicy": [Path("domain/entities/resale_economics.py")],
+        "EconomicBreakdown": [Path("domain/entities/resale_economics.py")],
     }
 
 

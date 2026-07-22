@@ -211,3 +211,9 @@ All infrastructure is in place. The project is ready to start implementing the d
 Candidate game state has been removed. Detection now occurs once at the
 application boundary for both scanner flows, multi-game candidates are routed
 explicitly to the lot scanner, and own-listing comparables are excluded.
+# P1.7 explicit economics
+
+Individual and lot opportunities now expose an auditable economic breakdown.
+The operational 3 EUR quick-sale discount is example configuration, not a
+hidden default. Fees and costs must be configured for the real sales channel;
+currency conversion and migration from `float` to `Decimal` remain pending.

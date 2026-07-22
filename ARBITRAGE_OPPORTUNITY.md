@@ -522,3 +522,28 @@ The rule-based approach is appropriate for MVP. ML can be added later as an alte
   - Three-level recommendation system (BUY/MAYBE/SKIP)
   - Comprehensive test coverage
   - Human-readable explanations
+# P1.7: explicit resale economics
+
+Market value is the statistical reference produced by `MarketPriceEstimate`.
+Expected sale revenue is the amount after the configured per-item quick-sale
+discount. Net expected profit subtracts percentage fees, per-item fixed costs,
+the safety reserve, purchase price, and the one-time acquisition overhead.
+
+```text
+MarketPriceEstimate
+        ↓
+ResaleEconomicPolicy
+        ↓
+EconomicBreakdown
+        ↓
+ArbitrageOpportunity
+        ↓
+Recommendation + opportunity_score
+```
+
+`estimated_profit` now means net expected profit. `break_even_price`
+temporarily means required gross sale revenue; its name is deferred to P1.8.
+Decision thresholds, rule order, and score weights are unchanged, but their
+economic inputs are net, so recommendations may legitimately become more
+conservative. Values are explicit configuration, remain `float`, and no
+currency conversion is performed.

@@ -171,3 +171,11 @@ normalized `canonical_name` plus `Platform.value`, then valued sequentially.
 A zero-game result produces a `GAME_DETECTION` failure carrying the candidate
 `listing_id` and does not call the collector or analyzer. Before each dataset
 is built, a comparable with the candidate's own `listing_id` is excluded.
+# P1.7: aggregate net economics
+
+The lot analyzer applies the same injected `ResaleEconomicPolicy` once to the
+successfully valued games. Purchase price and acquisition overhead are charged
+once per lot; quick-sale discount and fixed selling cost apply once per valued
+item. Unvalued games add neither invented revenue nor selling cost, while still
+affecting the existing coverage rules. `LotOpportunity.economic_breakdown`
+preserves the complete calculation.

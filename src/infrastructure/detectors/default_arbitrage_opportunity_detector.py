@@ -7,6 +7,7 @@ against estimated market prices using configurable business rules.
 from datetime import UTC, datetime
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     IArbitrageOpportunityDetector,
@@ -30,6 +31,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
     def __init__(
         self,
+        economic_policy: ResaleEconomicPolicy,
         min_profit_eur: float | None = None,
         min_margin_percent: float | None = None,
         min_confidence_score: float | None = None,
@@ -41,6 +43,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             min_margin_percent: Minimum profit margin % (default: 25.0)
             min_confidence_score: Minimum confidence score (default: 0.50)
         """
+        self.economic_policy = economic_policy
         self.min_profit_eur = min_profit_eur or self.MIN_PROFIT_EUR
         self.min_margin_percent = min_margin_percent or self.MIN_MARGIN_PERCENT
         self.min_confidence_score = min_confidence_score or self.MIN_CONFIDENCE_SCORE
@@ -63,15 +66,22 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         listing_price = listing.price
         market_price = market_estimate.estimated_price
 
-        # Calculate profitability metrics
-        estimated_profit = market_price - listing_price
+        economic_breakdown = self.economic_policy.calculate(
+            reference_item_prices=[market_price],
+            acquisition_price=listing_price,
+        )
+        estimated_profit = economic_breakdown.net_profit
 
         profit_margin_percentage = (
-            (estimated_profit / market_price * 100.0) if market_price > 0 else 0.0
+            estimated_profit / economic_breakdown.expected_sale_revenue * 100.0
+            if economic_breakdown.expected_sale_revenue > 0
+            else 0.0
         )
 
         roi_percentage = (
-            (estimated_profit / listing_price * 100.0) if listing_price > 0 else 0.0
+            estimated_profit / economic_breakdown.total_acquisition_cost * 100.0
+            if economic_breakdown.total_acquisition_cost > 0
+            else 0.0
         )
 
         market_discount_percentage = (
@@ -80,7 +90,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             else 0.0
         )
 
-        break_even_price = listing_price
+        break_even_price = economic_breakdown.break_even_sale_revenue
 
         # Extract confidence
         confidence_score = market_estimate.confidence_score
@@ -119,6 +129,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             recommendation=recommendation,
             reason=reason,
             created_at=datetime.now(UTC),
+            economic_breakdown=economic_breakdown,
         )
 
     def _make_recommendation(
