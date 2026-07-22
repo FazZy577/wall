@@ -11,6 +11,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from application.interfaces.opportunity_scanner import RankingResult
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import EconomicBreakdown
 from domain.interfaces.arbitrage_opportunity_detector import (
@@ -232,8 +233,8 @@ def main() -> None:
     print("Step 2: Creating ranker")
     print("-" * 80)
 
-    ranker = DefaultOpportunityRanker(strategy=RankingStrategy.OPPORTUNITY_SCORE)
-    print(f"  Strategy: {ranker.strategy}")
+    ranker = DefaultOpportunityRanker()
+    print(f"  Strategy: {RankingStrategy.OPPORTUNITY_SCORE}")
     print()
 
     # =========================================================================
@@ -243,19 +244,21 @@ def main() -> None:
     print("-" * 80)
     print()
 
-    result = ranker.rank(opportunities)
-    print(result.explain())
+    ranked = ranker.rank(opportunities)
+    result = RankingResult.from_ranked_opportunities(ranked)
+    for position, opportunity in enumerate(result.ordered_opportunities, 1):
+        print(position, opportunity.listing.listing_id, opportunity.recommendation)
     print()
 
     # =========================================================================
-    # Step 4: Top 3 (limit=3)
+    # Step 4: Show the first three already-ranked items
     # =========================================================================
-    print("Step 4: Top 3 (limit=3)")
+    print("Step 4: First three ranked items")
     print("-" * 80)
     print()
 
-    top3 = ranker.rank(opportunities, limit=3)
-    print(top3.explain())
+    top3 = result.ordered_opportunities[:3]
+    print([opportunity.listing.listing_id for opportunity in top3])
     print()
 
     # =========================================================================
@@ -265,9 +268,7 @@ def main() -> None:
     print("-" * 80)
     print()
 
-    print(f"  total_received:  {result.total_received}")
-    print(f"  total_ranked:    {result.total_ranked}")
-    print(f"  total_returned:  {result.total_returned}")
+    print(f"  total_opportunities: {result.total_opportunities}")
     print()
     print(f"  BUY:    {result.buy_count}")
     print(f"  MAYBE:  {result.maybe_count}")
@@ -306,7 +307,7 @@ def main() -> None:
     print("-" * 80)
     print()
 
-    empty = ranker.rank([])
+    empty = RankingResult.from_ranked_opportunities(ranker.rank([]))
     print(f"  best_score:    {empty.best_score}")
     print(f"  average_score: {empty.average_score}")
     print()

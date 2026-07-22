@@ -11,6 +11,7 @@ from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 
 
 def game(
@@ -78,6 +79,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
         outlier_removal=dependencies["outliers"],
         market_estimator=dependencies["estimator"],
         arbitrage_detector=dependencies["detector"],
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
     dependencies["collector"].collect_comparables.return_value = [
         comparable("comparable", game())

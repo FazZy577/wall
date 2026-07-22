@@ -1,291 +1,40 @@
 # Opportunity Ranker
 
-**Module**: `domain.interfaces.opportunity_ranker`  
-**Implementation**: `infrastructure.rankers.default_opportunity_ranker`
+Canonical contract: `domain.interfaces.opportunity_ranker`
+Production implementation: `infrastructure.rankers.default_opportunity_ranker`
 
-## Overview
-
-The Opportunity Ranker is a **pure sorting module** that ranks arbitrage opportunities by a configurable strategy. It contains **NO business logic** — only ordering and summarization.
-
-## Responsibility
-
-The ranker receives `list[ArbitrageOpportunity]` and returns them sorted from best to worst. Its ONLY responsibilities are:
-
-- **Sort** opportunities by the configured strategy
-- **Tie-break** deterministically when scores are equal
-- **Apply** an optional limit
-- **Summarize** the ranked list with statistics
-
-It does NOT:
-- Recalculate opportunity scores
-- Change BUY/MAYBE/SKIP recommendations
-- Estimate prices or profits
-- Detect games or collect listings
-- Contact any external API
-
-## Why It's Separate from OpportunityScanner
-
-The ranker is **not integrated** into the `OpportunityScanner` yet. This is intentional:
-
-- The scanner coordinates the pipeline (game detection → price collection → ... → opportunity detection)
-- The ranker is a **post-processing** step that orders the scanner's output
-- Separation allows the ranker to be used independently (e.g., ranking cached opportunities)
-- Integration will happen in a future phase
-
-## Data Flow
-
-```
-list[ArbitrageOpportunity]
-        │
-        ▼
-┌───────────────────┐
-│ OpportunityRanker  │
-│                    │
-│ 1. Validate limit  │
-│ 2. Sort by strategy│
-│ 3. Tie-break       │
-│ 4. Apply limit     │
-│ 5. Summarize       │
-└────────┬───────────┘
-         │
-         ▼
-    RankingResult
-    (ordered list + summary stats)
-```
-
-## Ranking Strategy
-
-Only one strategy is implemented:
+There is one ranking path and one implemented strategy:
 
 ```python
 class RankingStrategy(StrEnum):
     OPPORTUNITY_SCORE = "opportunity_score"
 ```
 
-Future strategies (not yet implemented):
-- `ABSOLUTE_PROFIT` — sort by `net_profit` descending
-- `ROI` — sort by `net_roi_percentage` descending
-- `MARKET_DISCOUNT` — sort by `acquisition_discount_to_reference_market_percentage` descending
-- `CONFIDENCE` — sort by `confidence_score` descending
-- `HYBRID` — weighted combination of multiple factors
-
-Attempting to use an unimplemented strategy raises `UnsupportedRankingStrategyError`.
-
-## Recommendation barrier
-
-Every ranking uses the explicit primary order `BUY > MAYBE > SKIP`. The
-selected strategy is applied only inside each recommendation group.
-Recommendation is not incorporated into `opportunity_score`, and neither
-scores nor recommendations are modified.
+`IOpportunityRanker.rank()` receives every `ArbitrageOpportunity` and returns
+a new ordered list. It does not filter, limit, mutate, recalculate, or change
+recommendations. `DefaultOpportunityRanker` applies this stable key:
 
 ```text
-Input:  SKIP 95, BUY 60, MAYBE 80, BUY 40
-Output: BUY 60, BUY 40, MAYBE 80, SKIP 95
+(recommendation priority, -opportunity_score)
+BUY = 0, MAYBE = 1, SKIP = 2
 ```
 
-The application ranking used by the scanner retains every opportunity. The
-standalone ranker's pre-existing `include_skip` option remains available; when
-SKIP entries are included, they always follow MAYBE and BUY.
+Equal keys retain input order. Profit, confidence, ROI, listing ID and other
+fields are not hidden tie-breakers.
 
-## Secondary Sort
+The batch `DefaultOpportunityScanner` requires an `IOpportunityRanker` through
+constructor injection and calls it exactly once after all candidates have been
+processed. The scanner passes all opportunities and returns the order supplied
+by the ranker. Ranking errors propagate to the caller.
 
-By `opportunity_score` descending:
-
-```
-92.5 → 88.2 → 73.0 → 41.7
-```
-
-## Tie-Breaking
-
-When two opportunities have the same `opportunity_score`, the following criteria are applied in order:
-
-| # | Criterion | Direction |
-|---|---|---|
-| 1 | `net_profit` | Descending (higher profit first) |
-| 2 | `confidence_score` | Descending (more confident first) |
-| 3 | `net_roi_percentage` | Descending (higher ROI first) |
-| 4 | `listing.listing_id` | Ascending (stable, deterministic) |
-
-Example:
-
-```
-Score 80.0, Profit €18.00  →  ranks FIRST
-Score 80.0, Profit €10.00  →  ranks SECOND
-```
-
-## recommendation vs Ranking
-
-The ranker does **NOT** alter `recommendation`. It preserves the original BUY/MAYBE/SKIP from the `ArbitrageOpportunityDetector`.
-
-Recommendation is the primary barrier. The selected strategy and existing
-tie-breakers order only opportunities that share the same recommendation.
-Application strategies not yet implemented retain their score fallback until
-P1.10. The standalone ranker continues rejecting unsupported strategies.
-P1.9 does not introduce ranking for `LotOpportunity`.
-
-## Limit
-
-| Value | Behavior |
-|---|---|
-| `None` | Return all opportunities |
-| `3` | Return top 3 |
-| `0` | Return empty list |
-| `-1` | Raise `InvalidRankingLimitError` |
-
-The limit is applied **after** sorting. Counts (BUY/MAYBE/SKIP) are computed over **all** received opportunities, not just the returned ones.
-
-Example:
+`RankingResult.from_ranked_opportunities()` only computes metadata over a list
+that is already ranked: strategy, total, BUY/MAYBE/SKIP counts, best score,
+average score, and creation time. It never sorts or filters.
 
 ```python
-# 100 received, limit=10
-result = ranker.rank(opportunities, limit=10)
-result.total_received  # 100
-result.total_ranked    # 100
-result.total_returned  # 10
-result.buy_count       # 45 (counted over all 100)
-```
-
-## Usage
-
-```python
-from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
-from domain.interfaces.opportunity_ranker import RankingStrategy
-
-ranker = DefaultOpportunityRanker(strategy=RankingStrategy.OPPORTUNITY_SCORE)
-
-# Full ranking
-result = ranker.rank(opportunities)
-
-# Top 10
-top10 = ranker.rank(opportunities, limit=10)
-
-# Summary
-print(f"BUY: {result.buy_count}, Best: {result.best_score}")
-
-# Human-readable output
-print(result.explain())
-```
-
-## RankingResult
-
-```python
-@dataclass
-class RankingResult:
-    ordered_opportunities: list[ArbitrageOpportunity]  # Sorted (post-limit)
-    strategy: RankingStrategy                           # Strategy used
-    total_received: int                                 # Input size
-    total_ranked: int                                   # = total_received
-    total_returned: int                                 # After limit
-    buy_count: int                                      # BUY in all received
-    maybe_count: int                                    # MAYBE in all received
-    skip_count: int                                     # SKIP in all received
-    best_score: float | None                            # None if empty
-    average_score: float | None                         # None if empty
-    created_at: datetime                                # Ranking timestamp
-```
-
-For an empty input:
-- `best_score = None` (not `0.0`)
-- `average_score = None` (not `0.0`)
-- All counts = `0`
-
-## explain()
-
-Returns a deterministic human-readable summary:
-
-```
-============================================================
-OPPORTUNITY RANKING
-============================================================
-
-Strategy: OPPORTUNITY_SCORE
-
-Total Received: 25
-Total Returned: 10
-
-Recommendations:
-BUY: 7
-MAYBE: 12
-SKIP: 6
-
-Best Score: 92.40
-Average Score: 61.35
-
-## TOP OPPORTUNITIES
-
-1. Grand Theft Auto V PS4
-   Score: 92.40
-   Profit: EUR 25.00
-   Recommendation: BUY
-
-2. Red Dead Redemption 2 PS4
-   Score: 89.10
-   Profit: EUR 21.00
-   Recommendation: BUY
-
-============================================================
-```
-
-## Immutability
-
-The ranker never modifies:
-- The input list
-- Any `ArbitrageOpportunity` object
-
-It creates a new sorted list.
-
-## Exceptions
-
-| Exception | When |
-|---|---|
-| `InvalidRankingLimitError` | Limit is negative |
-| `UnsupportedRankingStrategyError` | Strategy is not yet implemented |
-
-## How to Add a Future Strategy
-
-1. Add the value to `RankingStrategy` enum
-2. Implement the sort logic in `DefaultOpportunityRanker._sort_key`
-3. Update `_validate_strategy` to allow the new value
-4. Add tests for the new strategy
-5. Update this documentation
-
-The API (`rank()` method signature) does NOT change. Only the internal sort key changes.
-
-## Testing
-
-Tests verify:
-- Empty list handling
-- Single opportunity
-- Descending order by score
-- Tie-breaking by profit, confidence, ROI, and listing_id
-- Determinism (identical results on repeated calls)
-- Immutability (original list and objects unchanged)
-- All limit cases (None, 0, < total, > total, negative)
-- Counts over all received (not just returned)
-- best_score and average_score (including None for empty)
-- explain() output correctness
-- Exception messages
-
-See `tests/unit/test_default_opportunity_ranker.py` for all test cases.
-
-## Future Integration
-
-When the ranker is integrated into `OpportunityScanner`:
-
-```python
-# Future code (not yet implemented):
-scanner = DefaultOpportunityScanner(...)
-result = await scanner.scan_multiple(listings)
-
 ranker = DefaultOpportunityRanker()
-ranking = ranker.rank(result.opportunities, limit=10)
-print(ranking.explain())
+ordered = ranker.rank(opportunities, RankingStrategy.OPPORTUNITY_SCORE)
+summary = RankingResult.from_ranked_opportunities(ordered)
 ```
 
-The ranker is designed to be a drop-in post-processing step.
-
-## Related Documentation
-
-- [Opportunity Scanner](OPPORTUNITY_SCANNER.md) — Orchestrates the pipeline
-- [Arbitrage Opportunity Detector](ARBITRAGE_OPPORTUNITY.md) — Creates `ArbitrageOpportunity` objects
-- [Architecture](ARCHITECTURE.md) — Overall system design
+Lot opportunity ranking is outside this flow and was not introduced by P1.10.

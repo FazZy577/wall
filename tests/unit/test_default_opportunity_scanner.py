@@ -21,6 +21,7 @@ from domain.interfaces.game_detector import (
     DetectionMethod,
     Platform,
 )
+from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 
 
 @pytest.fixture
@@ -140,6 +141,7 @@ def scanner(
         outlier_removal=mock_outlier_removal,
         market_estimator=mock_market_estimator,
         arbitrage_detector=mock_arbitrage_detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
     return scanner
 
@@ -829,3 +831,96 @@ async def test_candidate_ids_are_excluded_from_market_comparables(
     await scanner.scan_multiple([sample_listing])
 
     mock_dataset_builder.build.assert_called_once_with([sample_comparable])
+
+
+@pytest.mark.asyncio
+async def test_scan_multiple_delegates_all_opportunities_to_ranker_once(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_comparable: ComparableListing,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+    second = CandidateListing(
+        listing_id="second",
+        title=sample_listing.title,
+        description=sample_listing.description,
+        price=sample_listing.price,
+        currency=sample_listing.currency,
+        url="https://example.test/second",
+    )
+    third = CandidateListing(
+        listing_id="third",
+        title=sample_listing.title,
+        description=sample_listing.description,
+        price=sample_listing.price,
+        currency=sample_listing.currency,
+        url="https://example.test/third",
+    )
+    first_opportunity = Mock(
+        listing=sample_listing,
+        recommendation=Recommendation.BUY,
+        opportunity_score=80.0,
+    )
+    second_opportunity = Mock(
+        listing=second,
+        recommendation=Recommendation.MAYBE,
+        opportunity_score=60.0,
+    )
+    third_opportunity = Mock(
+        listing=third,
+        recommendation=Recommendation.SKIP,
+        opportunity_score=90.0,
+    )
+    mock_arbitrage_detector.detect.side_effect = [
+        first_opportunity,
+        second_opportunity,
+        third_opportunity,
+    ]
+    ranker = Mock()
+    ranker.rank.return_value = [
+        third_opportunity,
+        first_opportunity,
+        second_opportunity,
+    ]
+    scanner.opportunity_ranker = ranker
+
+    result = await scanner.scan_multiple([sample_listing, second, third])
+
+    ranker.rank.assert_called_once()
+    supplied, strategy = ranker.rank.call_args.args
+    assert supplied == [first_opportunity, second_opportunity, third_opportunity]
+    assert strategy.value == "opportunity_score"
+    assert result.opportunities == [
+        third_opportunity,
+        first_opportunity,
+        second_opportunity,
+    ]
+
+
+@pytest.mark.asyncio
+async def test_scan_multiple_propagates_ranking_errors(
+    scanner: DefaultOpportunityScanner,
+) -> None:
+    ranker = Mock()
+    ranker.rank.side_effect = RuntimeError("ranking failed")
+    scanner.opportunity_ranker = ranker
+
+    with pytest.raises(RuntimeError, match="ranking failed"):
+        await scanner.scan_multiple([])
+
+    ranker.rank.assert_called_once_with([], scanner.ranking_strategy)

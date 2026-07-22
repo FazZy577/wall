@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
 from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
-from application.interfaces.opportunity_scanner import IOpportunityScanner
+from application.interfaces.opportunity_scanner import IOpportunityScanner, RankingResult
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
@@ -17,6 +17,7 @@ from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportuni
 from domain.interfaces.game_detector import IGameDetector
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
+from domain.interfaces.opportunity_ranker import IOpportunityRanker, RankingStrategy
 from domain.interfaces.outlier_removal import IOutlierRemoval
 from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import IPriceDatasetBuilder
@@ -235,3 +236,66 @@ def test_application_has_no_manual_event_loop_bridge() -> None:
         )
 
     assert occurrences == []
+
+
+def test_ranking_contract_has_one_canonical_definition_and_strategy() -> None:
+    symbols = {"RankingStrategy", "IOpportunityRanker"}
+    definitions: dict[str, list[Path]] = {symbol: [] for symbol in symbols}
+    for source_file in SRC_ROOT.rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name in definitions:
+                definitions[node.name].append(source_file.relative_to(SRC_ROOT))
+
+    expected = [Path("domain/interfaces/opportunity_ranker.py")]
+    assert definitions == dict.fromkeys(symbols, expected)
+    assert list(RankingStrategy) == [RankingStrategy.OPPORTUNITY_SCORE]
+
+
+def test_scanner_requires_ranker_port_and_application_does_not_sort() -> None:
+    parameter = inspect.signature(DefaultOpportunityScanner).parameters[
+        "opportunity_ranker"
+    ]
+    assert parameter.annotation is IOpportunityRanker
+    assert parameter.default is inspect.Parameter.empty
+
+    interface_tree = ast.parse(
+        (SRC_ROOT / "application/interfaces/opportunity_scanner.py").read_text(
+            encoding="utf-8"
+        )
+    )
+    ranking_result = next(
+        node
+        for node in interface_tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "RankingResult"
+    )
+    assert not any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "sorted"
+        for node in ast.walk(ranking_result)
+    )
+    assert not hasattr(RankingResult, "from_opportunities")
+    ranking_result_source = ast.unparse(ranking_result)
+    assert ".sort(" not in ranking_result_source
+    assert "_RECOMMENDATION_PRIORITY" not in ranking_result_source
+    assert "fallback" not in ranking_result_source.casefold()
+
+
+def test_default_ranker_owns_the_only_productive_opportunity_ordering() -> None:
+    mapping_files: list[Path] = []
+    opportunity_sort_files: list[Path] = []
+    for source_file in SRC_ROOT.rglob("*.py"):
+        source = source_file.read_text(encoding="utf-8")
+        relative = source_file.relative_to(SRC_ROOT)
+        if "_RECOMMENDATION_PRIORITY" in source:
+            mapping_files.append(relative)
+        if "sorted(" in source and "-opportunity.opportunity_score" in source:
+            opportunity_sort_files.append(relative)
+
+    ranker_path = Path("infrastructure/rankers/default_opportunity_ranker.py")
+    assert mapping_files == [ranker_path]
+    assert opportunity_sort_files == [ranker_path]
+    assert "DefaultOpportunityRanker" not in (
+        SRC_ROOT / "application/use_cases/default_opportunity_scanner.py"
+    ).read_text(encoding="utf-8")

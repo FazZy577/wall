@@ -19,6 +19,7 @@ from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
+from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
 
 
@@ -91,6 +92,7 @@ async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formu
         outlier_removal=DefaultOutlierRemoval(),
         market_estimator=estimator,
         arbitrage_detector=detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
     candidates = [_candidate("candidate-5", 5.0), _candidate("candidate-25", 25.0)]
 
@@ -139,6 +141,7 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
         arbitrage_detector=DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral()
         ),
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
     scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
 

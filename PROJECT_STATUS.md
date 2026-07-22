@@ -233,5 +233,14 @@ parameter names were removed rather than retained as aliases.
 Opportunity ranking now enforces `BUY > MAYBE > SKIP` before applying the
 selected strategy inside each group. Scores, recommendations, counts and
 tie-breakers remain unchanged. Batch scanner results retain every
-recommendation. Unimplemented application strategies keep their existing
-score fallback pending P1.10; no lot ranking was introduced.
+recommendation. P1.10 subsequently removed the temporary duplicate strategy
+path; no lot ranking was introduced.
+
+## P1.10 canonical opportunity ranking
+
+The batch scanner delegates exactly once to its injected
+`IOpportunityRanker`. The sole strategy is `OPPORTUNITY_SCORE`, using the
+stable key `BUY > MAYBE > SKIP` followed by descending score. All opportunities
+are retained; fallback strategies, filtering, limits, and hidden tie-breakers
+were removed. `RankingResult` only summarizes an already ordered list. Lot
+ranking remains unchanged.

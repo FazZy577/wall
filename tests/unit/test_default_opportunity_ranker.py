@@ -1,10 +1,6 @@
-"""Unit tests for DefaultOpportunityRanker.
+"""Unit tests for the single canonical opportunity ranking path."""
 
-Tests deterministic ranking, tie-breaking, limit handling,
-SKIP filtering, summary statistics, explainability, and immutability.
-No external calls. No Playwright. No Wallapop.
-"""
-
+import itertools
 from datetime import datetime
 
 import pytest
@@ -16,31 +12,14 @@ from domain.interfaces.arbitrage_opportunity_detector import (
     ReasonCode,
     Recommendation,
 )
-from domain.interfaces.game_detector import (
-    DetectedGame,
-    DetectionMethod,
-    Platform,
-)
-from domain.interfaces.opportunity_ranker import (
-    InvalidRankingLimitError,
-    RankingStrategy,
-    UnsupportedRankingStrategyError,
-)
+from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.opportunity_ranker import RankingStrategy
 from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
-
-# ---------------------------------------------------------------------------
-# Test helpers
-# ---------------------------------------------------------------------------
 
 
 def _make_game(name: str = "Test Game") -> DetectedGame:
-    """Create a sample DetectedGame."""
     return DetectedGame(
-        canonical_name=name,
-        matched_text=name.lower(),
-        platform=Platform.PS4,
-        confidence=1.0,
-        detection_method=DetectionMethod.EXACT_MATCH,
+        name, name.lower(), Platform.PS4, 1.0, DetectionMethod.EXACT_MATCH
     )
 
 
@@ -58,23 +37,11 @@ def _make_opportunity(
     market_price: float = 30.0,
     listing_price: float = 10.0,
 ) -> ArbitrageOpportunity:
-    """Create an ArbitrageOpportunity with explicit fields.
-
-    All parameters are keyword-only to avoid positional confusion.
-    """
     listing = CandidateListing(
-        listing_id=listing_id,
-        title=title,
-        description="Good condition",
-        price=listing_price,
-        currency="EUR",
-        url=f"https://wallapop.com/item/{listing_id}",
+        listing_id, title, "Good condition", listing_price, "EUR",
+        f"https://wallapop.com/item/{listing_id}",
     )
-    total_acquisition_cost = (
-        net_profit / (net_roi_percentage / 100.0)
-        if net_roi_percentage != 0
-        else listing_price
-    )
+    total_cost = net_profit / (net_roi_percentage / 100.0) if net_roi_percentage else listing_price
     acquisition_price = market_price * (
         1 - acquisition_discount_to_reference_market_percentage / 100.0
     )
@@ -87,11 +54,11 @@ def _make_opportunity(
         fixed_selling_costs=0.0,
         safety_buffer=0.0,
         acquisition_price=acquisition_price,
-        acquisition_overhead=total_acquisition_cost - acquisition_price,
-        total_acquisition_cost=total_acquisition_cost,
-        net_expected_proceeds=net_profit + total_acquisition_cost,
+        acquisition_overhead=total_cost - acquisition_price,
+        total_acquisition_cost=total_cost,
+        net_expected_proceeds=net_profit + total_cost,
         net_profit=net_profit,
-        break_even_sale_revenue=total_acquisition_cost,
+        break_even_sale_revenue=total_cost,
         item_count=1,
     )
     return ArbitrageOpportunity(
@@ -109,838 +76,140 @@ def _make_opportunity(
     )
 
 
-@pytest.fixture
-def ranker() -> DefaultOpportunityRanker:
-    """Create a ranker with default strategy."""
-    return DefaultOpportunityRanker()
-
-
-# ---------------------------------------------------------------------------
-# Constructor
-# ---------------------------------------------------------------------------
-
-
-class TestConstructor:
-    """Test ranker construction."""
-
-    def test_default_strategy(self) -> None:
-        """Should use OPPORTUNITY_SCORE by default."""
-        ranker = DefaultOpportunityRanker()
-        assert ranker.strategy == RankingStrategy.OPPORTUNITY_SCORE
-
-    def test_explicit_strategy(self) -> None:
-        """Should accept explicit strategy."""
-        ranker = DefaultOpportunityRanker(RankingStrategy.OPPORTUNITY_SCORE)
-        assert ranker.strategy == RankingStrategy.OPPORTUNITY_SCORE
-
-
-# ---------------------------------------------------------------------------
-# Recommendation-aware ranking (NEW behavior)
-# ---------------------------------------------------------------------------
-
-
-class TestRecommendationOrdering:
-    """Test that Recommendation is the primary sort key."""
-
-    def test_buy_before_skip_regardless_of_score(self, ranker: DefaultOpportunityRanker) -> None:
-        """BUY score 75 should appear before SKIP score 90."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip_high",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-                reason=ReasonCode.LOW_CONFIDENCE,
-            ),
-            _make_opportunity(
-                listing_id="buy_low",
-                recommendation=Recommendation.BUY,
-                opportunity_score=75.0,
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        # BUY must come before SKIP regardless of score
-        assert result.ordered_opportunities[0].listing.listing_id == "buy_low"
-        assert result.ordered_opportunities[1].listing.listing_id == "skip_high"
-
-    def test_maybe_before_skip_regardless_of_score(self, ranker: DefaultOpportunityRanker) -> None:
-        """MAYBE should appear before SKIP regardless of score."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip_high",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=95.0,
-            ),
-            _make_opportunity(
-                listing_id="maybe_low",
-                recommendation=Recommendation.MAYBE,
-                opportunity_score=30.0,
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        assert result.ordered_opportunities[0].listing.listing_id == "maybe_low"
-        assert result.ordered_opportunities[1].listing.listing_id == "skip_high"
-
-    def test_buy_before_maybe_before_skip(self, ranker: DefaultOpportunityRanker) -> None:
-        """Full order: BUY > MAYBE > SKIP."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip1",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-            ),
-            _make_opportunity(
-                listing_id="buy1",
-                recommendation=Recommendation.BUY,
-                opportunity_score=50.0,
-            ),
-            _make_opportunity(
-                listing_id="maybe1",
-                recommendation=Recommendation.MAYBE,
-                opportunity_score=80.0,
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        ids = [o.listing.listing_id for o in result.ordered_opportunities]
-        assert ids == ["buy1", "maybe1", "skip1"]
-
-    def test_within_buy_sorted_by_score_desc(self, ranker: DefaultOpportunityRanker) -> None:
-        """Within BUY, sort by opportunity_score descending."""
-        opps = [
-            _make_opportunity(
-                listing_id="buy_low",
-                recommendation=Recommendation.BUY,
-                opportunity_score=60.0,
-            ),
-            _make_opportunity(
-                listing_id="buy_high",
-                recommendation=Recommendation.BUY,
-                opportunity_score=92.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-
-        ids = [o.listing.listing_id for o in result.ordered_opportunities]
-        assert ids == ["buy_high", "buy_low"]
-
-
-# ---------------------------------------------------------------------------
-# SKIP filtering
-# ---------------------------------------------------------------------------
-
-
-class TestSkipFiltering:
-    """Test include_skip parameter behavior."""
-
-    def test_include_skip_false_excludes_skip(self, ranker: DefaultOpportunityRanker) -> None:
-        """Default (include_skip=False) should exclude SKIP."""
-        opps = [
-            _make_opportunity(
-                listing_id="buy1",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-            ),
-            _make_opportunity(
-                listing_id="skip1",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-            ),
-            _make_opportunity(
-                listing_id="maybe1",
-                recommendation=Recommendation.MAYBE,
-                opportunity_score=70.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)  # include_skip=False by default
-
-        ids = [o.listing.listing_id for o in result.ordered_opportunities]
-        assert "skip1" not in ids
-        assert ids == ["buy1", "maybe1"]
-        assert result.total_input == 3
-        assert result.total_eligible == 2
-        assert result.total_excluded == 1
-        assert result.total_returned == 2
-        assert result.skip_count == 1  # counted over input
-        assert result.include_skip is False
-
-    def test_include_skip_true_includes_skip(self, ranker: DefaultOpportunityRanker) -> None:
-        """include_skip=True should include SKIP after BUY and MAYBE."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip1",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-            ),
-            _make_opportunity(
-                listing_id="buy1",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-            ),
-            _make_opportunity(
-                listing_id="maybe1",
-                recommendation=Recommendation.MAYBE,
-                opportunity_score=70.0,
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        ids = [o.listing.listing_id for o in result.ordered_opportunities]
-        assert ids == ["buy1", "maybe1", "skip1"]
-        assert result.total_input == 3
-        assert result.total_eligible == 3
-        assert result.total_excluded == 0
-        assert result.include_skip is True
-
-    def test_only_skip_with_include_skip_false(self, ranker: DefaultOpportunityRanker) -> None:
-        """All SKIP with include_skip=False should return empty."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip1",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-            ),
-            _make_opportunity(
-                listing_id="skip2",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=80.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)  # include_skip=False
-
-        assert len(result.ordered_opportunities) == 0
-        assert result.total_input == 2
-        assert result.total_eligible == 0
-        assert result.total_excluded == 2
-        assert result.total_returned == 0
-        assert result.buy_count == 0
-        assert result.maybe_count == 0
-        assert result.skip_count == 2
-        assert result.best_score == 0.0
-        assert result.average_score == 0.0
-
-    def test_skip_never_displaces_buy_with_limit(self, ranker: DefaultOpportunityRanker) -> None:
-        """With limit, SKIP should never push BUY out of the TOP."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip_high",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=95.0,
-            ),
-            _make_opportunity(
-                listing_id="buy1",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-            ),
-            _make_opportunity(
-                listing_id="buy2",
-                recommendation=Recommendation.BUY,
-                opportunity_score=75.0,
-            ),
-        ]
-
-        # With include_skip=False, limit=2 в†’ both BUYs returned
-        result = ranker.rank(opps, limit=2, include_skip=False)
-
-        ids = [o.listing.listing_id for o in result.ordered_opportunities]
-        assert ids == ["buy1", "buy2"]
-        assert "skip_high" not in ids
-        assert result.total_returned == 2
-
-        # With include_skip=True, limit=2 в†’ BUY first, then SKIP
-        # The SKIP at 95 still comes AFTER both BUYs because Recommendation is primary
-        result2 = ranker.rank(opps, limit=2, include_skip=True)
-
-        ids2 = [o.listing.listing_id for o in result2.ordered_opportunities]
-        assert ids2 == ["buy1", "buy2"]  # SKIP doesn't displace BUY
-        assert "skip_high" not in ids2
-
-
-# ---------------------------------------------------------------------------
-# Limit applied after filtering
-# ---------------------------------------------------------------------------
-
-
-class TestLimitAfterFilter:
-    """Test that limit is applied after filtering and sorting."""
-
-    def test_limit_applied_after_filtering(self, ranker: DefaultOpportunityRanker) -> None:
-        """limit should count eligible opportunities, not input."""
-        opps = [
-            _make_opportunity(
-                listing_id="skip1",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=90.0,
-            ),
-            _make_opportunity(
-                listing_id="buy_low",
-                recommendation=Recommendation.BUY,
-                opportunity_score=60.0,
-            ),
-            _make_opportunity(
-                listing_id="buy_high",
-                recommendation=Recommendation.BUY,
-                opportunity_score=92.0,
-            ),
-            _make_opportunity(
-                listing_id="skip2",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=80.0,
-            ),
-        ]
-
-        result = ranker.rank(opps, limit=1)  # include_skip=False
-
-        # Only 1 returned (limit=1 applied to 2 eligible BUYs)
-        assert result.total_input == 4
-        assert result.total_eligible == 2
-        assert result.total_excluded == 2
-        assert result.total_returned == 1
-        assert len(result.ordered_opportunities) == 1
-        assert result.ordered_opportunities[0].listing.listing_id == "buy_high"
-
-
-# ---------------------------------------------------------------------------
-# Tie-breaking
-# ---------------------------------------------------------------------------
-
-
-class TestTieBreaking:
-    """Test deterministic tie-breaking within same Recommendation."""
-
-    def test_tie_break_by_profit(self, ranker: DefaultOpportunityRanker) -> None:
-        """When score equal, higher profit should come first."""
-        opps = [
-            _make_opportunity(
-                listing_id="low_profit",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=10.0,
-            ),
-            _make_opportunity(
-                listing_id="high_profit",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=65.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-
-        assert result.ordered_opportunities[0].listing.listing_id == "high_profit"
-        assert result.ordered_opportunities[1].listing.listing_id == "low_profit"
-
-    def test_tie_break_by_confidence(self, ranker: DefaultOpportunityRanker) -> None:
-        """When score and profit equal, higher confidence first."""
-        opps = [
-            _make_opportunity(
-                listing_id="low_conf",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.50,
-            ),
-            _make_opportunity(
-                listing_id="high_conf",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.95,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-
-        assert result.ordered_opportunities[0].listing.listing_id == "high_conf"
-        assert result.ordered_opportunities[1].listing.listing_id == "low_conf"
-
-    def test_tie_break_by_roi(self, ranker: DefaultOpportunityRanker) -> None:
-        """When score, profit, confidence equal, higher ROI first."""
-        opps = [
-            _make_opportunity(
-                listing_id="low_roi",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.80,
-                net_roi_percentage=30.0,
-            ),
-            _make_opportunity(
-                listing_id="high_roi",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.80,
-                net_roi_percentage=200.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-
-        assert result.ordered_opportunities[0].listing.listing_id == "high_roi"
-        assert result.ordered_opportunities[1].listing.listing_id == "low_roi"
-
-    def test_tie_break_by_listing_id(self, ranker: DefaultOpportunityRanker) -> None:
-        """When all numeric criteria equal, listing_id ascending."""
-        opps = [
-            _make_opportunity(
-                listing_id="zzz_last",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.80,
-                net_roi_percentage=50.0,
-            ),
-            _make_opportunity(
-                listing_id="aaa_first",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=20.0,
-                confidence_score=0.80,
-                net_roi_percentage=50.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-
-        assert result.ordered_opportunities[0].listing.listing_id == "aaa_first"
-        assert result.ordered_opportunities[1].listing.listing_id == "zzz_last"
-
-
-# ---------------------------------------------------------------------------
-# Determinism
-# ---------------------------------------------------------------------------
-
-
-class TestDeterminism:
-    """Test that ranking is always deterministic."""
-
-    def test_identical_results_on_repeated_calls(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should produce identical results every time."""
-        opps = [
-            _make_opportunity(
-                listing_id="a", recommendation=Recommendation.BUY, opportunity_score=70.0
-            ),
-            _make_opportunity(
-                listing_id="b", recommendation=Recommendation.BUY, opportunity_score=90.0
-            ),
-            _make_opportunity(
-                listing_id="c", recommendation=Recommendation.BUY, opportunity_score=80.0
-            ),
-        ]
-
-        results = [ranker.rank(opps) for _ in range(5)]
-
-        for r in results:
-            ids = [o.listing.listing_id for o in r.ordered_opportunities]
-            assert ids == ["b", "c", "a"]
-
-
-# ---------------------------------------------------------------------------
-# Immutability
-# ---------------------------------------------------------------------------
-
-
-class TestImmutability:
-    """Test that input is never modified."""
-
-    def test_original_list_not_modified(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should not modify the original list."""
-        opps = [
-            _make_opportunity(
-                listing_id="c", recommendation=Recommendation.BUY, opportunity_score=30.0
-            ),
-            _make_opportunity(
-                listing_id="a", recommendation=Recommendation.BUY, opportunity_score=90.0
-            ),
-            _make_opportunity(
-                listing_id="b", recommendation=Recommendation.BUY, opportunity_score=50.0
-            ),
-        ]
-        original_order = [o.listing.listing_id for o in opps]
-
-        ranker.rank(opps)
-
-        assert [o.listing.listing_id for o in opps] == original_order
-
-    def test_original_opportunities_not_modified(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should not modify any opportunity object."""
-        opp = _make_opportunity(
-            listing_id="test",
-            opportunity_score=75.0,
-            net_profit=25.0,
-        )
-        original_score = opp.opportunity_score
-        original_profit = opp.net_profit
-
-        ranker.rank([opp])
-
-        assert opp.opportunity_score == original_score
-        assert opp.net_profit == original_profit
-
-    def test_result_is_new_list(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should return a new list, not the original."""
-        opps = [_make_opportunity(listing_id="a")]
-        result = ranker.rank(opps)
-
-        assert result.ordered_opportunities is not opps
-
-
-# ---------------------------------------------------------------------------
-# Limit
-# ---------------------------------------------------------------------------
-
-
-class TestLimit:
-    """Test limit parameter behavior."""
-
-    def test_limit_none_returns_all_eligible(self, ranker: DefaultOpportunityRanker) -> None:
-        """None limit should return all eligible."""
-        opps = [
-            _make_opportunity(
-                listing_id=str(i),
-                recommendation=Recommendation.BUY,
-                opportunity_score=100.0 - i,
-            )
-            for i in range(10)
-        ]
-        result = ranker.rank(opps, limit=None)
-
-        assert result.total_input == 10
-        assert result.total_eligible == 10
-        assert result.total_returned == 10
-
-    def test_limit_zero_returns_empty(self, ranker: DefaultOpportunityRanker) -> None:
-        """Limit 0 should return empty list."""
-        opps = [
-            _make_opportunity(
-                listing_id=str(i),
-                recommendation=Recommendation.BUY,
-                opportunity_score=100.0 - i,
-            )
-            for i in range(5)
-        ]
-        result = ranker.rank(opps, limit=0)
-
-        assert result.total_input == 5
-        assert result.total_eligible == 5
-        assert result.total_returned == 0
-        assert len(result.ordered_opportunities) == 0
-        assert result.buy_count == 5
-        assert result.best_score == 0.0
-        assert result.average_score == 0.0
-
-    def test_limit_less_than_eligible(self, ranker: DefaultOpportunityRanker) -> None:
-        """Limit < eligible should return only top N."""
-        opps = [
-            _make_opportunity(
-                listing_id=str(i),
-                recommendation=Recommendation.BUY,
-                opportunity_score=100.0 - i,
-            )
-            for i in range(10)
-        ]
-        result = ranker.rank(opps, limit=3)
-
-        assert result.total_eligible == 10
-        assert result.total_returned == 3
-        assert len(result.ordered_opportunities) == 3
-        assert result.ordered_opportunities[0].opportunity_score == 100.0
-        assert result.ordered_opportunities[2].opportunity_score == 98.0
-
-    def test_limit_greater_than_eligible(self, ranker: DefaultOpportunityRanker) -> None:
-        """Limit > eligible should return all eligible."""
-        opps = [
-            _make_opportunity(
-                listing_id=str(i),
-                recommendation=Recommendation.BUY,
-                opportunity_score=100.0 - i,
-            )
-            for i in range(3)
-        ]
-        result = ranker.rank(opps, limit=100)
-
-        assert result.total_eligible == 3
-        assert result.total_returned == 3
-
-    def test_limit_negative_raises(self, ranker: DefaultOpportunityRanker) -> None:
-        """Negative limit should raise InvalidRankingLimitError."""
-        opps = [_make_opportunity(listing_id="a")]
-
-        with pytest.raises(InvalidRankingLimitError) as exc:
-            ranker.rank(opps, limit=-1)
-
-        assert exc.value.limit == -1
-        assert "limit" in str(exc.value).lower()
-
-
-# ---------------------------------------------------------------------------
-# Counts
-# ---------------------------------------------------------------------------
-
-
-class TestCounts:
-    """Test BUY/MAYBE/SKIP counting over input."""
-
-    def test_counts_over_all_input(self, ranker: DefaultOpportunityRanker) -> None:
-        """Counts should be over ALL input, not just returned."""
-        opps = [
-            _make_opportunity(
-                listing_id="b1", recommendation=Recommendation.BUY, opportunity_score=90.0
-            ),
-            _make_opportunity(
-                listing_id="b2", recommendation=Recommendation.BUY, opportunity_score=80.0
-            ),
-            _make_opportunity(
-                listing_id="s1", recommendation=Recommendation.SKIP, opportunity_score=30.0
-            ),
-            _make_opportunity(
-                listing_id="s2", recommendation=Recommendation.SKIP, opportunity_score=20.0
-            ),
-            _make_opportunity(
-                listing_id="m1", recommendation=Recommendation.MAYBE, opportunity_score=50.0
-            ),
-        ]
-
-        result = ranker.rank(opps, limit=2)  # include_skip=False
-
-        # Only 2 returned (BUYs), but counts are over all 5
-        assert result.total_input == 5
-        assert result.total_eligible == 3  # 2 BUY + 1 MAYBE
-        assert result.total_excluded == 2  # 2 SKIPs filtered out
-        assert result.total_returned == 2
-        assert result.buy_count == 2
-        assert result.maybe_count == 1
-        assert result.skip_count == 2
-
-    def test_buy_count(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should count BUY correctly."""
-        opps = [
-            _make_opportunity(
-                listing_id="b1", recommendation=Recommendation.BUY, opportunity_score=80.0
-            ),
-            _make_opportunity(
-                listing_id="b2", recommendation=Recommendation.BUY, opportunity_score=70.0
-            ),
-            _make_opportunity(
-                listing_id="s1", recommendation=Recommendation.SKIP, opportunity_score=30.0
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        assert result.buy_count == 2
-        assert result.maybe_count == 0
-        assert result.skip_count == 1
-
-
-# ---------------------------------------------------------------------------
-# Scores
-# ---------------------------------------------------------------------------
-
-
-class TestScores:
-    """Test best_score and average_score over returned opportunities."""
-
-    def test_best_score_over_returned(self, ranker: DefaultOpportunityRanker) -> None:
-        """best_score should be max over returned, not input."""
-        opps = [
-            _make_opportunity(
-                listing_id="buy_a",
-                recommendation=Recommendation.BUY,
-                opportunity_score=92.4,
-            ),
-            _make_opportunity(
-                listing_id="skip_high",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=99.0,  # Higher but excluded
-            ),
-            _make_opportunity(
-                listing_id="buy_b",
-                recommendation=Recommendation.BUY,
-                opportunity_score=61.35,
-            ),
-        ]
-
-        result = ranker.rank(opps)  # include_skip=False
-
-        # best_score should be 92.4 (over BUYs only), not 99.0 (SKIP excluded)
-        assert result.best_score == 92.4
-        assert result.average_score == round((92.4 + 61.35) / 2, 2)
-
-    def test_empty_scores_are_zero(self, ranker: DefaultOpportunityRanker) -> None:
-        """Empty result should have 0.0 not None."""
-        result = ranker.rank([])
-
-        assert result.best_score == 0.0
-        assert result.average_score == 0.0
-
-
-# ---------------------------------------------------------------------------
-# Explain
-# ---------------------------------------------------------------------------
-
-
-class TestExplain:
-    """Test explain() method."""
-
-    def test_explain_contains_key_info(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should contain new fields: total_input, total_eligible, total_excluded."""
-        opps = [
-            _make_opportunity(
-                listing_id="b1",
-                title="GTA V PS4",
-                recommendation=Recommendation.BUY,
-                opportunity_score=92.4,
-                net_profit=25.0,
-            ),
-            _make_opportunity(
-                listing_id="s1",
-                title="Overpriced Game",
-                recommendation=Recommendation.SKIP,
-                opportunity_score=30.0,
-                net_profit=-5.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-        text = result.explain(top_n=2)
-
-        assert "OPPORTUNITY RANKING" in text
-        assert "OPPORTUNITY_SCORE" in text
-        assert "Total Input: 2" in text
-        assert "Total Eligible: 1" in text
-        assert "Total Excluded: 1" in text
-        assert "Total Returned: 1" in text
-        assert "BUY: 1" in text
-        assert "SKIP: 1" in text
-        assert "1. GTA V PS4" in text
-        assert "Score: 92.40" in text
-        assert "Profit: EUR 25.00" in text
-        assert "Recommendation: BUY" in text
-
-    def test_explain_empty_with_na(self, ranker: DefaultOpportunityRanker) -> None:
-        """Empty result should show N/A for scores."""
-        result = ranker.rank([])
-        text = result.explain()
-
-        assert "Total Input: 0" in text
-        assert "Best Score: N/A" in text
-        assert "Average Score: N/A" in text
-
-    def test_explain_deterministic(self, ranker: DefaultOpportunityRanker) -> None:
-        """Should produce identical output on repeated calls."""
-        opps = [
-            _make_opportunity(
-                listing_id="a",
-                title="Game A",
-                recommendation=Recommendation.BUY,
-                opportunity_score=80.0,
-                net_profit=15.0,
-            ),
-        ]
-
-        result = ranker.rank(opps)
-        text1 = result.explain()
-        text2 = result.explain()
-
-        assert text1 == text2
-
-
-# ---------------------------------------------------------------------------
-# RankingResult field coherence
-# ---------------------------------------------------------------------------
-
-
-class TestRankingResultCoherence:
-    """Test that RankingResult fields are internally consistent."""
-
-    def test_field_coherence(self, ranker: DefaultOpportunityRanker) -> None:
-        """total_input = total_eligible + total_excluded."""
-        opps = [
-            _make_opportunity(
-                listing_id="b1", recommendation=Recommendation.BUY, opportunity_score=80.0
-            ),
-            _make_opportunity(
-                listing_id="s1", recommendation=Recommendation.SKIP, opportunity_score=30.0
-            ),
-            _make_opportunity(
-                listing_id="s2", recommendation=Recommendation.SKIP, opportunity_score=20.0
-            ),
-        ]
-
-        result = ranker.rank(opps)  # include_skip=False
-
-        assert result.total_input == 3
-        assert result.total_eligible == 1
-        assert result.total_excluded == 2
-        assert result.total_input == result.total_eligible + result.total_excluded
-        assert result.total_returned <= result.total_eligible
-        assert result.buy_count + result.maybe_count + result.skip_count == result.total_input
-
-    def test_counts_sum_to_input(self, ranker: DefaultOpportunityRanker) -> None:
-        """buy_count + maybe_count + skip_count == total_input."""
-        opps = [
-            _make_opportunity(
-                listing_id="b1", recommendation=Recommendation.BUY, opportunity_score=90.0
-            ),
-            _make_opportunity(
-                listing_id="m1", recommendation=Recommendation.MAYBE, opportunity_score=70.0
-            ),
-            _make_opportunity(
-                listing_id="s1", recommendation=Recommendation.SKIP, opportunity_score=30.0
-            ),
-            _make_opportunity(
-                listing_id="b2", recommendation=Recommendation.BUY, opportunity_score=85.0
-            ),
-        ]
-
-        result = ranker.rank(opps, include_skip=True)
-
-        assert result.buy_count + result.maybe_count + result.skip_count == result.total_input
-        assert result.buy_count == 2
-        assert result.maybe_count == 1
-        assert result.skip_count == 1
-
-
-# ---------------------------------------------------------------------------
-# Strategy validation
-# ---------------------------------------------------------------------------
-
-
-class TestStrategyValidation:
-    """Test strategy validation."""
-
-    def test_valid_strategy_accepted(self) -> None:
-        """OPPORTUNITY_SCORE should be accepted."""
-        ranker = DefaultOpportunityRanker(RankingStrategy.OPPORTUNITY_SCORE)
-        assert ranker.strategy == RankingStrategy.OPPORTUNITY_SCORE
-
-
-# ---------------------------------------------------------------------------
-# Exceptions
-# ---------------------------------------------------------------------------
-
-
-class TestExceptions:
-    """Test domain exceptions."""
-
-    def test_invalid_ranking_limit_error(self) -> None:
-        """Should create proper error with limit value."""
-        error = InvalidRankingLimitError(-5)
-        assert error.limit == -5
-        assert "-5" in str(error)
-
-    def test_unsupported_ranking_strategy_error(self) -> None:
-        """Should create proper error with strategy name."""
-        error = UnsupportedRankingStrategyError("absolute_profit")
-        assert error.strategy == "absolute_profit"
-        assert "absolute_profit" in str(error)
+def _ids(opportunities: list[ArbitrageOpportunity]) -> list[str]:
+    return [opportunity.listing.listing_id for opportunity in opportunities]
+
+
+def test_only_real_strategy_is_exposed() -> None:
+    assert list(RankingStrategy) == [RankingStrategy.OPPORTUNITY_SCORE]
+    assert not hasattr(RankingStrategy, "ABSOLUTE_PROFIT")
+    assert not hasattr(RankingStrategy, "ROI")
+    assert not hasattr(RankingStrategy, "MARKET_DISCOUNT")
+    assert not hasattr(RankingStrategy, "CUSTOM")
+    with pytest.raises(ValueError):
+        RankingStrategy("roi")
+    with pytest.raises(ValueError):
+        RankingStrategy("absolute_profit")
+
+
+def test_ranker_groups_recommendations_then_orders_by_score() -> None:
+    opportunities = [
+        _make_opportunity(listing_id="skip-100", recommendation=Recommendation.SKIP, opportunity_score=100),
+        _make_opportunity(listing_id="buy-20", recommendation=Recommendation.BUY, opportunity_score=20),
+        _make_opportunity(listing_id="maybe-90", recommendation=Recommendation.MAYBE, opportunity_score=90),
+        _make_opportunity(listing_id="buy-80", recommendation=Recommendation.BUY, opportunity_score=80),
+    ]
+
+    ranked = DefaultOpportunityRanker().rank(opportunities)
+
+    assert _ids(ranked) == ["buy-80", "buy-20", "maybe-90", "skip-100"]
+
+
+@pytest.mark.parametrize("recommendation", list(Recommendation))
+def test_equal_keys_preserve_input_order(recommendation: Recommendation) -> None:
+    first = _make_opportunity(listing_id="first", recommendation=recommendation, opportunity_score=50)
+    second = _make_opportunity(listing_id="second", recommendation=recommendation, opportunity_score=50)
+
+    assert DefaultOpportunityRanker().rank([first, second]) == [first, second]
+
+
+def test_ranker_returns_all_items_and_does_not_mutate_input() -> None:
+    opportunities = [
+        _make_opportunity(listing_id="skip", recommendation=Recommendation.SKIP),
+        _make_opportunity(listing_id="buy", recommendation=Recommendation.BUY),
+    ]
+    original = list(opportunities)
+
+    ranked = DefaultOpportunityRanker().rank(opportunities)
+
+    assert opportunities == original
+    assert set(map(id, ranked)) == set(map(id, opportunities))
+
+
+@pytest.mark.parametrize(
+    ("higher", "lower"),
+    [
+        (Recommendation.BUY, Recommendation.MAYBE),
+        (Recommendation.BUY, Recommendation.SKIP),
+        (Recommendation.MAYBE, Recommendation.SKIP),
+    ],
+)
+def test_recommendation_priority_is_an_absolute_barrier(
+    higher: Recommendation, lower: Recommendation
+) -> None:
+    preferred = _make_opportunity(
+        listing_id="preferred", recommendation=higher, opportunity_score=1
+    )
+    other = _make_opportunity(
+        listing_id="other", recommendation=lower, opportunity_score=100
+    )
+
+    assert DefaultOpportunityRanker().rank([other, preferred]) == [preferred, other]
+
+
+@pytest.mark.parametrize("recommendation", list(Recommendation))
+def test_score_descends_within_each_recommendation(
+    recommendation: Recommendation,
+) -> None:
+    low = _make_opportunity(
+        listing_id="low", recommendation=recommendation, opportunity_score=10
+    )
+    high = _make_opportunity(
+        listing_id="high", recommendation=recommendation, opportunity_score=90
+    )
+    middle = _make_opportunity(
+        listing_id="middle", recommendation=recommendation, opportunity_score=50
+    )
+
+    assert _ids(DefaultOpportunityRanker().rank([low, high, middle])) == [
+        "high",
+        "middle",
+        "low",
+    ]
+
+
+@pytest.mark.parametrize(
+    "different_field",
+    ["net_profit", "confidence_score", "net_roi_percentage", "listing_id", "listing_price"],
+)
+def test_equal_primary_keys_have_no_hidden_tie_breaker(different_field: str) -> None:
+    first_values: dict[str, object] = {"listing_id": "z-first"}
+    second_values: dict[str, object] = {"listing_id": "a-second"}
+    if different_field != "listing_id":
+        first_values[different_field] = 1.0
+        second_values[different_field] = 99.0
+    first = _make_opportunity(
+        **first_values, recommendation=Recommendation.BUY, opportunity_score=50  # type: ignore[arg-type]
+    )
+    second = _make_opportunity(
+        **second_values, recommendation=Recommendation.BUY, opportunity_score=50  # type: ignore[arg-type]
+    )
+
+    assert DefaultOpportunityRanker().rank([first, second]) == [first, second]
+
+
+@pytest.mark.parametrize("permutation", list(itertools.permutations(range(4))))
+def test_order_is_correct_for_every_four_item_input_permutation(
+    permutation: tuple[int, ...],
+) -> None:
+    canonical = [
+        _make_opportunity(listing_id="buy-high", recommendation=Recommendation.BUY, opportunity_score=90),
+        _make_opportunity(listing_id="buy-low", recommendation=Recommendation.BUY, opportunity_score=10),
+        _make_opportunity(listing_id="maybe", recommendation=Recommendation.MAYBE, opportunity_score=100),
+        _make_opportunity(listing_id="skip", recommendation=Recommendation.SKIP, opportunity_score=100),
+    ]
+
+    ranked = DefaultOpportunityRanker().rank([canonical[index] for index in permutation])
+
+    assert ranked == canonical
+
+
+@pytest.mark.parametrize("size", [0, 1, 2])
+def test_repeated_ranking_is_deterministic_for_small_inputs(size: int) -> None:
+    opportunities = [
+        _make_opportunity(listing_id=str(index), opportunity_score=float(index))
+        for index in range(size)
+    ]
+    ranker = DefaultOpportunityRanker()
+
+    assert ranker.rank(opportunities) == ranker.rank(opportunities)

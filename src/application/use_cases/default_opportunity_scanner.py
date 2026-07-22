@@ -25,6 +25,7 @@ from domain.interfaces.market_price_estimator import (
     IMarketPriceEstimator,
     MarketPriceEstimate,
 )
+from domain.interfaces.opportunity_ranker import IOpportunityRanker, RankingStrategy
 from domain.interfaces.outlier_removal import IOutlierRemoval
 from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import IPriceDatasetBuilder
@@ -92,8 +93,10 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         outlier_removal: IOutlierRemoval,
         market_estimator: IMarketPriceEstimator,
         arbitrage_detector: IArbitrageOpportunityDetector,
+        opportunity_ranker: IOpportunityRanker,
         latitude: float = DEFAULT_LATITUDE,
         longitude: float = DEFAULT_LONGITUDE,
+        ranking_strategy: RankingStrategy = RankingStrategy.OPPORTUNITY_SCORE,
     ) -> None:
         self.game_detector = game_detector
         self.price_collector = price_collector
@@ -102,8 +105,10 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         self.outlier_removal = outlier_removal
         self.market_estimator = market_estimator
         self.arbitrage_detector = arbitrage_detector
+        self.opportunity_ranker = opportunity_ranker
         self.latitude = latitude
         self.longitude = longitude
+        self.ranking_strategy = ranking_strategy
 
     @staticmethod
     def _build_comparable_cache_key(game: DetectedGame) -> _ComparableCacheKey:
@@ -333,12 +338,17 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             f"Batch scan completed: {len(opportunities)} successful, "
             f"{len(failures)} failed in {processing_time:.2f} s"
         )
-        ranked_opportunities = RankingResult.from_opportunities(opportunities)
+        ordered_opportunities = self.opportunity_ranker.rank(
+            opportunities, self.ranking_strategy
+        )
+        ranking_result = RankingResult.from_ranked_opportunities(
+            ordered_opportunities, self.ranking_strategy
+        )
         return ScanResult(
             total_processed=len(listings),
             successful=len(opportunities),
             failed=len(failures),
-            opportunities=ranked_opportunities.ordered_opportunities,
+            opportunities=ranking_result.ordered_opportunities,
             failures=failures,
             processing_time=processing_time,
             created_at=datetime.now(UTC),

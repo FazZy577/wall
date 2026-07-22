@@ -15,7 +15,7 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from application.interfaces.opportunity_scanner import RankingResult, RankingStrategy
+from application.interfaces.opportunity_scanner import RankingResult
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
@@ -27,6 +27,7 @@ from domain.interfaces.game_detector import (
     ListingText,
     Platform,
 )
+from domain.interfaces.opportunity_ranker import RankingStrategy
 from domain.interfaces.price_collector import IPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -38,6 +39,7 @@ from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
+from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
 
 # Configure logging
@@ -148,6 +150,7 @@ async def main() -> None:
         outlier_removal=outlier_removal,
         market_estimator=market_estimator,
         arbitrage_detector=arbitrage_detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
 
     print("  вњ“ All 7 dependencies injected into scanner")
@@ -242,7 +245,7 @@ async def main() -> None:
 
     if result.opportunities:
         # Create RankingResult for summary statistics
-        ranking = RankingResult.from_opportunities(
+        ranking = RankingResult.from_ranked_opportunities(
             result.opportunities,
             strategy=RankingStrategy.OPPORTUNITY_SCORE,
         )

@@ -168,6 +168,7 @@ The scanner receives **all** dependencies via constructor injection:
 | `outlier_removal` | `IOutlierRemoval` | Removes outliers |
 | `market_estimator` | `IMarketPriceEstimator` | Estimates market price |
 | `arbitrage_detector` | `IArbitrageOpportunityDetector` | Detects opportunities |
+| `opportunity_ranker` | `IOpportunityRanker` | Orders the complete batch once |
 
 Optional parameters:
 - `latitude` (float, default: 41.3874 — Barcelona)
@@ -176,30 +177,29 @@ Optional parameters:
 
 ## Ranking System
 
-The scanner supports configurable ranking of opportunities. Results are always sorted by the configured strategy before being returned in `ScanResult.opportunities`.
+The scanner delegates ranking to its injected `IOpportunityRanker` exactly once
+per batch. It passes every opportunity and preserves the returned order.
 
 ### RankingStrategy
 
 ```python
 class RankingStrategy(StrEnum):
-    OPPORTUNITY_SCORE = "opportunity_score"   # Sort by opportunity_score descending (implemented)
-    ABSOLUTE_PROFIT = "absolute_profit"       # Sort by net_profit descending (future)
-    ROI = "roi"                               # Sort by net_roi_percentage descending (future)
-    MARKET_DISCOUNT = "market_discount"       # Sort by acquisition_discount_to_reference_market_percentage descending (future)
-    CUSTOM = "custom"                         # Custom ranking function (future)
+    OPPORTUNITY_SCORE = "opportunity_score"
 ```
 
-Only `OPPORTUNITY_SCORE` is implemented initially — same pattern as `EstimationStrategy.MEDIAN`.
-Unimplemented strategies fall back to `OPPORTUNITY_SCORE` with a warning.
+`OPPORTUNITY_SCORE` is the only exposed strategy.
+The ranker groups `BUY`, `MAYBE`, and `SKIP`, then orders each group by
+descending score. It does not use fallbacks.
 
 ### RankingResult
 
 Provides ranked opportunities + summary statistics for dashboards:
 
 ```python
-from application.interfaces.opportunity_scanner import RankingResult, RankingStrategy
+from application.interfaces.opportunity_scanner import RankingResult
+from domain.interfaces.opportunity_ranker import RankingStrategy
 
-ranking = RankingResult.from_opportunities(
+ranking = RankingResult.from_ranked_opportunities(
     result.opportunities,
     strategy=RankingStrategy.OPPORTUNITY_SCORE,
 )
@@ -218,6 +218,8 @@ for opp in ranking.ordered_opportunities:
 | Field | Type | Description |
 |---|---|---|
 | `ordered_opportunities` | `list[ArbitrageOpportunity]` | Opportunities sorted by the ranking strategy |
+| `strategy` | `RankingStrategy` | Strategy already applied by the ranker |
+| `total_opportunities` | `int` | Number of ranked opportunities |
 | `buy_count` | `int` | Number of BUY recommendations |
 | `maybe_count` | `int` | Number of MAYBE recommendations |
 | `skip_count` | `int` | Number of SKIP recommendations |

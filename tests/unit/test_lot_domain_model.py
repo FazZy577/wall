@@ -630,6 +630,9 @@ class TestDatasetContamination:
         from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
         )
+        from infrastructure.rankers.default_opportunity_ranker import (
+            DefaultOpportunityRanker,
+        )
 
         # Setup
         game = _make_game("GTA V")
@@ -666,6 +669,7 @@ class TestDatasetContamination:
             outlier_removal=Mock(),
             market_estimator=Mock(),
             arbitrage_detector=Mock(),
+            opportunity_ranker=DefaultOpportunityRanker(),
         )
         scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
         scanner.game_detector.detect_games.return_value = [game]
@@ -713,6 +717,9 @@ class TestDatasetContamination:
         from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
         )
+        from infrastructure.rankers.default_opportunity_ranker import (
+            DefaultOpportunityRanker,
+        )
 
         game = _make_game("GTA V")
         from domain.entities.comparable_listing import ComparableListing
@@ -748,6 +755,7 @@ class TestDatasetContamination:
             outlier_removal=Mock(),
             market_estimator=Mock(),
             arbitrage_detector=Mock(),
+            opportunity_ranker=DefaultOpportunityRanker(),
         )
         scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
         scanner.game_detector.detect_games.return_value = [game]

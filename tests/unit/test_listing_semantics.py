@@ -35,6 +35,7 @@ from domain.interfaces.price_dataset_builder import InvalidComparableListingErro
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
+from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 
 
 def _game(platform: Platform = Platform.PS4) -> DetectedGame:
@@ -244,6 +245,7 @@ async def test_scanner_detects_games_from_candidate_text_without_candidate_platf
         outlier_removal=Mock(),
         market_estimator=Mock(),
         arbitrage_detector=Mock(),
+        opportunity_ranker=DefaultOpportunityRanker(),
     )
     scanner.price_collector.collect_comparables = AsyncMock(return_value=[])
     scanner.dataset_builder.build.return_value = Mock(sample_size=0)

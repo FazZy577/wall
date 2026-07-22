@@ -47,6 +47,14 @@ async. Application usa `await` directo y nunca inicia ni cierra el event loop;
 esa responsabilidad pertenece al entry point. El procesamiento continúa
 siendo estrictamente secuencial.
 
+El ranking de oportunidades individuales tiene un único contrato,
+`IOpportunityRanker`, y una única implementación productiva,
+`DefaultOpportunityRanker`. `DefaultOpportunityScanner` recibe el puerto por
+inyección y delega una vez por lote. Solo se expone `OPPORTUNITY_SCORE`: primero
+se aplica `BUY > MAYBE > SKIP` y después score descendente, con orden estable
+en empates. `RankingResult` únicamente resume la lista ya ordenada. No se
+filtran recomendaciones, no existen fallbacks y no se añadió ranking de lotes.
+
 ```python
 async def main() -> None:
     result = await scanner.scan_multiple(listings)
