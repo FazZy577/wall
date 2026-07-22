@@ -9,7 +9,7 @@ from datetime import datetime
 from enum import StrEnum
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     MarketPriceEstimate,

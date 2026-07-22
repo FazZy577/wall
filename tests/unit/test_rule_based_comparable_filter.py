@@ -2,7 +2,7 @@
 
 import pytest
 
-from domain.interfaces.comparable_filter import Listing
+from domain.interfaces.comparable_filter import ComparableFilterInput
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from infrastructure.filters.rule_based_comparable_filter import RuleBasedComparableFilter
 
@@ -56,7 +56,7 @@ class TestValidComparables:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Simple game listing."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4",
             description="Juego en buen estado",
         )
@@ -66,7 +66,7 @@ class TestValidComparables:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Game with full canonical name."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Grand Theft Auto V PS4",
             description="Estado perfecto",
         )
@@ -76,7 +76,7 @@ class TestValidComparables:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Game with variant spelling."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA5 PlayStation 4",
             description="",
         )
@@ -86,7 +86,7 @@ class TestValidComparables:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Game listing with Spanish accents."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V Edición Premium",
             description="Incluye contenido adicional",
         )
@@ -96,7 +96,7 @@ class TestValidComparables:
         self, filter_instance: RuleBasedComparableFilter, fifa_23_game: DetectedGame
     ) -> None:
         """Valid: FIFA 23 listing."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="FIFA 23 PS4",
             description="Juego de fútbol",
         )
@@ -110,7 +110,7 @@ class TestConsoleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Console only, no games."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="PS4 (PlayStation 4) Negra",
             description="Consola en buen estado",
         )
@@ -120,7 +120,7 @@ class TestConsoleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Console with accessories."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="PlayStation 4 Slim 1TB",
             description="Incluye mando y cable HDMI",
         )
@@ -130,7 +130,7 @@ class TestConsoleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Xbox console."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Xbox One 500GB",
             description="Console in good condition",
         )
@@ -140,7 +140,7 @@ class TestConsoleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Nintendo Switch console."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Nintendo Switch",
             description="Consola portátil",
         )
@@ -154,7 +154,7 @@ class TestControllerRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: DualShock controller."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Mando DualShock 4 PS4",
             description="Mando original",
         )
@@ -164,7 +164,7 @@ class TestControllerRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: DualSense controller."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="DualSense PS5 Blanco",
             description="Controller for PlayStation 5",
         )
@@ -174,7 +174,7 @@ class TestControllerRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Generic controller mention."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Controller PS4",
             description="Joystick inalámbrico",
         )
@@ -184,7 +184,7 @@ class TestControllerRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Spanish word for controller."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Mando PS4 Blanco",
             description="En perfecto estado",
         )
@@ -198,7 +198,7 @@ class TestAccessoryRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Case/funda."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Funda PS4",
             description="Protector de silicona",
         )
@@ -208,7 +208,7 @@ class TestAccessoryRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: HDMI cable."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Cable HDMI PS4",
             description="2 metros",
         )
@@ -218,7 +218,7 @@ class TestAccessoryRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Dock/charging station."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Dock de carga PS4",
             description="Para dos mandos",
         )
@@ -228,7 +228,7 @@ class TestAccessoryRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Headset."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Auriculares PS4",
             description="Headset gaming",
         )
@@ -242,7 +242,7 @@ class TestAccountRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: PSN account."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Cuenta PSN con juegos",
             description="Account with games",
         )
@@ -252,7 +252,7 @@ class TestAccountRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Digital code."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V Código Digital",
             description="Digital download code",
         )
@@ -262,7 +262,7 @@ class TestAccountRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Xbox Live account."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Xbox Live Account",
             description="Cuenta con suscripción",
         )
@@ -276,7 +276,7 @@ class TestEmptyBoxRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Box without disc."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Caja GTA V sin disco",
             description="Solo la caja original",
         )
@@ -286,7 +286,7 @@ class TestEmptyBoxRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Empty steelbook."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Steelbook GTA V",
             description="Sin disco, solo caja metálica",
         )
@@ -296,7 +296,7 @@ class TestEmptyBoxRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Box only (English)."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V Box",
             description="Empty box, no game",
         )
@@ -306,7 +306,7 @@ class TestEmptyBoxRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Box without disc (Italian)."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Caja FIFA 23",
             description="Senza disco",
         )
@@ -320,7 +320,7 @@ class TestBundleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Lote with multiple games."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Lote GTA V + RDR2 + FIFA 23",
             description="3 juegos por el precio de 2",
         )
@@ -330,7 +330,7 @@ class TestBundleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Pack of games."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Pack juegos PS4",
             description="GTA V, God of War, Uncharted",
         )
@@ -340,7 +340,7 @@ class TestBundleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Collection."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Colección juegos Rockstar",
             description="GTA V y Red Dead Redemption 2",
         )
@@ -350,7 +350,7 @@ class TestBundleRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: Bundle (English)."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Game Bundle PS4",
             description="Multiple games included",
         )
@@ -364,7 +364,7 @@ class TestWrongGameRejection:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Reject: GTA Trilogy when looking for GTA V."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA Trilogy PS4",
             description="3 juegos clásicos",
         )
@@ -374,7 +374,7 @@ class TestWrongGameRejection:
         self, filter_instance: RuleBasedComparableFilter, fifa_23_game: DetectedGame
     ) -> None:
         """Reject: FIFA 20 when looking for FIFA 23."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="FIFA 20 PS4",
             description="Juego de fútbol",
         )
@@ -384,7 +384,7 @@ class TestWrongGameRejection:
         self, filter_instance: RuleBasedComparableFilter, fifa_23_game: DetectedGame
     ) -> None:
         """Reject: FIFA 18 when looking for FIFA 23."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="FIFA 18",
             description="Edición estándar",
         )
@@ -394,7 +394,7 @@ class TestWrongGameRejection:
         self, filter_instance: RuleBasedComparableFilter, cod_bo6_game: DetectedGame
     ) -> None:
         """Reject: Black Ops 3 when looking for Black Ops 6."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="Call of Duty Black Ops 3 PS4",
             description="COD BO3",
         )
@@ -404,7 +404,7 @@ class TestWrongGameRejection:
         self, filter_instance: RuleBasedComparableFilter, cod_bo6_game: DetectedGame
     ) -> None:
         """Reject: Black Ops 4 when looking for Black Ops 6."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="COD Black Ops 4",
             description="",
         )
@@ -418,7 +418,7 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Edge case: Empty strings."""
-        listing = Listing(title="", description="")
+        listing = ComparableFilterInput(title="", description="")
         # Should reject due to no game match
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
 
@@ -426,14 +426,14 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Edge case: Very short listing."""
-        listing = Listing(title="PS4", description="")
+        listing = ComparableFilterInput(title="PS4", description="")
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
 
     def test_game_with_console_mention(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Game with console mention (but game is primary)."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V para PS4",
             description="Videojuego Grand Theft Auto V compatible con PlayStation 4",
         )
@@ -444,7 +444,7 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Game compatible with multiple platforms."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4/PS5",
             description="Compatible con ambas consolas",
         )
@@ -454,7 +454,7 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Title with special characters."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="🎮 GTA V - PS4 ⭐⭐⭐⭐⭐",
             description="Estado perfecto!!!",
         )
@@ -464,7 +464,7 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: All uppercase listing."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4",
             description="JUEGO EN PERFECTO ESTADO",
         )
@@ -474,7 +474,7 @@ class TestEdgeCases:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Mixed Spanish and English."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4 Game",
             description="Juego en good condition",
         )
@@ -520,7 +520,7 @@ class TestComplexScenarios:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Steelbook edition with game included."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V Steelbook Edition PS4",
             description="Incluye el juego completo en disco",
         )
@@ -531,7 +531,7 @@ class TestComplexScenarios:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Special/Premium edition."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V Premium Edition PS4",
             description="Incluye contenido adicional",
         )
@@ -541,7 +541,7 @@ class TestComplexScenarios:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Used game listing."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4 Usado",
             description="Buen estado, disco funciona perfectamente",
         )
@@ -551,7 +551,7 @@ class TestComplexScenarios:
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
         """Valid: Sealed new game."""
-        listing = Listing(
+        listing = ComparableFilterInput(
             title="GTA V PS4 Nuevo Precintado",
             description="Sin abrir, sellado de fábrica",
         )

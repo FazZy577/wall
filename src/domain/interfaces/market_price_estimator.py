@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 from domain.interfaces.price_dataset_builder import PriceDataset
 from domain.interfaces.price_statistics import PriceStatisticsResult
 

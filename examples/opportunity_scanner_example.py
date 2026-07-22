@@ -16,6 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -24,7 +25,7 @@ from domain.interfaces.game_detector import (
     Platform,
 )
 from domain.interfaces.opportunity_scanner import RankingResult, RankingStrategy
-from domain.interfaces.price_collector import ComparableListing, IPriceCollector
+from domain.interfaces.price_collector import IPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )

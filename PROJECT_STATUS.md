@@ -4,6 +4,14 @@
 
 Platform for detecting arbitrage opportunities in second-hand marketplaces, starting with Wallapop and designed for multi-marketplace expansion.
 
+## P1.3 Canonical domain model definitions
+
+`CandidateListing`, `ComparableListing`, `ListingText`, `DetectedGame`,
+`GameValuation`, and `Platform` each have one canonical class definition.
+The price collector port retains only a compatibility re-export of the
+canonical `ComparableListing`; raw marketplace dictionaries and the filter's
+minimal `Listing` payload remain intentionally distinct.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete

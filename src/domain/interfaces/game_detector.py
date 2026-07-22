@@ -5,50 +5,18 @@ Defines the contract for game detection implementations.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import StrEnum
 
+from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 
-class Platform(StrEnum):
-    """Gaming platforms."""
-
-    PS4 = "PS4"
-    PS5 = "PS5"
-    XBOX_ONE = "Xbox One"
-    XBOX_SERIES = "Xbox Series"
-    SWITCH = "Nintendo Switch"
-    UNKNOWN = "Unknown"
-
-
-class DetectionMethod(StrEnum):
-    """Method used to detect a game."""
-
-    EXACT_MATCH = "EXACT_MATCH"
-    ALIAS_MATCH = "ALIAS_MATCH"
-    FUZZY_MATCH = "FUZZY_MATCH"
-
-
-@dataclass
-class DetectedGame:
-    """Represents a game detected in a listing.
-
-    Attributes:
-        canonical_name: Official game name
-        matched_text: Text fragment that matched
-        platform: Gaming platform
-        confidence: Detection confidence (0.0 - 1.0)
-        detection_method: Method used for detection
-    """
-
-    canonical_name: str
-    matched_text: str
-    platform: Platform
-    confidence: float
-    detection_method: DetectionMethod
-
-    def __post_init__(self) -> None:
-        """Validate confidence is between 0 and 1."""
-        if not 0.0 <= self.confidence <= 1.0:
-            raise ValueError(f"Confidence must be between 0 and 1, got {self.confidence}")
+# Compatibility re-exports: historical imports from this detector port resolve
+# to the shared canonical domain models above.
+__all__ = [
+    "DetectedGame",
+    "DetectionMethod",
+    "IGameDetector",
+    "ListingText",
+    "Platform",
+]
 
 
 @dataclass

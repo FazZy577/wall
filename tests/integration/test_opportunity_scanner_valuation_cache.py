@@ -3,8 +3,8 @@
 from unittest.mock import Mock
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )

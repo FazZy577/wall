@@ -10,9 +10,9 @@ from datetime import datetime
 from enum import StrEnum
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
-from domain.interfaces.game_detector import DetectedGame
 
 
 class LotPipelineStage(StrEnum):

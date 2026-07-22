@@ -7,11 +7,11 @@ for price estimation.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 
 
 @dataclass
-class Listing:
+class ComparableFilterInput:
     """Represents a marketplace listing to evaluate.
 
     Attributes:
@@ -41,7 +41,7 @@ class IComparableFilter(ABC):
     def is_valid_comparable(
         self,
         target_game: DetectedGame,
-        listing: Listing,
+        listing: ComparableFilterInput,
     ) -> bool:
         """Determine if a listing is valid as a comparable.
 

@@ -8,7 +8,8 @@ import logging
 from datetime import UTC, datetime
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.interfaces.price_collector import ComparableListing
+from domain.entities.comparable_listing import ComparableListing
+from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.interfaces.price_dataset_builder import (
     InvalidComparableListingError,
     IPriceDatasetBuilder,
@@ -103,12 +104,6 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
         Returns:
             Empty PriceDataset
         """
-        from domain.interfaces.game_detector import (
-            DetectedGame,
-            DetectionMethod,
-            Platform,
-        )
-
         # Create placeholder game
         placeholder_game = DetectedGame(
             canonical_name="Unknown",

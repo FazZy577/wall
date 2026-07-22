@@ -16,6 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
@@ -29,7 +30,7 @@ from domain.interfaces.outlier_removal import (
     OutlierMethod,
     OutlierRemovalResult,
 )
-from domain.interfaces.price_collector import ComparableListing, IPriceCollector
+from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import (
     IPriceDatasetBuilder,
     PriceDataset,

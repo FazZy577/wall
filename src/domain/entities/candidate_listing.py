@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 
 
 @dataclass

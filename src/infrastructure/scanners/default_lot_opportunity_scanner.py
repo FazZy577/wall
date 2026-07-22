@@ -14,9 +14,10 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
+from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
-from domain.interfaces.game_detector import DetectedGame
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 from domain.interfaces.lot_opportunity_scanner import (
     GameValuationFailure,
@@ -26,7 +27,7 @@ from domain.interfaces.lot_opportunity_scanner import (
 )
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
 from domain.interfaces.outlier_removal import IOutlierRemoval
-from domain.interfaces.price_collector import ComparableListing, IPriceCollector
+from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import IPriceDatasetBuilder
 from domain.interfaces.price_statistics import IPriceStatistics
 

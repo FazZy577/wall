@@ -15,7 +15,7 @@ The lot domain model introduces three new entities that enable analyzing bundles
 | **Purpose** | Listing we are considering **buying** | Listing used as a **price reference** |
 | **Game count** | `detected_games: list[DetectedGame]` (multiple) | `detected_game: DetectedGame` (single) |
 | **Used in** | Lot valuation, purchase decisions | Market price estimation dataset |
-| **Location** | `domain/entities/candidate_listing.py` | `domain/interfaces/price_collector.py` |
+| **Location** | `domain/entities/candidate_listing.py` | `domain/entities/comparable_listing.py` |
 
 **Example**: For a lot "GTA V + RDR2 + Spider-Man at 40€":
 
@@ -38,7 +38,7 @@ The lot domain model introduces three new entities that enable analyzing bundles
 `ArbitrageOpportunity` represents a single-game opportunity. It has:
 - `game: DetectedGame` (singular)
 - `market_price: float` (single value)
-- `listing: ComparableListing` (single-game listing)
+- `listing: CandidateListing` (single-game purchase candidate)
 
 Converting `game` to a list would break the existing individual pipeline. Instead, `LotOpportunity` is a separate entity that composes multiple `GameValuation` objects.
 

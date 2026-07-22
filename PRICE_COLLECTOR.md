@@ -93,6 +93,11 @@ Game → Generate Search Query → WallapopClient → Raw Listings
 
 Represents a validated comparable listing with full details:
 
+Its single canonical definition is
+`domain/entities/comparable_listing.py`. The historical import from
+`domain.interfaces.price_collector` remains a compatibility re-export and
+resolves to the same class object.
+
 ```python
 @dataclass
 class ComparableListing:

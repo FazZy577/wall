@@ -7,8 +7,8 @@ listings that cannot be used as valid comparables for price estimation.
 import re
 import unicodedata
 
-from domain.interfaces.comparable_filter import IComparableFilter, Listing
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
+from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
 
 
 class RuleBasedComparableFilter(IComparableFilter):
@@ -112,7 +112,7 @@ class RuleBasedComparableFilter(IComparableFilter):
     def is_valid_comparable(
         self,
         target_game: DetectedGame,
-        listing: Listing,
+        listing: ComparableFilterInput,
     ) -> bool:
         """Determine if a listing is valid as a comparable.
 
@@ -280,7 +280,9 @@ class RuleBasedComparableFilter(IComparableFilter):
 
         return has_empty_indicator
 
-    def _is_correct_game(self, target_game: DetectedGame, listing: Listing) -> bool:
+    def _is_correct_game(
+        self, target_game: DetectedGame, listing: ComparableFilterInput
+    ) -> bool:
         """Verify that the listing matches the target game.
 
         Checks for common mismatches like:

@@ -1,18 +1,35 @@
-"""Nominal and typed boundaries between candidates and comparables."""
+"""Nominal, typed, and canonical boundaries for listing/game models."""
 
+import ast
+from pathlib import Path
 from typing import get_type_hints
 from unittest.mock import Mock
 
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
+from domain.entities.detected_game import (
+    DetectedGame,
+    DetectionMethod,
+    Platform,
+)
+from domain.entities.game_valuation import GameValuation
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     IArbitrageOpportunityDetector,
 )
-from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
+from domain.interfaces.game_detector import DetectedGame as PortDetectedGame
+from domain.interfaces.game_detector import DetectionMethod as PortDetectionMethod
+from domain.interfaces.game_detector import IGameDetector, ListingText
+from domain.interfaces.game_detector import Platform as PortPlatform
+from domain.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
 from domain.interfaces.opportunity_scanner import IOpportunityScanner
-from domain.interfaces.price_collector import ComparableListing, IPriceCollector
+from domain.interfaces.price_collector import (
+    ComparableListing as PortComparableListing,
+)
+from domain.interfaces.price_collector import IPriceCollector
 from domain.interfaces.price_dataset_builder import InvalidComparableListingError
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -62,6 +79,26 @@ def test_candidate_and_comparable_are_nominally_unrelated() -> None:
     assert not issubclass(ComparableListing, CandidateListing)
 
 
+def test_legacy_comparable_import_reexports_canonical_class() -> None:
+    assert PortComparableListing is ComparableListing
+
+
+def test_detector_port_reexports_canonical_detection_models() -> None:
+    assert PortDetectedGame is DetectedGame
+    assert PortPlatform is Platform
+    assert PortDetectionMethod is DetectionMethod
+
+
+def test_comparable_filter_input_is_a_distinct_explicit_payload() -> None:
+    filter_hints = get_type_hints(IComparableFilter.is_valid_comparable)
+
+    assert filter_hints["listing"] is ComparableFilterInput
+    assert ComparableFilterInput is not CandidateListing
+    assert ComparableFilterInput is not ComparableListing
+    assert not issubclass(ComparableFilterInput, CandidateListing)
+    assert not issubclass(ComparableFilterInput, ComparableListing)
+
+
 def test_candidate_has_no_single_platform_requirement() -> None:
     candidate = _candidate()
     detected_games = [_game(Platform.PS4), _game(Platform.PS5)]
@@ -105,6 +142,67 @@ def test_public_type_hints_enforce_listing_boundaries() -> None:
     assert detector["listing"] is CandidateListing
     assert opportunity["listing"] is CandidateListing
     assert collector["return"] == list[ComparableListing]
+
+
+def test_detection_and_lot_contracts_share_canonical_game_types() -> None:
+    candidate_hints = get_type_hints(CandidateListing)
+    detector_hints = get_type_hints(IGameDetector.detect_games)
+    lot_hints = get_type_hints(ILotOpportunityScanner.scan_lot)
+    valuation_hints = get_type_hints(GameValuation)
+
+    assert candidate_hints["detected_games"] == list[DetectedGame]
+    assert detector_hints["listing_text"] is ListingText
+    assert detector_hints["return"] == list[DetectedGame]
+    assert lot_hints["listing"] is CandidateListing
+    assert valuation_hints["game"] is DetectedGame
+    assert GameValuation is not DetectedGame
+    assert ListingText is not CandidateListing
+    assert _game().platform is Platform.PS4
+
+
+def test_canonical_domain_symbols_have_single_class_definition() -> None:
+    source_root = Path(__file__).parents[2] / "src"
+    canonical_symbols = {
+        "CandidateListing",
+        "ComparableListing",
+        "DetectedGame",
+        "ListingText",
+        "GameValuation",
+        "Platform",
+        "DetectionMethod",
+    }
+    definitions: dict[str, list[Path]] = {name: [] for name in canonical_symbols}
+
+    for source_file in source_root.rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name in definitions:
+                definitions[node.name].append(source_file.relative_to(source_root))
+
+    assert definitions == {
+        "CandidateListing": [Path("domain/entities/candidate_listing.py")],
+        "ComparableListing": [Path("domain/entities/comparable_listing.py")],
+        "DetectedGame": [Path("domain/entities/detected_game.py")],
+        "ListingText": [Path("domain/interfaces/game_detector.py")],
+        "GameValuation": [Path("domain/entities/game_valuation.py")],
+        "Platform": [Path("domain/entities/detected_game.py")],
+        "DetectionMethod": [Path("domain/entities/detected_game.py")],
+    }
+
+
+def test_no_generic_listing_class_exists_in_source() -> None:
+    source_root = Path(__file__).parents[2] / "src"
+    definitions: list[Path] = []
+
+    for source_file in source_root.rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        if any(
+            isinstance(node, ast.ClassDef) and node.name == "Listing"
+            for node in ast.walk(tree)
+        ):
+            definitions.append(source_file.relative_to(source_root))
+
+    assert definitions == []
 
 
 def test_scanner_detects_games_from_candidate_text_without_candidate_platform() -> None:

@@ -9,8 +9,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )

@@ -7,10 +7,12 @@ to collect valid comparable listings.
 import logging
 from typing import Any
 
-from domain.interfaces.comparable_filter import IComparableFilter, Listing
-from domain.interfaces.game_detector import DetectedGame, IGameDetector, ListingText
+from domain.entities.comparable_listing import ComparableListing
+from domain.entities.detected_game import DetectedGame
+from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
+from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.marketplace_search import IMarketplaceSearch
-from domain.interfaces.price_collector import ComparableListing, IPriceCollector
+from domain.interfaces.price_collector import IPriceCollector
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +223,9 @@ class WallapopPriceCollector(IPriceCollector):
             return None
 
         # Filter with comparable filter
-        listing_obj = Listing(title=title, description=description, price=price_float)
+        listing_obj = ComparableFilterInput(
+            title=title, description=description, price=price_float
+        )
         is_valid = self.comparable_filter.is_valid_comparable(target_game, listing_obj)
 
         if not is_valid:

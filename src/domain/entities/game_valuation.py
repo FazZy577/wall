@@ -6,7 +6,7 @@ Represents the valuation of a single game within a lot or candidate listing.
 from dataclasses import dataclass
 from datetime import datetime
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 from domain.interfaces.market_price_estimator import MarketPriceEstimate
 
 

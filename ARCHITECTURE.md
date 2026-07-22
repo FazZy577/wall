@@ -89,6 +89,25 @@ wallapop-arbitrage/
 
 ## Entidades del Dominio
 
+### Modelos canónicos actuales
+
+| Concepto | Responsabilidad | Definición canónica |
+|---|---|---|
+| `CandidateListing` | Anuncio que se considera comprar; puede ser un lote | `domain/entities/candidate_listing.py` |
+| `ComparableListing` | Observación individual aceptada para estimar mercado | `domain/entities/comparable_listing.py` |
+| `ComparableFilterInput` | Payload previo a que el filtro acepte o rechace un comparable | `domain/interfaces/comparable_filter.py` |
+| `ListingText` | Título y descripción que recibe `GameDetector` | `domain/interfaces/game_detector.py` |
+| `DetectedGame` | Resultado compartido de detección | `domain/entities/detected_game.py` |
+| `Platform` | Plataforma compartida por detección y valoración | `domain/entities/detected_game.py` |
+| `DetectionMethod` | Método con el que se produjo una detección | `domain/entities/detected_game.py` |
+| `GameValuation` | Valoración económica de un juego detectado | `domain/entities/game_valuation.py` |
+
+Estos conceptos comparten algunos campos, pero no son intercambiables. El
+`ComparableFilterInput` de `comparable_filter.py` es un payload exclusivo de ese
+puerto, previo a que un anuncio sea aceptado como `ComparableListing`. Los
+diccionarios devueltos por `IMarketplaceSearch` continúan siendo datos crudos
+externos, no un DTO general ni una entidad de dominio.
+
 ### Listing (Anuncio)
 Representa un anuncio normalizado de cualquier marketplace.
 

@@ -13,12 +13,10 @@ from typing import Any
 
 from rapidfuzz import fuzz
 
+from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.interfaces.game_detector import (
-    DetectedGame,
-    DetectionMethod,
     IGameDetector,
     ListingText,
-    Platform,
 )
 
 

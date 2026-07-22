@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.detected_game import DetectedGame
 
 
 class InvalidComparableListingError(TypeError):

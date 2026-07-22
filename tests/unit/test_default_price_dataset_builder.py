@@ -9,12 +9,12 @@ from unittest.mock import Mock
 
 import pytest
 
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
     Platform,
 )
-from domain.interfaces.price_collector import ComparableListing
 from domain.interfaces.price_dataset_builder import PriceDataset, PriceObservation
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,

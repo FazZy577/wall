@@ -4,34 +4,11 @@ Defines the contract for price collection implementations.
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any
 
-from domain.interfaces.game_detector import DetectedGame
+from domain.entities.comparable_listing import ComparableListing
+from domain.entities.detected_game import DetectedGame
 
-
-@dataclass
-class ComparableListing:
-    """A marketplace listing validated as a comparable for price estimation.
-
-    Attributes:
-        listing_id: Unique identifier from marketplace
-        title: Listing title
-        description: Listing description
-        price: Listed price in currency
-        currency: Currency code (e.g., "EUR")
-        detected_game: The game detected in this listing
-        url: Direct URL to the listing
-    """
-
-    listing_id: str
-    title: str
-    description: str
-    price: float
-    currency: str
-    detected_game: DetectedGame
-    url: str
-    raw_listing: dict[str, Any] = field(default_factory=dict)
+# Compatibility re-export: old imports resolve to the canonical entity above.
 
 
 class IPriceCollector(ABC):

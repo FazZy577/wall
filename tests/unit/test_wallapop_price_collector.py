@@ -9,12 +9,12 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
     Platform,
 )
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 
 

@@ -9,6 +9,7 @@ from unittest.mock import Mock
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import (
     DetectedGame,
@@ -16,7 +17,6 @@ from domain.interfaces.game_detector import (
     Platform,
 )
 from domain.interfaces.lot_opportunity_scanner import LotPipelineStage
-from domain.interfaces.price_collector import ComparableListing
 from infrastructure.scanners.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )

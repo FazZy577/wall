@@ -608,7 +608,7 @@ class TestDatasetContamination:
 
         # Setup
         game = _make_game("GTA V")
-        from domain.interfaces.price_collector import ComparableListing
+        from domain.entities.comparable_listing import ComparableListing
 
         candidate = CandidateListing(
             listing_id="candidate001",
@@ -690,7 +690,7 @@ class TestDatasetContamination:
         )
 
         game = _make_game("GTA V")
-        from domain.interfaces.price_collector import ComparableListing
+        from domain.entities.comparable_listing import ComparableListing
 
         candidate = CandidateListing(
             listing_id="candidate002",
