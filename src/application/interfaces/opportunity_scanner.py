@@ -96,6 +96,13 @@ class RankingStrategy(StrEnum):
     CUSTOM = "custom"
 
 
+_RECOMMENDATION_PRIORITY: dict[Recommendation, int] = {
+    Recommendation.BUY: 0,
+    Recommendation.MAYBE: 1,
+    Recommendation.SKIP: 2,
+}
+
+
 @dataclass
 class RankingResult:
     """Result of ranking a list of arbitrage opportunities.
@@ -173,10 +180,19 @@ def _sort_by_strategy(
         strategy: Ranking strategy to use
 
     Returns:
-        New list sorted by the strategy (descending)
+        New list grouped BUY, MAYBE, SKIP and sorted by strategy within groups
     """
+
+    def opportunity_score_key(
+        opportunity: ArbitrageOpportunity,
+    ) -> tuple[int, float]:
+        return (
+            _RECOMMENDATION_PRIORITY[opportunity.recommendation],
+            -opportunity.opportunity_score,
+        )
+
     if strategy == RankingStrategy.OPPORTUNITY_SCORE:
-        return sorted(opportunities, key=lambda o: o.opportunity_score, reverse=True)
+        return sorted(opportunities, key=opportunity_score_key)
 
     # Fallback for unimplemented strategies — same pattern as
     # DefaultMarketPriceEstimator which only implements MEDIAN.
@@ -187,7 +203,7 @@ def _sort_by_strategy(
         f"Ranking strategy '{strategy}' is not yet implemented. "
         f"Falling back to {RankingStrategy.OPPORTUNITY_SCORE}."
     )
-    return sorted(opportunities, key=lambda o: o.opportunity_score, reverse=True)
+    return sorted(opportunities, key=opportunity_score_key)
 
 
 class IOpportunityScanner(ABC):

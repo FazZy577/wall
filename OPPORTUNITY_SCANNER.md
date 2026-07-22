@@ -1,5 +1,11 @@
 # Opportunity Scanner
 
+Batch results use a strict recommendation barrier before they are returned:
+all BUY opportunities precede MAYBE, and all MAYBE precede SKIP. Within each
+group the current strategy applies (`opportunity_score` descending by
+default). Scores and recommendations are unchanged, and no opportunity is
+filtered from `ScanResult`.
+
 **Module**: `application.interfaces.opportunity_scanner`
 **Implementation**: `application.use_cases.default_opportunity_scanner`
 

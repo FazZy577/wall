@@ -10,6 +10,7 @@ from application.interfaces.opportunity_scanner import (
     FailureInfo,
     IOpportunityScanner,
     PipelineStage,
+    RankingResult,
     ScanResult,
 )
 from domain.entities.candidate_listing import CandidateListing
@@ -332,11 +333,12 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             f"Batch scan completed: {len(opportunities)} successful, "
             f"{len(failures)} failed in {processing_time:.2f} s"
         )
+        ranked_opportunities = RankingResult.from_opportunities(opportunities)
         return ScanResult(
             total_processed=len(listings),
             successful=len(opportunities),
             failed=len(failures),
-            opportunities=opportunities,
+            opportunities=ranked_opportunities.ordered_opportunities,
             failures=failures,
             processing_time=processing_time,
             created_at=datetime.now(UTC),

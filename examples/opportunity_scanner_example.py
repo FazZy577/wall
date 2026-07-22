@@ -256,6 +256,7 @@ async def main() -> None:
         print(f"  SKIP:   {ranking.skip_count}")
         print(f"  Best score:   {ranking.best_score:.1f}/100")
         print(f"  Average score: {ranking.average_score:.1f}/100")
+        print("  Priority: BUY > MAYBE > SKIP; score orders within each group")
         print()
 
         for i, opp in enumerate(ranking.ordered_opportunities, 1):

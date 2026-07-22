@@ -227,3 +227,11 @@ individual and lot opportunities. Both expose the same read-only API:
 `acquisition_discount_to_reference_market_percentage`, and
 `break_even_sale_revenue`. Historical ambiguous financial fields and threshold
 parameter names were removed rather than retained as aliases.
+
+## P1.9 recommendation-aware ranking
+
+Opportunity ranking now enforces `BUY > MAYBE > SKIP` before applying the
+selected strategy inside each group. Scores, recommendations, counts and
+tie-breakers remain unchanged. Batch scanner results retain every
+recommendation. Unimplemented application strategies keep their existing
+score fallback pending P1.10; no lot ranking was introduced.

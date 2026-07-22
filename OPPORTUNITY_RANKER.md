@@ -71,7 +71,23 @@ Future strategies (not yet implemented):
 
 Attempting to use an unimplemented strategy raises `UnsupportedRankingStrategyError`.
 
-## Primary Sort
+## Recommendation barrier
+
+Every ranking uses the explicit primary order `BUY > MAYBE > SKIP`. The
+selected strategy is applied only inside each recommendation group.
+Recommendation is not incorporated into `opportunity_score`, and neither
+scores nor recommendations are modified.
+
+```text
+Input:  SKIP 95, BUY 60, MAYBE 80, BUY 40
+Output: BUY 60, BUY 40, MAYBE 80, SKIP 95
+```
+
+The application ranking used by the scanner retains every opportunity. The
+standalone ranker's pre-existing `include_skip` option remains available; when
+SKIP entries are included, they always follow MAYBE and BUY.
+
+## Secondary Sort
 
 By `opportunity_score` descending:
 
@@ -101,7 +117,11 @@ Score 80.0, Profit €10.00  →  ranks SECOND
 
 The ranker does **NOT** alter `recommendation`. It preserves the original BUY/MAYBE/SKIP from the `ArbitrageOpportunityDetector`.
 
-The ranking is purely by `opportunity_score` — a high score with a SKIP recommendation would still rank above a low score with BUY. This is intentional: the score encodes all relevant factors, and the recommendation is informational.
+Recommendation is the primary barrier. The selected strategy and existing
+tie-breakers order only opportunities that share the same recommendation.
+Application strategies not yet implemented retain their score fallback until
+P1.10. The standalone ranker continues rejecting unsupported strategies.
+P1.9 does not introduce ranking for `LotOpportunity`.
 
 ## Limit
 

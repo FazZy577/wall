@@ -358,6 +358,51 @@ class TestScanMultiple:
         assert isinstance(result.created_at, datetime)
 
     @pytest.mark.asyncio
+    async def test_scan_multiple_returns_recommendation_priority_order(
+        self,
+        scanner: DefaultOpportunityScanner,
+        sample_comparable: ComparableListing,
+        mock_price_collector: Mock,
+        mock_dataset_builder: Mock,
+        mock_statistics: Mock,
+        mock_outlier_removal: Mock,
+        mock_market_estimator: Mock,
+        mock_arbitrage_detector: Mock,
+    ) -> None:
+        listings = [
+            CandidateListing(
+                listing_id=f"candidate-{index}",
+                title=f"GTA V PS4 {index}",
+                description="",
+                price=10.0 + index,
+                currency="EUR",
+                url=f"https://example.test/{index}",
+            )
+            for index in range(3)
+        ]
+        _setup_successful_pipeline_mocks(
+            scanner,
+            sample_comparable,
+            mock_price_collector,
+            mock_dataset_builder,
+            mock_statistics,
+            mock_outlier_removal,
+            mock_market_estimator,
+            mock_arbitrage_detector,
+        )
+        skip = Mock(recommendation=Recommendation.SKIP, opportunity_score=100.0)
+        buy = Mock(recommendation=Recommendation.BUY, opportunity_score=1.0)
+        maybe = Mock(recommendation=Recommendation.MAYBE, opportunity_score=90.0)
+        mock_arbitrage_detector.detect.side_effect = [skip, buy, maybe]
+
+        result = await scanner.scan_multiple(listings)
+
+        assert result.opportunities == [buy, maybe, skip]
+        assert result.successful == 3
+        assert result.comparable_cache_misses == 1
+        assert result.comparable_cache_hits == 2
+
+    @pytest.mark.asyncio
     async def test_empty_list(
         self,
         scanner: DefaultOpportunityScanner,

@@ -9,6 +9,7 @@ from application.interfaces.opportunity_scanner import PipelineStage, ScanResult
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
+from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 
 
@@ -105,7 +106,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
             listing=candidate,
             listing_price=candidate.price,
             market_estimate=estimate,
-            recommendation="BUY",
+            recommendation=Recommendation.BUY,
             opportunity_score=100.0 - candidate.price,
         )
 
