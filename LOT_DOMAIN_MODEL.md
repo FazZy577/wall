@@ -29,7 +29,7 @@ The lot domain model introduces three new entities that enable analyzing bundles
 | **Scope** | Single game | Bundle of games |
 | **Game field** | `game: DetectedGame` (singular) | `game_valuations: list[GameValuation]` (plural) |
 | **Market price** | Single game's market price | Sum of all games' market values |
-| **Profit** | `market_price - listing_price` | `total_market_value - lot_price` |
+| **Profit** | `market_price - listing_price` | `reference_market_value - lot_price` |
 | **Confidence** | Single estimate's confidence | Aggregate (mean) of individual confidences |
 | **Reason** | `ReasonCode` (individual) | `LotReasonCode` (lot-specific) |
 
@@ -89,17 +89,17 @@ Created via `GameValuation.from_market_estimate(game, estimate, observations_rem
 class LotOpportunity:
     listing: CandidateListing
     game_valuations: list[GameValuation]
-    total_market_value: float
     lot_price: float
-    estimated_profit: float
-    profit_margin_percentage: float
-    roi_percentage: float
     aggregate_confidence_score: float
     recommendation: Recommendation
     reason: LotReasonCode
     opportunity_score: float
     created_at: datetime
+    economic_breakdown: EconomicBreakdown
 ```
+
+All financial values are read-only properties delegated to
+`economic_breakdown`; they are not duplicated dataclass fields.
 
 Created via `LotOpportunity.from_valuations(listing, valuations, recommendation, reason, score)`.
 
@@ -119,11 +119,11 @@ class LotReasonCode(StrEnum):
 ## Calculations
 
 ```
-total_market_value = sum(game_valuation.estimated_market_value)
-lot_price = listing.price
-estimated_profit = total_market_value - lot_price
-profit_margin_percentage = estimated_profit / total_market_value * 100
-roi_percentage = estimated_profit / lot_price * 100
+reference_market_value = sum(successful game reference values)
+expected_sale_revenue = sum(per-item values after quick-sale discount)
+net_profit = net_expected_proceeds - total_acquisition_cost
+net_profit_margin_percentage = net_profit / expected_sale_revenue * 100
+net_roi_percentage = net_profit / total_acquisition_cost * 100
 aggregate_confidence_score = mean(confidence_score for each valuation)
 ```
 
@@ -131,9 +131,10 @@ aggregate_confidence_score = mean(confidence_score for each valuation)
 
 | Case | Behavior |
 |---|---|
-| `total_market_value <= 0` | `profit_margin_percentage = 0.0` |
-| `lot_price <= 0` | `roi_percentage = 0.0` |
-| No valuations | `aggregate_confidence_score = 0.0`, `total_market_value = 0.0` |
+| `expected_sale_revenue <= 0` | `net_profit_margin_percentage = 0.0` |
+| `total_acquisition_cost <= 0` | `net_roi_percentage = 0.0` |
+| `reference_market_value <= 0` | acquisition discount = `0.0` |
+| No valuations | `aggregate_confidence_score = 0.0`, `reference_market_value = 0.0` |
 
 ### aggregate_confidence_score
 
@@ -187,8 +188,8 @@ lot = LotOpportunity.from_valuations(
 )
 
 # Results:
-# total_market_value = 15 + 20 + 18 = 53€
-# estimated_profit = 53 - 40 = 13€
+# reference_market_value = 15 + 20 + 18 = 53€
+# net_profit = 53 - 40 = 13€
 # profit_margin = 13/53*100 = 24.5%
 # roi = 13/40*100 = 32.5%
 ```

@@ -230,17 +230,17 @@ async def main() -> None:
     if opportunity is None:
         raise RuntimeError("Expected lot opportunity")
 
-    margin = opportunity.estimated_profit / opportunity.total_market_value * 100
-    roi = opportunity.estimated_profit / opportunity.lot_price * 100
+    margin = opportunity.net_profit / opportunity.reference_market_value * 100
+    roi = opportunity.net_profit / opportunity.lot_price * 100
 
     print(f"Total detected games: {result.total_detected_games}")
     print(f"Successfully valued: {result.successfully_valued_games}")
     print(f"Failed: {result.failed_games}")
     print(f"Complete: {result.is_complete}")
     print()
-    print(f"Total market value: {listing.currency} {opportunity.total_market_value:.2f}")
+    print(f"Total market value: {listing.currency} {opportunity.reference_market_value:.2f}")
     print(f"Lot price: {listing.currency} {opportunity.lot_price:.2f}")
-    print(f"Estimated profit: {listing.currency} {opportunity.estimated_profit:.2f}")
+    print(f"Estimated profit: {listing.currency} {opportunity.net_profit:.2f}")
     print(f"Margin: {margin:.2f}%")
     print(f"ROI: {roi:.2f}%")
     print(f"Aggregate confidence: {opportunity.aggregate_confidence_score:.2f}")

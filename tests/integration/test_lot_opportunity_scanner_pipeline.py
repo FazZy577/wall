@@ -108,7 +108,7 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
     assert result.total_detected_games == 3
     assert len(result.game_valuations) == 3
     assert result.opportunity is not None
-    assert result.opportunity.total_market_value == 45.0
+    assert result.opportunity.reference_market_value == 45.0
     assert result.opportunity.lot_price == 40.0
     assert len(collector.calls) == 3
     analyzer.analyze.assert_called_once()

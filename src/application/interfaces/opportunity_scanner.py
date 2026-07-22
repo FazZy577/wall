@@ -83,9 +83,9 @@ class RankingStrategy(StrEnum):
 
     Attributes:
         OPPORTUNITY_SCORE: Sort by opportunity_score descending
-        ABSOLUTE_PROFIT: Sort by estimated_profit descending (future)
-        ROI: Sort by roi_percentage descending (future)
-        MARKET_DISCOUNT: Sort by market_discount_percentage descending (future)
+        ABSOLUTE_PROFIT: Sort by net_profit descending (future)
+        ROI: Sort by net_roi_percentage descending (future)
+        MARKET_DISCOUNT: Sort by acquisition_discount_to_reference_market_percentage descending (future)
         CUSTOM: Custom ranking function (future)
     """
 

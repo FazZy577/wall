@@ -18,12 +18,32 @@ It provides a **BUY**, **MAYBE**, or **SKIP** recommendation based on configurab
 
 An arbitrage opportunity exists when you can buy an item at one price and immediately sell it at a higher price, capturing the difference as profit.
 
-For video games on marketplaces like Wallapop:
-- **Listing Price**: What the seller is asking
-- **Market Price**: What the game typically sells for (estimated)
-- **Profit**: Market Price - Listing Price
-- **Profit Margin**: (Profit / Market Price) × 100%
-- **ROI**: (Profit / Listing Price) × 100%
+For video games on marketplaces like Wallapop, the listing price is the
+acquisition price and the market estimate supplies the reference value. The
+economic policy then accounts explicitly for quick-sale discount, selling
+fees, fixed costs, overhead, and safety buffer before exposing net profit,
+margin, ROI, acquisition discount, and break-even revenue.
+
+### Canonical financial vocabulary
+
+`EconomicBreakdown` is the single source of financial truth. Opportunities
+delegate their read-only financial properties to it.
+
+| Canonical name | Meaning | Denominator |
+|---|---|---|
+| `reference_market_value` | Gross reference market value | n/a |
+| `expected_sale_revenue` | Gross expected revenue after quick-sale discount | n/a |
+| `net_expected_proceeds` | Revenue after selling costs and buffer, before acquisition | n/a |
+| `net_profit` | Proceeds after all costs including acquisition | n/a |
+| `net_profit_margin_percentage` | Net profit margin | `expected_sale_revenue` |
+| `net_roi_percentage` | Net return on investment | `total_acquisition_cost` |
+| `acquisition_discount_to_reference_market_percentage` | Acquisition-price discount to reference market | `reference_market_value` |
+| `break_even_sale_revenue` | Gross sale revenue required to cover costs | n/a |
+
+Reference market is not expected revenue; expected revenue is not net
+proceeds; and net proceeds do not yet subtract acquisition. The acquisition
+discount uses acquisition price, while ROI uses total acquisition cost.
+Break-even is revenue, not a purchase price.
 
 ### Decision Framework
 
@@ -122,14 +142,14 @@ from infrastructure.detectors.default_arbitrage_opportunity_detector import (
 )
 
 # Create detector with default thresholds
-detector = DefaultArbitrageOpportunityDetector()
+detector = DefaultArbitrageOpportunityDetector(economic_policy)
 
 # Evaluate a listing
 opportunity = detector.detect(listing, market_estimate)
 
 # Check recommendation
 if opportunity.recommendation == Recommendation.BUY:
-    print(f"BUY: Expected profit EUR {opportunity.estimated_profit:.2f}")
+    print(f"BUY: Expected profit EUR {opportunity.net_profit:.2f}")
 elif opportunity.recommendation == Recommendation.MAYBE:
     print(f"MAYBE: {opportunity.reason}")
 else:
@@ -141,8 +161,8 @@ else:
 ```python
 # More conservative thresholds
 detector = DefaultArbitrageOpportunityDetector(
-    min_profit_eur=15.0,      # Require at least EUR 15 profit
-    min_margin_percent=35.0,  # Require at least 35% margin
+    min_net_profit_eur=15.0,      # Require at least EUR 15 profit
+    min_net_profit_margin_percent=35.0,  # Require at least 35% margin
     min_confidence_score=0.70, # Require higher confidence
 )
 
@@ -201,9 +221,7 @@ Reason: undervalued
 | `game` | `DetectedGame` | Game detected in the listing |
 | `market_price` | `float` | Estimated market price (EUR) |
 | `listing_price` | `float` | Price in the listing (EUR) |
-| `estimated_profit` | `float` | Expected profit (market - listing) |
-| `profit_margin_percentage` | `float` | Profit margin % |
-| `roi_percentage` | `float` | Return on investment % |
+| `economic_breakdown` | `EconomicBreakdown` | Single stored source of financial values |
 | `confidence_score` | `float` | Confidence in market estimate |
 | `confidence_level` | `ConfidenceLevel` | Human-readable confidence |
 | `recommendation` | `Recommendation` | BUY, MAYBE, or SKIP |
@@ -254,15 +272,15 @@ if confidence_score < min_confidence_score:
 ### Step 3: Profitability Check
 
 ```python
-if estimated_profit <= 0:
+if net_profit <= 0:
     return SKIP (overpriced)
 ```
 
 ### Step 4: Threshold Evaluation
 
 ```python
-if (profit >= min_profit_eur AND 
-    margin >= min_margin_percent AND 
+if (net_profit >= min_net_profit_eur AND
+    net_profit_margin_percentage >= min_net_profit_margin_percent AND
     confidence >= min_confidence_score):
     return BUY (undervalued)
 ```
@@ -270,10 +288,10 @@ if (profit >= min_profit_eur AND
 ### Step 5: Borderline Cases
 
 ```python
-if profit > 0 AND profit < min_profit_eur:
+if net_profit > 0 AND net_profit < min_net_profit_eur:
     return MAYBE (low_expected_profit)
 
-if profit > 0 AND margin < min_margin_percent:
+if net_profit > 0 AND net_profit_margin_percentage < min_net_profit_margin_percent:
     return MAYBE (fair_price)
 ```
 
@@ -285,14 +303,14 @@ return MAYBE (fair_price)
 
 ## Calculation Formulas
 
-### Estimated Profit
+### Net Profit
 ```
-estimated_profit = market_price - listing_price
+net_profit = net_expected_proceeds - total_acquisition_cost
 ```
 
 ### Profit Margin Percentage
 ```
-profit_margin_percentage = (estimated_profit / market_price) × 100
+net_profit_margin_percentage = (net_profit / expected_sale_revenue) × 100
 ```
 
 **Interpretation**:
@@ -302,7 +320,7 @@ profit_margin_percentage = (estimated_profit / market_price) × 100
 
 ### ROI Percentage
 ```
-roi_percentage = (estimated_profit / listing_price) × 100
+net_roi_percentage = (net_profit / total_acquisition_cost) × 100
 ```
 
 **Interpretation**:
@@ -396,8 +414,8 @@ For risk-averse users who want high-confidence opportunities:
 
 ```python
 detector = DefaultArbitrageOpportunityDetector(
-    min_profit_eur=15.0,       # Higher profit requirement
-    min_margin_percent=35.0,   # Higher margin requirement
+    min_net_profit_eur=15.0,       # Higher profit requirement
+    min_net_profit_margin_percent=35.0,   # Higher margin requirement
     min_confidence_score=0.70, # Higher confidence requirement
 )
 ```
@@ -410,8 +428,8 @@ For users willing to take more risk:
 
 ```python
 detector = DefaultArbitrageOpportunityDetector(
-    min_profit_eur=5.0,        # Lower profit requirement
-    min_margin_percent=15.0,   # Lower margin requirement
+    min_net_profit_eur=5.0,        # Lower profit requirement
+    min_net_profit_margin_percent=15.0,   # Lower margin requirement
     min_confidence_score=0.40, # Lower confidence requirement
 )
 ```
@@ -424,8 +442,8 @@ Default thresholds provide a good balance:
 
 ```python
 detector = DefaultArbitrageOpportunityDetector()
-# min_profit_eur=10.0
-# min_margin_percent=25.0
+# min_net_profit_eur=10.0
+# min_net_profit_margin_percent=25.0
 # min_confidence_score=0.50
 ```
 
@@ -541,7 +559,7 @@ ArbitrageOpportunity
 Recommendation + opportunity_score
 ```
 
-`estimated_profit` now means net expected profit. `break_even_price`
+`net_profit` now means net expected profit. `break_even_sale_revenue`
 temporarily means required gross sale revenue; its name is deferred to P1.8.
 Decision thresholds, rule order, and score weights are unchanged, but their
 economic inputs are net, so recommendations may legitimately become more

@@ -217,3 +217,13 @@ Individual and lot opportunities now expose an auditable economic breakdown.
 The operational 3 EUR quick-sale discount is example configuration, not a
 hidden default. Fees and costs must be configured for the real sales channel;
 currency conversion and migration from `float` to `Decimal` remain pending.
+
+## P1.8 canonical financial nomenclature
+
+`EconomicBreakdown` is now the sole stored source of financial amounts for
+individual and lot opportunities. Both expose the same read-only API:
+`reference_market_value`, `expected_sale_revenue`, `net_expected_proceeds`,
+`net_profit`, `net_profit_margin_percentage`, `net_roi_percentage`,
+`acquisition_discount_to_reference_market_percentage`, and
+`break_even_sale_revenue`. Historical ambiguous financial fields and threshold
+parameter names were removed rather than retained as aliases.

@@ -79,12 +79,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             ],
             acquisition_price=listing.price,
         )
-        estimated_profit = economic_breakdown.net_profit
-
-        profit_margin = self._compute_margin(
-            economic_breakdown.expected_sale_revenue,
-            estimated_profit,
-        )
+        net_profit = economic_breakdown.net_profit
+        net_profit_margin = economic_breakdown.net_profit_margin_percentage
         aggregate_confidence = self._compute_aggregate_confidence(game_valuations)
 
         # Determine recommendation and reason
@@ -93,15 +89,15 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             listing=listing,
             total_detected_games=total_detected_games,
             valued_count=valued_count,
-            estimated_profit=estimated_profit,
-            profit_margin=profit_margin,
+            net_profit=net_profit,
+            net_profit_margin=net_profit_margin,
             aggregate_confidence=aggregate_confidence,
         )
 
         # Calculate opportunity score
         opportunity_score = self._calculate_opportunity_score(
-            profit_margin=profit_margin,
-            estimated_profit=estimated_profit,
+            net_profit_margin=net_profit_margin,
+            net_profit=net_profit,
             aggregate_confidence=aggregate_confidence,
             total_detected_games=total_detected_games,
             valued_count=valued_count,
@@ -119,13 +115,6 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
     # ------------------------------------------------------------------
     # Metric computation
     # ------------------------------------------------------------------
-
-    @staticmethod
-    def _compute_margin(expected_sale_revenue: float, estimated_profit: float) -> float:
-        """Compute profit margin percentage."""
-        if expected_sale_revenue > 0:
-            return estimated_profit / expected_sale_revenue * 100
-        return 0.0
 
     @staticmethod
     def _compute_aggregate_confidence(
@@ -149,8 +138,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         listing: CandidateListing,
         total_detected_games: int,
         valued_count: int,
-        estimated_profit: float,
-        profit_margin: float,
+        net_profit: float,
+        net_profit_margin: float,
         aggregate_confidence: float,
     ) -> tuple[Recommendation, LotReasonCode]:
         """Determine BUY/MAYBE/SKIP using explicit priority rules.
@@ -174,7 +163,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
         # Rule 4: Incomplete valuation
         if not is_complete:
-            if estimated_profit > 0:
+            if net_profit > 0:
                 return Recommendation.MAYBE, LotReasonCode.INCOMPLETE_VALUATION
             return Recommendation.SKIP, LotReasonCode.INCOMPLETE_VALUATION
 
@@ -183,17 +172,17 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             return Recommendation.SKIP, LotReasonCode.LOW_AGGREGATE_CONFIDENCE
 
         # Rule 6: Overpriced lot
-        if estimated_profit < 0:
+        if net_profit < 0:
             return Recommendation.SKIP, LotReasonCode.OVERPRICED_LOT
 
         # Rule 7: Fair value (exactly at market price)
-        if estimated_profit == 0:
+        if net_profit == 0:
             return Recommendation.SKIP, LotReasonCode.FAIR_VALUE_LOT
 
         # Rule 8: Clear BUY opportunity
         if (
-            estimated_profit >= _MIN_LOT_PROFIT_EUR
-            and profit_margin >= _MIN_LOT_MARGIN_PERCENTAGE
+            net_profit >= _MIN_LOT_PROFIT_EUR
+            and net_profit_margin >= _MIN_LOT_MARGIN_PERCENTAGE
             and aggregate_confidence >= _MIN_AGGREGATE_CONFIDENCE
         ):
             return Recommendation.BUY, LotReasonCode.UNDERVALUED_LOT
@@ -207,8 +196,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
     def _calculate_opportunity_score(
         self,
-        profit_margin: float,
-        estimated_profit: float,
+        net_profit_margin: float,
+        net_profit: float,
         aggregate_confidence: float,
         total_detected_games: int,
         valued_count: int,
@@ -223,8 +212,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             valued_count / total_detected_games if total_detected_games > 0 else 0.0
         )
 
-        margin_component = self._normalize_margin(profit_margin)
-        profit_component = self._normalize_profit(estimated_profit)
+        margin_component = self._normalize_margin(net_profit_margin)
+        profit_component = self._normalize_profit(net_profit)
         confidence_component = self._normalize_confidence(aggregate_confidence)
         completion_component = self._normalize_completion(completion_ratio)
 
@@ -238,14 +227,14 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         return round(max(0.0, min(100.0, score)), 1)
 
     @staticmethod
-    def _normalize_margin(profit_margin: float) -> float:
+    def _normalize_margin(net_profit_margin: float) -> float:
         """Normalize profit margin: 0%→0, 50%+→100."""
-        return max(0.0, min(100.0, profit_margin / 50.0 * 100.0))
+        return max(0.0, min(100.0, net_profit_margin / 50.0 * 100.0))
 
     @staticmethod
-    def _normalize_profit(estimated_profit: float) -> float:
+    def _normalize_profit(net_profit: float) -> float:
         """Normalize absolute profit: 0€→0, 50€+→100."""
-        return max(0.0, min(100.0, estimated_profit / 50.0 * 100.0))
+        return max(0.0, min(100.0, net_profit / 50.0 * 100.0))
 
     @staticmethod
     def _normalize_confidence(aggregate_confidence: float) -> float:

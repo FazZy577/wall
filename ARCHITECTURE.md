@@ -193,7 +193,7 @@ Análisis de rentabilidad de un anuncio.
 **Propiedades:**
 - `listing_id`: Referencia al anuncio
 - `detected_games`: Juegos detectados
-- `total_market_value`: Valor total estimado
+- `reference_market_value`: Valor total estimado
 - `expected_profit`: Beneficio esperado
 - `profit_margin`, `roi`: Métricas
 - `confidence_score`: Nivel de confianza
@@ -345,5 +345,9 @@ one valuation identity.
 
 `domain/entities/resale_economics.py` is the single canonical definition of
 `ResaleEconomicPolicy` and `EconomicBreakdown`. Infrastructure detectors and
-analyzers require the policy through constructor injection. Application
+analyzers consume that breakdown as the single financial source of truth.
+Opportunity entities store the breakdown once and delegate their canonical
+financial properties to it; they do not persist parallel profit, margin, ROI,
+discount, or break-even copies. Infrastructure detectors and analyzers require
+the policy through constructor injection. Application
 scanners neither construct nor configure it.

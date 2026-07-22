@@ -10,7 +10,7 @@ from datetime import datetime
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import EconomicBreakdown
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -49,10 +49,10 @@ def _make_opportunity(
     listing_id: str = "test001",
     title: str = "Test Game PS4",
     opportunity_score: float = 70.0,
-    estimated_profit: float = 20.0,
+    net_profit: float = 20.0,
     confidence_score: float = 0.80,
-    roi_percentage: float = 50.0,
-    market_discount_percentage: float = 30.0,
+    net_roi_percentage: float = 50.0,
+    acquisition_discount_to_reference_market_percentage: float = 30.0,
     recommendation: Recommendation = Recommendation.BUY,
     reason: ReasonCode = ReasonCode.UNDERVALUED,
     market_price: float = 30.0,
@@ -70,25 +70,42 @@ def _make_opportunity(
         currency="EUR",
         url=f"https://wallapop.com/item/{listing_id}",
     )
+    total_acquisition_cost = (
+        net_profit / (net_roi_percentage / 100.0)
+        if net_roi_percentage != 0
+        else listing_price
+    )
+    acquisition_price = market_price * (
+        1 - acquisition_discount_to_reference_market_percentage / 100.0
+    )
+    breakdown = EconomicBreakdown(
+        reference_market_value=market_price,
+        expected_item_sale_prices=(market_price,),
+        expected_sale_revenue=market_price,
+        quick_sale_discount_total=0.0,
+        selling_fees=0.0,
+        fixed_selling_costs=0.0,
+        safety_buffer=0.0,
+        acquisition_price=acquisition_price,
+        acquisition_overhead=total_acquisition_cost - acquisition_price,
+        total_acquisition_cost=total_acquisition_cost,
+        net_expected_proceeds=net_profit + total_acquisition_cost,
+        net_profit=net_profit,
+        break_even_sale_revenue=total_acquisition_cost,
+        item_count=1,
+    )
     return ArbitrageOpportunity(
         listing=listing,
         game=_make_game(),
         market_price=market_price,
         listing_price=listing_price,
-        estimated_profit=estimated_profit,
-        profit_margin_percentage=round(estimated_profit / market_price * 100, 1),
-        roi_percentage=roi_percentage,
-        market_discount_percentage=market_discount_percentage,
-        break_even_price=listing_price,
         confidence_score=confidence_score,
         confidence_level="high",  # type: ignore[arg-type]
         opportunity_score=opportunity_score,
         recommendation=recommendation,
         reason=reason,
         created_at=datetime.now(),
-        economic_breakdown=ResaleEconomicPolicy.neutral().calculate(
-            [market_price], listing_price
-        ),
+        economic_breakdown=breakdown,
     )
 
 
@@ -406,13 +423,13 @@ class TestTieBreaking:
                 listing_id="low_profit",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=10.0,
+                net_profit=10.0,
             ),
             _make_opportunity(
                 listing_id="high_profit",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=65.0,
+                net_profit=65.0,
             ),
         ]
 
@@ -428,14 +445,14 @@ class TestTieBreaking:
                 listing_id="low_conf",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.50,
             ),
             _make_opportunity(
                 listing_id="high_conf",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.95,
             ),
         ]
@@ -452,17 +469,17 @@ class TestTieBreaking:
                 listing_id="low_roi",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.80,
-                roi_percentage=30.0,
+                net_roi_percentage=30.0,
             ),
             _make_opportunity(
                 listing_id="high_roi",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.80,
-                roi_percentage=200.0,
+                net_roi_percentage=200.0,
             ),
         ]
 
@@ -478,17 +495,17 @@ class TestTieBreaking:
                 listing_id="zzz_last",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.80,
-                roi_percentage=50.0,
+                net_roi_percentage=50.0,
             ),
             _make_opportunity(
                 listing_id="aaa_first",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=20.0,
+                net_profit=20.0,
                 confidence_score=0.80,
-                roi_percentage=50.0,
+                net_roi_percentage=50.0,
             ),
         ]
 
@@ -559,15 +576,15 @@ class TestImmutability:
         opp = _make_opportunity(
             listing_id="test",
             opportunity_score=75.0,
-            estimated_profit=25.0,
+            net_profit=25.0,
         )
         original_score = opp.opportunity_score
-        original_profit = opp.estimated_profit
+        original_profit = opp.net_profit
 
         ranker.rank([opp])
 
         assert opp.opportunity_score == original_score
-        assert opp.estimated_profit == original_profit
+        assert opp.net_profit == original_profit
 
     def test_result_is_new_list(self, ranker: DefaultOpportunityRanker) -> None:
         """Should return a new list, not the original."""
@@ -783,14 +800,14 @@ class TestExplain:
                 title="GTA V PS4",
                 recommendation=Recommendation.BUY,
                 opportunity_score=92.4,
-                estimated_profit=25.0,
+                net_profit=25.0,
             ),
             _make_opportunity(
                 listing_id="s1",
                 title="Overpriced Game",
                 recommendation=Recommendation.SKIP,
                 opportunity_score=30.0,
-                estimated_profit=-5.0,
+                net_profit=-5.0,
             ),
         ]
 
@@ -827,7 +844,7 @@ class TestExplain:
                 title="Game A",
                 recommendation=Recommendation.BUY,
                 opportunity_score=80.0,
-                estimated_profit=15.0,
+                net_profit=15.0,
             ),
         ]
 

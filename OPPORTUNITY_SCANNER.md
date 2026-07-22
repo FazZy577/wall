@@ -177,9 +177,9 @@ The scanner supports configurable ranking of opportunities. Results are always s
 ```python
 class RankingStrategy(StrEnum):
     OPPORTUNITY_SCORE = "opportunity_score"   # Sort by opportunity_score descending (implemented)
-    ABSOLUTE_PROFIT = "absolute_profit"       # Sort by estimated_profit descending (future)
-    ROI = "roi"                               # Sort by roi_percentage descending (future)
-    MARKET_DISCOUNT = "market_discount"       # Sort by market_discount_percentage descending (future)
+    ABSOLUTE_PROFIT = "absolute_profit"       # Sort by net_profit descending (future)
+    ROI = "roi"                               # Sort by net_roi_percentage descending (future)
+    MARKET_DISCOUNT = "market_discount"       # Sort by acquisition_discount_to_reference_market_percentage descending (future)
     CUSTOM = "custom"                         # Custom ranking function (future)
 ```
 
@@ -259,7 +259,7 @@ print(f"Time: {result.processing_time:.2f}s")
 
 # Opportunities sorted by score
 for opp in sorted(result.opportunities, key=lambda x: x.opportunity_score, reverse=True):
-    print(f"  {opp.listing.title}: €{opp.estimated_profit:.2f} profit ({opp.opportunity_score:.0f}/100)")
+    print(f"  {opp.listing.title}: €{opp.net_profit:.2f} profit ({opp.opportunity_score:.0f}/100)")
 ```
 
 ## Data Model

@@ -12,7 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import EconomicBreakdown
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -42,10 +42,10 @@ def _make_opportunity(
     listing_id: str,
     title: str,
     opportunity_score: float,
-    estimated_profit: float,
+    net_profit: float,
     confidence_score: float,
-    roi_percentage: float,
-    market_discount_percentage: float,
+    net_roi_percentage: float,
+    acquisition_discount_to_reference_market_percentage: float,
     recommendation: Recommendation,
     listing_price: float,
     market_price: float,
@@ -60,25 +60,42 @@ def _make_opportunity(
         currency="EUR",
         url=f"https://wallapop.com/item/{listing_id}",
     )
+    total_acquisition_cost = (
+        net_profit / (net_roi_percentage / 100.0)
+        if net_roi_percentage != 0
+        else listing_price
+    )
+    acquisition_price = market_price * (
+        1 - acquisition_discount_to_reference_market_percentage / 100.0
+    )
+    breakdown = EconomicBreakdown(
+        reference_market_value=market_price,
+        expected_item_sale_prices=(market_price,),
+        expected_sale_revenue=market_price,
+        quick_sale_discount_total=0.0,
+        selling_fees=0.0,
+        fixed_selling_costs=0.0,
+        safety_buffer=0.0,
+        acquisition_price=acquisition_price,
+        acquisition_overhead=total_acquisition_cost - acquisition_price,
+        total_acquisition_cost=total_acquisition_cost,
+        net_expected_proceeds=net_profit + total_acquisition_cost,
+        net_profit=net_profit,
+        break_even_sale_revenue=total_acquisition_cost,
+        item_count=1,
+    )
     return ArbitrageOpportunity(
         listing=listing,
         game=game,
         market_price=market_price,
         listing_price=listing_price,
-        estimated_profit=estimated_profit,
-        profit_margin_percentage=round(estimated_profit / market_price * 100, 1),
-        roi_percentage=roi_percentage,
-        market_discount_percentage=market_discount_percentage,
-        break_even_price=listing_price,
         confidence_score=confidence_score,
         confidence_level="high",  # type: ignore[arg-type]
         opportunity_score=opportunity_score,
         recommendation=recommendation,
         reason=ReasonCode.UNDERVALUED,
         created_at=datetime.now(),
-        economic_breakdown=ResaleEconomicPolicy.neutral().calculate(
-            [market_price], listing_price
-        ),
+        economic_breakdown=breakdown,
     )
 
 
@@ -104,10 +121,10 @@ def main() -> None:
             listing_id="lst_001",
             title="Grand Theft Auto V PS4",
             opportunity_score=92.4,
-            estimated_profit=25.0,
+            net_profit=25.0,
             confidence_score=0.85,
-            roi_percentage=200.0,
-            market_discount_percentage=50.0,
+            net_roi_percentage=200.0,
+            acquisition_discount_to_reference_market_percentage=50.0,
             recommendation=Recommendation.BUY,
             listing_price=10.0,
             market_price=35.0,
@@ -116,10 +133,10 @@ def main() -> None:
             listing_id="lst_002",
             title="Red Dead Redemption 2 PS4",
             opportunity_score=89.1,
-            estimated_profit=21.0,
+            net_profit=21.0,
             confidence_score=0.90,
-            roi_percentage=150.0,
-            market_discount_percentage=40.0,
+            net_roi_percentage=150.0,
+            acquisition_discount_to_reference_market_percentage=40.0,
             recommendation=Recommendation.BUY,
             listing_price=14.0,
             market_price=35.0,
@@ -128,10 +145,10 @@ def main() -> None:
             listing_id="lst_003",
             title="The Last of Us Part II",
             opportunity_score=73.0,
-            estimated_profit=12.0,
+            net_profit=12.0,
             confidence_score=0.75,
-            roi_percentage=80.0,
-            market_discount_percentage=30.0,
+            net_roi_percentage=80.0,
+            acquisition_discount_to_reference_market_percentage=30.0,
             recommendation=Recommendation.MAYBE,
             listing_price=15.0,
             market_price=27.0,
@@ -140,10 +157,10 @@ def main() -> None:
             listing_id="lst_004",
             title="Call of Duty Black Ops 6",
             opportunity_score=65.0,
-            estimated_profit=8.0,
+            net_profit=8.0,
             confidence_score=0.70,
-            roi_percentage=50.0,
-            market_discount_percentage=20.0,
+            net_roi_percentage=50.0,
+            acquisition_discount_to_reference_market_percentage=20.0,
             recommendation=Recommendation.MAYBE,
             listing_price=16.0,
             market_price=24.0,
@@ -152,10 +169,10 @@ def main() -> None:
             listing_id="lst_005",
             title="FIFA 25 PS4",
             opportunity_score=41.7,
-            estimated_profit=3.0,
+            net_profit=3.0,
             confidence_score=0.60,
-            roi_percentage=20.0,
-            market_discount_percentage=10.0,
+            net_roi_percentage=20.0,
+            acquisition_discount_to_reference_market_percentage=10.0,
             recommendation=Recommendation.SKIP,
             listing_price=15.0,
             market_price=18.0,
@@ -164,10 +181,10 @@ def main() -> None:
             listing_id="lst_006",
             title="Overpriced Game PS4",
             opportunity_score=30.0,
-            estimated_profit=-5.0,
+            net_profit=-5.0,
             confidence_score=0.55,
-            roi_percentage=-30.0,
-            market_discount_percentage=5.0,
+            net_roi_percentage=-30.0,
+            acquisition_discount_to_reference_market_percentage=5.0,
             recommendation=Recommendation.SKIP,
             listing_price=25.0,
             market_price=20.0,
@@ -177,10 +194,10 @@ def main() -> None:
             listing_id="lst_007",
             title="NBA 2K25 PS4",
             opportunity_score=80.0,
-            estimated_profit=10.0,
+            net_profit=10.0,
             confidence_score=0.80,
-            roi_percentage=60.0,
-            market_discount_percentage=25.0,
+            net_roi_percentage=60.0,
+            acquisition_discount_to_reference_market_percentage=25.0,
             recommendation=Recommendation.BUY,
             listing_price=12.0,
             market_price=22.0,
@@ -189,10 +206,10 @@ def main() -> None:
             listing_id="lst_008",
             title="NBA 2K25 PS4 (Steelbook)",
             opportunity_score=80.0,
-            estimated_profit=18.0,  # Higher profit в†’ wins tie-break
+            net_profit=18.0,  # Higher profit в†’ wins tie-break
             confidence_score=0.80,
-            roi_percentage=80.0,
-            market_discount_percentage=30.0,
+            net_roi_percentage=80.0,
+            acquisition_discount_to_reference_market_percentage=30.0,
             recommendation=Recommendation.BUY,
             listing_price=12.0,
             market_price=30.0,
@@ -204,7 +221,7 @@ def main() -> None:
         print(
             f"    {opp.listing.listing_id}: {opp.listing.title[:30]:30s} "
             f"score={opp.opportunity_score:5.1f} "
-            f"profit=в‚¬{opp.estimated_profit:6.2f} "
+            f"profit=в‚¬{opp.net_profit:6.2f} "
             f"{opp.recommendation.upper()}"
         )
     print()
@@ -271,7 +288,7 @@ def main() -> None:
     print("    lst_007 (NBA 2K25):          profit=в‚¬10.00")
     print("    lst_008 (NBA 2K25 Steelbook): profit=в‚¬18.00")
     print()
-    print("  Result: lst_008 ranks HIGHER because tie-break #1 is estimated_profit.")
+    print("  Result: lst_008 ranks HIGHER because tie-break #1 is net_profit.")
     print()
 
     # Verify

@@ -25,27 +25,29 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
     """
 
     # Business rule constants
-    MIN_PROFIT_EUR = 10.0
-    MIN_MARGIN_PERCENT = 25.0
+    MIN_NET_PROFIT_EUR = 10.0
+    MIN_NET_PROFIT_MARGIN_PERCENT = 25.0
     MIN_CONFIDENCE_SCORE = 0.50
 
     def __init__(
         self,
         economic_policy: ResaleEconomicPolicy,
-        min_profit_eur: float | None = None,
-        min_margin_percent: float | None = None,
+        min_net_profit_eur: float | None = None,
+        min_net_profit_margin_percent: float | None = None,
         min_confidence_score: float | None = None,
     ) -> None:
         """Initialize with optional custom thresholds.
 
         Args:
-            min_profit_eur: Minimum profit in EUR (default: 10.0)
-            min_margin_percent: Minimum profit margin % (default: 25.0)
+            min_net_profit_eur: Minimum profit in EUR (default: 10.0)
+            min_net_profit_margin_percent: Minimum profit margin % (default: 25.0)
             min_confidence_score: Minimum confidence score (default: 0.50)
         """
         self.economic_policy = economic_policy
-        self.min_profit_eur = min_profit_eur or self.MIN_PROFIT_EUR
-        self.min_margin_percent = min_margin_percent or self.MIN_MARGIN_PERCENT
+        self.min_net_profit_eur = min_net_profit_eur or self.MIN_NET_PROFIT_EUR
+        self.min_net_profit_margin_percent = (
+            min_net_profit_margin_percent or self.MIN_NET_PROFIT_MARGIN_PERCENT
+        )
         self.min_confidence_score = min_confidence_score or self.MIN_CONFIDENCE_SCORE
 
     def detect(
@@ -70,28 +72,6 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             reference_item_prices=[market_price],
             acquisition_price=listing_price,
         )
-        estimated_profit = economic_breakdown.net_profit
-
-        profit_margin_percentage = (
-            estimated_profit / economic_breakdown.expected_sale_revenue * 100.0
-            if economic_breakdown.expected_sale_revenue > 0
-            else 0.0
-        )
-
-        roi_percentage = (
-            estimated_profit / economic_breakdown.total_acquisition_cost * 100.0
-            if economic_breakdown.total_acquisition_cost > 0
-            else 0.0
-        )
-
-        market_discount_percentage = (
-            ((market_price - listing_price) / market_price * 100.0)
-            if market_price > 0
-            else 0.0
-        )
-
-        break_even_price = economic_breakdown.break_even_sale_revenue
-
         # Extract confidence
         confidence_score = market_estimate.confidence_score
         confidence_level = market_estimate.confidence_level
@@ -99,17 +79,17 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         # Determine recommendation and reason
         recommendation, reason = self._make_recommendation(
             listing_price=listing_price,
-            estimated_profit=estimated_profit,
-            profit_margin_percentage=profit_margin_percentage,
+            net_profit=economic_breakdown.net_profit,
+            net_profit_margin_percentage=economic_breakdown.net_profit_margin_percentage,
             confidence_score=confidence_score,
         )
 
         # Calculate opportunity score (0-100)
         opportunity_score = self._calculate_opportunity_score(
-            profit_margin_percentage=profit_margin_percentage,
-            estimated_profit=estimated_profit,
+            net_profit_margin_percentage=economic_breakdown.net_profit_margin_percentage,
+            net_profit=economic_breakdown.net_profit,
             confidence_score=confidence_score,
-            roi_percentage=roi_percentage,
+            net_roi_percentage=economic_breakdown.net_roi_percentage,
         )
 
         # Build result
@@ -118,11 +98,6 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             game=market_estimate.game,
             market_price=market_price,
             listing_price=listing_price,
-            estimated_profit=estimated_profit,
-            profit_margin_percentage=profit_margin_percentage,
-            roi_percentage=roi_percentage,
-            market_discount_percentage=market_discount_percentage,
-            break_even_price=break_even_price,
             confidence_score=confidence_score,
             confidence_level=confidence_level,
             opportunity_score=opportunity_score,
@@ -135,16 +110,16 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
     def _make_recommendation(
         self,
         listing_price: float,
-        estimated_profit: float,
-        profit_margin_percentage: float,
+        net_profit: float,
+        net_profit_margin_percentage: float,
         confidence_score: float,
     ) -> tuple[Recommendation, ReasonCode]:
         """Determine recommendation and reason based on business rules.
 
         Args:
             listing_price: Price in the listing
-            estimated_profit: Expected profit
-            profit_margin_percentage: Profit margin %
+            net_profit: Expected profit
+            net_profit_margin_percentage: Profit margin %
             confidence_score: Confidence in market estimate
 
         Returns:
@@ -159,23 +134,23 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             return Recommendation.SKIP, ReasonCode.LOW_CONFIDENCE
 
         # Overpriced (negative or zero profit)
-        if estimated_profit <= 0:
+        if net_profit <= 0:
             return Recommendation.SKIP, ReasonCode.OVERPRICED
 
         # Check if meets all BUY criteria
-        meets_profit_threshold = estimated_profit >= self.min_profit_eur
-        meets_margin_threshold = profit_margin_percentage >= self.min_margin_percent
+        meets_profit_threshold = net_profit >= self.min_net_profit_eur
+        meets_margin_threshold = net_profit_margin_percentage >= self.min_net_profit_margin_percent
         meets_confidence_threshold = confidence_score >= self.min_confidence_score
 
         if meets_profit_threshold and meets_margin_threshold and meets_confidence_threshold:
             return Recommendation.BUY, ReasonCode.UNDERVALUED
 
         # Positive profit but doesn't meet all thresholds
-        if estimated_profit > 0 and estimated_profit < self.min_profit_eur:
+        if net_profit > 0 and net_profit < self.min_net_profit_eur:
             return Recommendation.MAYBE, ReasonCode.LOW_EXPECTED_PROFIT
 
         # Fair price (small profit margin)
-        if estimated_profit > 0 and profit_margin_percentage < self.min_margin_percent:
+        if net_profit > 0 and net_profit_margin_percentage < self.min_net_profit_margin_percent:
             return Recommendation.MAYBE, ReasonCode.FAIR_PRICE
 
         # Default: something profitable but uncertain
@@ -183,10 +158,10 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
     def _calculate_opportunity_score(
         self,
-        profit_margin_percentage: float,
-        estimated_profit: float,
+        net_profit_margin_percentage: float,
+        net_profit: float,
         confidence_score: float,
-        roi_percentage: float,
+        net_roi_percentage: float,
     ) -> float:
         """Calculate opportunity score (0-100) for ranking.
 
@@ -197,25 +172,25 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         - ROI (10% weight): Higher ROI = better return
 
         Args:
-            profit_margin_percentage: Profit margin %
-            estimated_profit: Expected profit in EUR
+            net_profit_margin_percentage: Profit margin %
+            net_profit: Expected profit in EUR
             confidence_score: Confidence in market estimate (0-1)
-            roi_percentage: Return on investment %
+            net_roi_percentage: Return on investment %
 
         Returns:
             Score from 0 to 100
         """
         # Normalize profit margin: 0% = 0, 50%+ = 100
-        margin_score = min(profit_margin_percentage / 50.0 * 100.0, 100.0)
+        margin_score = min(net_profit_margin_percentage / 50.0 * 100.0, 100.0)
 
         # Normalize absolute profit: 0€ = 0, 20€+ = 100
-        profit_score = min(estimated_profit / 20.0 * 100.0, 100.0)
+        profit_score = min(net_profit / 20.0 * 100.0, 100.0)
 
         # Normalize confidence: 0.0 = 0, 1.0 = 100
         confidence_score_normalized = confidence_score * 100.0
 
         # Normalize ROI: 0% = 0, 100%+ = 100
-        roi_score = min(roi_percentage / 100.0 * 100.0, 100.0)
+        roi_score = min(net_roi_percentage / 100.0 * 100.0, 100.0)
 
         # Weighted combination
         opportunity_score = (

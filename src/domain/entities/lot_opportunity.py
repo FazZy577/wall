@@ -39,11 +39,8 @@ class LotOpportunity:
     Attributes:
         listing: The candidate listing (lot) being evaluated
         game_valuations: Individual valuations for each game in the lot
-        total_market_value: Sum of all game estimated market values
         lot_price: Total price of the lot (= listing.price)
-        estimated_profit: Net expected profit from economic_breakdown
-        profit_margin_percentage: Net profit / expected sale revenue
-        roi_percentage: Net profit / total acquisition cost
+        economic_breakdown: Single source of financial values and metrics
         aggregate_confidence_score: Mean of individual confidence scores
         recommendation: BUY, MAYBE, or SKIP
         reason: Why this recommendation was made
@@ -53,17 +50,45 @@ class LotOpportunity:
 
     listing: CandidateListing
     game_valuations: list[GameValuation]
-    total_market_value: float
     lot_price: float
-    estimated_profit: float
-    profit_margin_percentage: float
-    roi_percentage: float
     aggregate_confidence_score: float
     recommendation: Recommendation
     reason: LotReasonCode
     opportunity_score: float
     created_at: datetime
     economic_breakdown: EconomicBreakdown
+
+    @property
+    def reference_market_value(self) -> float:
+        return self.economic_breakdown.reference_market_value
+
+    @property
+    def expected_sale_revenue(self) -> float:
+        return self.economic_breakdown.expected_sale_revenue
+
+    @property
+    def net_expected_proceeds(self) -> float:
+        return self.economic_breakdown.net_expected_proceeds
+
+    @property
+    def net_profit(self) -> float:
+        return self.economic_breakdown.net_profit
+
+    @property
+    def net_profit_margin_percentage(self) -> float:
+        return self.economic_breakdown.net_profit_margin_percentage
+
+    @property
+    def net_roi_percentage(self) -> float:
+        return self.economic_breakdown.net_roi_percentage
+
+    @property
+    def acquisition_discount_to_reference_market_percentage(self) -> float:
+        return self.economic_breakdown.acquisition_discount_to_reference_market_percentage
+
+    @property
+    def break_even_sale_revenue(self) -> float:
+        return self.economic_breakdown.break_even_sale_revenue
 
     @classmethod
     def from_valuations(
@@ -77,20 +102,12 @@ class LotOpportunity:
     ) -> "LotOpportunity":
         """Create a LotOpportunity from individual game valuations.
 
-        Computes all aggregate metrics explicitly. The recommendation
-        and opportunity_score are set by the caller (future detector).
+        Uses the supplied economic breakdown as the sole source of financial
+        values. The recommendation and opportunity_score are set by the caller.
 
         Calculations:
-            total_market_value = sum of each valuation's estimated_market_value
             lot_price = listing.price
-            estimated_profit = total_market_value - lot_price
-            profit_margin_percentage = estimated_profit / total_market_value * 100
-            roi_percentage = estimated_profit / lot_price * 100
             aggregate_confidence_score = mean of individual confidence scores
-
-        Edge cases:
-            - If total_market_value <= 0: profit_margin_percentage = 0.0
-            - If lot_price <= 0: roi_percentage = 0.0
 
         Note: aggregate_confidence_score currently uses arithmetic mean.
         This may be replaced by a weighted mean in the future.
@@ -105,24 +122,7 @@ class LotOpportunity:
         Returns:
             LotOpportunity with computed aggregate metrics
         """
-        total_market_value = economic_breakdown.reference_market_value
         lot_price = listing.price
-        estimated_profit = economic_breakdown.net_profit
-
-        # Profit margin: profit relative to market value
-        if economic_breakdown.expected_sale_revenue > 0:
-            profit_margin_percentage = (
-                estimated_profit / economic_breakdown.expected_sale_revenue * 100
-            )
-        else:
-            profit_margin_percentage = 0.0
-
-        # ROI: profit relative to investment (lot price)
-        roi_percentage = (
-            estimated_profit / economic_breakdown.total_acquisition_cost * 100
-            if economic_breakdown.total_acquisition_cost > 0
-            else 0.0
-        )
 
         # Aggregate confidence: arithmetic mean of individual scores
         # Future: may be replaced by a weighted mean based on sample size
@@ -138,11 +138,7 @@ class LotOpportunity:
         return cls(
             listing=listing,
             game_valuations=game_valuations,
-            total_market_value=total_market_value,
             lot_price=lot_price,
-            estimated_profit=estimated_profit,
-            profit_margin_percentage=profit_margin_percentage,
-            roi_percentage=roi_percentage,
             aggregate_confidence_score=aggregate_confidence_score,
             recommendation=recommendation,
             reason=reason,

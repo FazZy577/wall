@@ -1,0 +1,84 @@
+[35mexamples/arbitrage_detector_example.py[m[36m:[m[32m58[m[36m:[m    [1;31mestimated_price[m: float,
+[35mexamples/arbitrage_detector_example.py[m[36m:[m[32m64[m[36m:[m        [1;31mestimated_price[m=[1;31mestimated_price[m,
+[35mexamples/arbitrage_detector_example.py[m[36m:[m[32m73[m[36m:[m        minimum_price=[1;31mestimated_price[m - 10.0,
+[35mexamples/arbitrage_detector_example.py[m[36m:[m[32m74[m[36m:[m        maximum_price=[1;31mestimated_price[m + 10.0,
+[35mexamples/full_pipeline_example.py[m[36m:[m[32m226[m[36m:[m    print(f"  Estimated Price: {estimate.currency} {estimate.[1;31mestimated_price[m:.2f}")
+[35mexamples/full_pipeline_example.py[m[36m:[m[32m289[m[36m:[m    print(f"| Estimated Price           | {estimate.currency} {estimate.[1;31mestimated_price[m:18.2f} |")
+[35mexamples/lot_opportunity_scanner_example.py[m[36m:[m[32m161[m[36m:[m            [1;31mestimated_price[m=statistics.median_price,
+[35mexamples/market_price_estimator_example.py[m[36m:[m[32m76[m[36m:[m    print(f"  Estimated Price: EUR {estimate_stable.[1;31mestimated_price[m:.2f}")
+[35mexamples/market_price_estimator_example.py[m[36m:[m[32m119[m[36m:[m    print(f"  Estimated Price: EUR {estimate_volatile.[1;31mestimated_price[m:.2f}")
+[35mexamples/market_price_estimator_example.py[m[36m:[m[32m161[m[36m:[m    print(f"  Estimated Price: EUR {estimate_small.[1;31mestimated_price[m:.2f}")
+[35msrc/application/use_cases/default_lot_opportunity_scanner.py[m[36m:[m[32m262[m[36m:[m                f"Market price estimated: EUR {market_estimate.[1;31mestimated_price[m:.2f}"
+[35msrc/domain/entities/game_valuation.py[m[36m:[m[32m24[m[36m:[m        estimated_market_value: Convenience alias for market_price_estimate.[1;31mestimated_price[m
+[35msrc/domain/entities/game_valuation.py[m[36m:[m[32m59[m[36m:[m            estimated_market_value=estimate.[1;31mestimated_price[m,
+[35msrc/domain/interfaces/market_price_estimator.py[m[36m:[m[32m51[m[36m:[m        [1;31mestimated_price[m: Estimated fair market price
+[35msrc/domain/interfaces/market_price_estimator.py[m[36m:[m[32m69[m[36m:[m    [1;31mestimated_price[m: float
+[35msrc/domain/interfaces/market_price_estimator.py[m[36m:[m[32m98[m[36m:[m        lines.append(f"Estimated Price: {self.currency} {self.[1;31mestimated_price[m:.2f}")
+[35msrc/domain/interfaces/market_price_estimator.py[m[36m:[m[32m119[m[36m:[m        lines.append(f"Median (Estimated): {self.currency} {self.[1;31mestimated_price[m:.2f}")
+[35msrc/infrastructure/detectors/default_arbitrage_opportunity_detector.py[m[36m:[m[32m69[m[36m:[m        market_price = market_estimate.[1;31mestimated_price[m
+[35msrc/infrastructure/estimators/default_market_price_estimator.py[m[36m:[m[32m79[m[36m:[m        [1;31mestimated_price[m = statistics.median_price
+[35msrc/infrastructure/estimators/default_market_price_estimator.py[m[36m:[m[32m118[m[36m:[m            [1;31mestimated_price[m=[1;31mestimated_price[m,
+[35mtests/e2e/test_real_price_pipeline.py[m[36m:[m[32m70[m[36m:[m        assert estimate.[1;31mestimated_price[m > 0
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m68[m[36m:[m    [1;31mestimated_price[m: float,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m74[m[36m:[m        [1;31mestimated_price[m=[1;31mestimated_price[m,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m158[m[36m:[m            [1;31mestimated_price[m=40.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m177[m[36m:[m            [1;31mestimated_price[m=22.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m196[m[36m:[m            [1;31mestimated_price[m=22.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m223[m[36m:[m            [1;31mestimated_price[m=40.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m252[m[36m:[m            [1;31mestimated_price[m=20.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m316[m[36m:[m            [1;31mestimated_price[m=22.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m339[m[36m:[m            [1;31mestimated_price[m=30.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m372[m[36m:[m            [1;31mestimated_price[m=20.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m393[m[36m:[m            [1;31mestimated_price[m=25.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m422[m[36m:[m            [1;31mestimated_price[m=20.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m454[m[36m:[m            [1;31mestimated_price[m=18.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m494[m[36m:[m            [1;31mestimated_price[m=44.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m519[m[36m:[m            [1;31mestimated_price[m=25.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m538[m[36m:[m            [1;31mestimated_price[m=20.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m557[m[36m:[m            [1;31mestimated_price[m=24.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m580[m[36m:[m            [1;31mestimated_price[m=22.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m628[m[36m:[m            [1;31mestimated_price[m=24.0,  # Profit: 12в‚¬ (below 15в‚¬)
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m660[m[36m:[m            [1;31mestimated_price[m=26.0,  # Profit: 10в‚¬, Margin: 38.5%
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m683[m[36m:[m            [1;31mestimated_price[m=22.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m719[m[36m:[m            [1;31mestimated_price[m=20.0,
+[35mtests/unit/test_default_arbitrage_opportunity_detector.py[m[36m:[m[32m748[m[36m:[m            [1;31mestimated_price[m=15.0,
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m48[m[36m:[m    [1;31mestimated_price[m: float,
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m53[m[36m:[m        [1;31mestimated_price[m=[1;31mestimated_price[m,
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m62[m[36m:[m        minimum_price=[1;31mestimated_price[m * 0.8,
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m63[m[36m:[m        maximum_price=[1;31mestimated_price[m * 1.2,
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m73[m[36m:[m    name: str, [1;31mestimated_price[m: float, confidence_score: float = 0.80
+[35mtests/unit/test_default_lot_opportunity_analyzer.py[m[36m:[m[32m76[m[36m:[m    estimate = _make_estimate(game, [1;31mestimated_price[m, confidence_score)
+[35mtests/unit/test_default_lot_opportunity_scanner.py[m[36m:[m[32m166[m[36m:[m    mock_estimate.[1;31mestimated_price[m = sum(comparable_prices) / len(comparable_prices)
+[35mtests/unit/test_default_lot_opportunity_scanner.py[m[36m:[m[32m446[m[36m:[m        mock_estimate.[1;31mestimated_price[m = 15.0
+[35mtests/unit/test_default_market_price_estimator.py[m[36m:[m[32m135[m[36m:[m        assert result.[1;31mestimated_price[m == 15.0
+[35mtests/unit/test_default_market_price_estimator.py[m[36m:[m[32m155[m[36m:[m        assert result.[1;31mestimated_price[m == 15.0  # median
+[35mtests/unit/test_default_market_price_estimator.py[m[36m:[m[32m171[m[36m:[m        assert result.[1;31mestimated_price[m == 15.0  # median stays at 15
+[35mtests/unit/test_default_market_price_estimator.py[m[36m:[m[32m347[m[36m:[m        assert result.[1;31mestimated_price[m == 15.0
+[35mtests/unit/test_default_opportunity_scanner.py[m[36m:[m[32m181[m[36m:[m    mock_estimate.[1;31mestimated_price[m = 22.0
+[35mtests/unit/test_default_opportunity_scanner.py[m[36m:[m[32m514[m[36m:[m        mock_estimate.[1;31mestimated_price[m = 22.0
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m46[m[36m:[m    [1;31mestimated_price[m: float = 20.0,
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m53[m[36m:[m        [1;31mestimated_price[m=[1;31mestimated_price[m,
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m62[m[36m:[m        minimum_price=[1;31mestimated_price[m * 0.8,
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m63[m[36m:[m        maximum_price=[1;31mestimated_price[m * 1.2,
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m277[m[36m:[m        estimate = _make_market_estimate(game, [1;31mestimated_price[m=15.0, confidence_score=0.85)
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m294[m[36m:[m        """estimated_market_value should equal estimate.[1;31mestimated_price[m."""
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m296[m[36m:[m        estimate = _make_market_estimate(game, [1;31mestimated_price[m=20.0)
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m300[m[36m:[m        assert valuation.estimated_market_value == estimate.[1;31mestimated_price[m
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m342[m[36m:[m        self, name: str, [1;31mestimated_price[m: float, confidence_score: float = 0.80
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m347[m[36m:[m            game, [1;31mestimated_price[m=[1;31mestimated_price[m, confidence_score=confidence_score
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m364[m[36m:[m            self._make_valuation("GTA V", [1;31mestimated_price[m=15.0, confidence_score=0.85),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m365[m[36m:[m            self._make_valuation("RDR2", [1;31mestimated_price[m=20.0, confidence_score=0.90),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m366[m[36m:[m            self._make_valuation("Spider-Man", [1;31mestimated_price[m=18.0, confidence_score=0.80),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m403[m[36m:[m            self._make_valuation("GTA V", [1;31mestimated_price[m=15.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m404[m[36m:[m            self._make_valuation("FIFA", [1;31mestimated_price[m=10.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m434[m[36m:[m            self._make_valuation("GTA V", [1;31mestimated_price[m=20.0, confidence_score=0.35),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m435[m[36m:[m            self._make_valuation("RDR2", [1;31mestimated_price[m=20.0, confidence_score=0.25),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m491[m[36m:[m            self._make_valuation("GTA V", [1;31mestimated_price[m=15.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m524[m[36m:[m            self._make_valuation("GTA V", [1;31mestimated_price[m=15.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m525[m[36m:[m            self._make_valuation("RDR2", [1;31mestimated_price[m=20.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m553[m[36m:[m            self._make_valuation("A", [1;31mestimated_price[m=20.0, confidence_score=1.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m554[m[36m:[m            self._make_valuation("B", [1;31mestimated_price[m=20.0, confidence_score=0.5),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m555[m[36m:[m            self._make_valuation("C", [1;31mestimated_price[m=20.0, confidence_score=0.5),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m556[m[36m:[m            self._make_valuation("D", [1;31mestimated_price[m=20.0, confidence_score=0.0),
+[35mtests/unit/test_lot_domain_model.py[m[36m:[m[32m584[m[36m:[m            self._make_valuation("Bad Game", [1;31mestimated_price[m=0.0),
+[35mtests/unit/test_opportunity_scanner_valuation_cache.py[m[36m:[m[32m99[m[36m:[m        [1;31mestimated_price[m=20.0,

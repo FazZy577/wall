@@ -16,7 +16,7 @@ class ILotOpportunityAnalyzer(ABC):
     """Interface for lot opportunity analysis implementations.
 
     Receives a candidate listing and its game valuations, then:
-    - Computes aggregate metrics (total_market_value, profit, margin, ROI)
+    - Computes aggregate metrics (reference_market_value, profit, margin, ROI)
     - Determines BUY/MAYBE/SKIP recommendation
     - Calculates opportunity_score (0-100)
     - Builds the LotOpportunity

@@ -85,9 +85,9 @@ def print_opportunity_summary(opportunity: ArbitrageOpportunity) -> None:
     print(f"Listing: {opportunity.listing.title}")
     print(f"  Listing Price: EUR {opportunity.listing_price:.2f}")
     print(f"  Market Price: EUR {opportunity.market_price:.2f}")
-    print(f"  Expected Profit: EUR {opportunity.estimated_profit:.2f}")
-    print(f"  Profit Margin: {opportunity.profit_margin_percentage:.1f}%")
-    print(f"  ROI: {opportunity.roi_percentage:.1f}%")
+    print(f"  Expected Profit: EUR {opportunity.net_profit:.2f}")
+    print(f"  Profit Margin: {opportunity.net_profit_margin_percentage:.1f}%")
+    print(f"  ROI: {opportunity.net_roi_percentage:.1f}%")
     print(
         f"  Confidence: {opportunity.confidence_score:.2f} ({opportunity.confidence_level.upper()})"
     )
@@ -238,7 +238,7 @@ def main() -> None:
 
         print(
             f"| {i:8} | EUR {opp.listing_price:4.2f} | EUR {opp.market_price:4.2f} | "
-            f"EUR {opp.estimated_profit:4.2f} | {opp.profit_margin_percentage:5.1f}% | "
+            f"EUR {opp.net_profit:4.2f} | {opp.net_profit_margin_percentage:5.1f}% | "
             f"{opp.opportunity_score:5.1f} | {rec_symbol:8} |"
         )
 
@@ -251,8 +251,8 @@ def main() -> None:
     print("-" * 80)
     print()
     print("For a BUY recommendation, ALL of the following must be true:")
-    print(f"  - Expected profit >= EUR {detector.min_profit_eur:.2f}")
-    print(f"  - Profit margin >= {detector.min_margin_percent:.1f}%")
+    print(f"  - Expected profit >= EUR {detector.min_net_profit_eur:.2f}")
+    print(f"  - Profit margin >= {detector.min_net_profit_margin_percent:.1f}%")
     print(f"  - Confidence score >= {detector.min_confidence_score:.2f}")
     print(f"  - Listing price > 0")
     print()

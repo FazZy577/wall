@@ -113,10 +113,10 @@ def test_p16_detection_source_change_preserves_economic_results(
     opportunity = analyzer.analyze(candidate, valuations, total_detected_games=3)
 
     actual = (
-        opportunity.total_market_value,
-        opportunity.estimated_profit,
-        opportunity.profit_margin_percentage,
-        opportunity.roi_percentage,
+        opportunity.reference_market_value,
+        opportunity.net_profit,
+        opportunity.net_profit_margin_percentage,
+        opportunity.net_roi_percentage,
         opportunity.recommendation,
         opportunity.reason,
         opportunity.opportunity_score,
@@ -141,7 +141,7 @@ def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
     assert opportunity.economic_breakdown.expected_item_sale_prices == (12.0, 17.0, 7.0)
     assert opportunity.economic_breakdown.expected_sale_revenue == 36.0
     assert opportunity.economic_breakdown.net_profit == -4.0
-    assert opportunity.estimated_profit == -4.0
+    assert opportunity.net_profit == -4.0
     assert opportunity.economic_breakdown.item_count == 3
 
 
@@ -193,11 +193,11 @@ class TestBuyRecommendation:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # total_market_value = 53, profit = 18, margin = 33.96%
-        assert lot.total_market_value == 53.0
-        assert lot.estimated_profit == 18.0
-        assert lot.profit_margin_percentage == pytest.approx(18 / 53 * 100)
-        assert lot.roi_percentage == pytest.approx(18 / 35 * 100)
+        # reference_market_value = 53, profit = 18, margin = 33.96%
+        assert lot.reference_market_value == 53.0
+        assert lot.net_profit == 18.0
+        assert lot.net_profit_margin_percentage == pytest.approx(18 / 53 * 100)
+        assert lot.net_roi_percentage == pytest.approx(18 / 35 * 100)
         assert lot.recommendation == Recommendation.BUY
         assert lot.reason == LotReasonCode.UNDERVALUED_LOT
 
@@ -229,10 +229,10 @@ class TestMarginThreshold:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # total_market_value = 53, profit = 13, margin = 24.5%
-        assert lot.total_market_value == 53.0
-        assert lot.estimated_profit == 13.0
-        assert lot.profit_margin_percentage == pytest.approx(13 / 53 * 100)
+        # reference_market_value = 53, profit = 13, margin = 24.5%
+        assert lot.reference_market_value == 53.0
+        assert lot.net_profit == 13.0
+        assert lot.net_profit_margin_percentage == pytest.approx(13 / 53 * 100)
         assert lot.recommendation == Recommendation.MAYBE
         assert lot.reason == LotReasonCode.FAIR_VALUE_LOT
 
@@ -261,8 +261,8 @@ class TestOverpriced:
 
         lot = analyzer.analyze(candidate, valuations, 2)
 
-        assert lot.total_market_value == 25.0
-        assert lot.estimated_profit == -75.0
+        assert lot.reference_market_value == 25.0
+        assert lot.net_profit == -75.0
         assert lot.recommendation == Recommendation.SKIP
         assert lot.reason == LotReasonCode.OVERPRICED_LOT
 
@@ -284,8 +284,8 @@ class TestOverpriced:
 
         lot = analyzer.analyze(candidate, valuations, 2)
 
-        assert lot.total_market_value == 35.0
-        assert lot.estimated_profit == 0.0
+        assert lot.reference_market_value == 35.0
+        assert lot.net_profit == 0.0
         assert lot.recommendation == Recommendation.SKIP
         assert lot.reason == LotReasonCode.FAIR_VALUE_LOT
 

@@ -101,8 +101,8 @@ async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formu
     assert detector.detect.call_count == 2
     assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
     assert [opportunity.market_price for opportunity in result.opportunities] == [30.0, 30.0]
-    assert [opportunity.estimated_profit for opportunity in result.opportunities] == [25.0, 5.0]
-    assert [opportunity.roi_percentage for opportunity in result.opportunities] == [500.0, 20.0]
+    assert [opportunity.net_profit for opportunity in result.opportunities] == [25.0, 5.0]
+    assert [opportunity.net_roi_percentage for opportunity in result.opportunities] == [500.0, 20.0]
     assert result.opportunities[0].recommendation != result.opportunities[1].recommendation
     assert result.opportunities[0].listing is candidates[0]
     assert result.opportunities[0].listing.raw_listing["kind"] == "candidate"
@@ -153,6 +153,6 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
     assert opportunity.listing is candidate
     assert opportunity.listing_price == 30.0
     assert opportunity.market_price == 15.0
-    assert opportunity.estimated_profit == -15.0
+    assert opportunity.net_profit == -15.0
     assert opportunity.listing.raw_listing == {"kind": "candidate", "price": 30.0}
     assert comparables[0].raw_listing == {"kind": "comparable", "id": "gta-12"}

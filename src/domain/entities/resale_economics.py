@@ -24,6 +24,31 @@ class EconomicBreakdown:
     break_even_sale_revenue: float
     item_count: int
 
+    @property
+    def net_profit_margin_percentage(self) -> float:
+        """Return net profit as a percentage of expected sale revenue."""
+        if self.expected_sale_revenue > 0:
+            return self.net_profit / self.expected_sale_revenue * 100.0
+        return 0.0
+
+    @property
+    def net_roi_percentage(self) -> float:
+        """Return net profit as a percentage of total acquisition cost."""
+        if self.total_acquisition_cost > 0:
+            return self.net_profit / self.total_acquisition_cost * 100.0
+        return 0.0
+
+    @property
+    def acquisition_discount_to_reference_market_percentage(self) -> float:
+        """Return acquisition-price discount against reference market value."""
+        if self.reference_market_value > 0:
+            return (
+                (self.reference_market_value - self.acquisition_price)
+                / self.reference_market_value
+                * 100.0
+            )
+        return 0.0
+
 
 @dataclass(frozen=True)
 class ResaleEconomicPolicy:

@@ -63,9 +63,9 @@ class RankingStrategy(StrEnum):
 ```
 
 Future strategies (not yet implemented):
-- `ABSOLUTE_PROFIT` — sort by `estimated_profit` descending
-- `ROI` — sort by `roi_percentage` descending
-- `MARKET_DISCOUNT` — sort by `market_discount_percentage` descending
+- `ABSOLUTE_PROFIT` — sort by `net_profit` descending
+- `ROI` — sort by `net_roi_percentage` descending
+- `MARKET_DISCOUNT` — sort by `acquisition_discount_to_reference_market_percentage` descending
 - `CONFIDENCE` — sort by `confidence_score` descending
 - `HYBRID` — weighted combination of multiple factors
 
@@ -85,9 +85,9 @@ When two opportunities have the same `opportunity_score`, the following criteria
 
 | # | Criterion | Direction |
 |---|---|---|
-| 1 | `estimated_profit` | Descending (higher profit first) |
+| 1 | `net_profit` | Descending (higher profit first) |
 | 2 | `confidence_score` | Descending (more confident first) |
-| 3 | `roi_percentage` | Descending (higher ROI first) |
+| 3 | `net_roi_percentage` | Descending (higher ROI first) |
 | 4 | `listing.listing_id` | Ascending (stable, deterministic) |
 
 Example:

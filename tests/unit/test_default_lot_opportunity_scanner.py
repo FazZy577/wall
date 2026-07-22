@@ -173,11 +173,11 @@ def _setup_pipeline_mocks(
     mock_opportunity.recommendation = Recommendation.BUY
     mock_opportunity.reason = "undervalued_lot"
     mock_opportunity.opportunity_score = 85.0
-    mock_opportunity.total_market_value = 53.0
+    mock_opportunity.reference_market_value = 53.0
     mock_opportunity.lot_price = 35.0
-    mock_opportunity.estimated_profit = 18.0
-    mock_opportunity.profit_margin_percentage = 34.0
-    mock_opportunity.roi_percentage = 51.4
+    mock_opportunity.net_profit = 18.0
+    mock_opportunity.net_profit_margin_percentage = 34.0
+    mock_opportunity.net_roi_percentage = 51.4
     mock_opportunity.aggregate_confidence_score = 0.80
     mock_lot_analyzer.analyze.return_value = mock_opportunity
 
@@ -702,9 +702,9 @@ class TestLotScanExplanation:
         assert "Complete: True" in explanation
         assert "Completion Ratio: 100.00%" in explanation
         assert "- GTA V: EUR 13.50" in explanation
-        assert "Total Market Value: EUR 53.00" in explanation
+        assert "Reference Market Value: EUR 53.00" in explanation
         assert "Lot Price: EUR 35.00" in explanation
-        assert "Estimated Profit: EUR 18.00" in explanation
+        assert "Net Profit: EUR 18.00" in explanation
         assert "Margin: 34.00%" in explanation
         assert "ROI: 51.40%" in explanation
         assert "Confidence: 0.80" in explanation

@@ -91,7 +91,7 @@ def create_market_estimate(
 
 
 class TestNewFields:
-    """Test new fields: market_discount_percentage and break_even_price."""
+    """Test new fields: acquisition_discount_to_reference_market_percentage and break_even_sale_revenue."""
 
     def test_required_net_economic_case(self, sample_game: DetectedGame) -> None:
         listing = CandidateListing("economic", "GTA V", "", 10.0, "EUR", "url")
@@ -110,11 +110,11 @@ class TestNewFields:
         )
         assert result.economic_breakdown is breakdown
         assert result.economic_breakdown.net_profit == pytest.approx(1.45)
-        assert result.estimated_profit == pytest.approx(1.45)
-        assert result.roi_percentage == pytest.approx(1.45 / 12 * 100)
-        assert result.profit_margin_percentage == pytest.approx(1.45 / 17 * 100)
-        assert result.market_discount_percentage == 50.0
-        assert result.break_even_price == pytest.approx(13 / 0.85)
+        assert result.net_profit == pytest.approx(1.45)
+        assert result.net_roi_percentage == pytest.approx(1.45 / 12 * 100)
+        assert result.net_profit_margin_percentage == pytest.approx(1.45 / 17 * 100)
+        assert result.acquisition_discount_to_reference_market_percentage == 50.0
+        assert result.break_even_sale_revenue == pytest.approx(13 / 0.85)
 
     def test_cost_policy_can_legitimately_lower_recommendation(
         self, sample_game: DetectedGame
@@ -137,7 +137,7 @@ class TestNewFields:
         assert costly_result.recommendation is Recommendation.MAYBE
         assert costly_result.opportunity_score < neutral_result.opportunity_score
 
-    def test_market_discount_percentage_calculation(
+    def test_acquisition_discount_to_reference_market_percentage_calculation(
         self,
         detector: DefaultArbitrageOpportunityDetector,
         sample_game: DetectedGame,
@@ -163,15 +163,15 @@ class TestNewFields:
         result = detector.detect(listing, market_estimate)
 
         # (40 - 20) / 40 * 100 = 50%
-        assert result.market_discount_percentage == 50.0
+        assert result.acquisition_discount_to_reference_market_percentage == 50.0
 
-    def test_break_even_price_equals_listing_price(
+    def test_break_even_sale_revenue_equals_listing_price(
         self,
         detector: DefaultArbitrageOpportunityDetector,
         sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
-        """Should set break_even_price equal to listing_price."""
+        """Should set break_even_sale_revenue equal to listing_price."""
         market_estimate = create_market_estimate(
             game=sample_game,
             estimated_price=22.0,
@@ -181,8 +181,8 @@ class TestNewFields:
 
         result = detector.detect(sample_listing, market_estimate)
 
-        assert result.break_even_price == result.listing_price
-        assert result.break_even_price == 12.0
+        assert result.break_even_sale_revenue == result.listing_price
+        assert result.break_even_sale_revenue == 12.0
 
     def test_opportunity_score_range(
         self,
@@ -322,8 +322,8 @@ class TestBuyRecommendation:
 
         assert result.recommendation == Recommendation.BUY
         assert result.reason == ReasonCode.UNDERVALUED
-        assert result.estimated_profit == 10.0
-        assert result.profit_margin_percentage == pytest.approx(45.45, abs=0.1)
+        assert result.net_profit == 10.0
+        assert result.net_profit_margin_percentage == pytest.approx(45.45, abs=0.1)
         assert result.confidence_score == 0.80
 
     def test_high_profit_buy(
@@ -345,8 +345,8 @@ class TestBuyRecommendation:
 
         assert result.recommendation == Recommendation.BUY
         assert result.reason == ReasonCode.UNDERVALUED
-        assert result.estimated_profit == 18.0
-        assert result.profit_margin_percentage == 60.0
+        assert result.net_profit == 18.0
+        assert result.net_profit_margin_percentage == 60.0
 
 
 class TestSkipRecommendation:
@@ -378,7 +378,7 @@ class TestSkipRecommendation:
 
         assert result.recommendation == Recommendation.SKIP
         assert result.reason == ReasonCode.OVERPRICED
-        assert result.estimated_profit == -5.0
+        assert result.net_profit == -5.0
 
     def test_low_confidence(
         self,
@@ -399,7 +399,7 @@ class TestSkipRecommendation:
 
         assert result.recommendation == Recommendation.SKIP
         assert result.reason == ReasonCode.LOW_CONFIDENCE
-        assert result.estimated_profit == 13.0  # Would be profitable
+        assert result.net_profit == 13.0  # Would be profitable
         assert result.confidence_score == 0.40
 
     def test_invalid_listing_price(
@@ -460,7 +460,7 @@ class TestMaybeRecommendation:
 
         assert result.recommendation == Recommendation.MAYBE
         assert result.reason == ReasonCode.LOW_EXPECTED_PROFIT
-        assert result.estimated_profit == 6.0
+        assert result.net_profit == 6.0
 
     def test_fair_price(
         self,
@@ -500,8 +500,8 @@ class TestMaybeRecommendation:
 
         assert result.recommendation == Recommendation.MAYBE
         assert result.reason == ReasonCode.FAIR_PRICE
-        assert result.estimated_profit == 10.0
-        assert result.profit_margin_percentage == pytest.approx(22.73, abs=0.1)
+        assert result.net_profit == 10.0
+        assert result.net_profit_margin_percentage == pytest.approx(22.73, abs=0.1)
 
 
 class TestProfitabilityCalculations:
@@ -524,7 +524,7 @@ class TestProfitabilityCalculations:
         result = detector.detect(sample_listing, market_estimate)
 
         # 25 - 12 = 13
-        assert result.estimated_profit == 13.0
+        assert result.net_profit == 13.0
 
     def test_margin_calculation(
         self,
@@ -543,7 +543,7 @@ class TestProfitabilityCalculations:
         result = detector.detect(sample_listing, market_estimate)
 
         # (20 - 12) / 20 * 100 = 40%
-        assert result.profit_margin_percentage == 40.0
+        assert result.net_profit_margin_percentage == 40.0
 
     def test_roi_calculation(
         self,
@@ -562,7 +562,7 @@ class TestProfitabilityCalculations:
         result = detector.detect(sample_listing, market_estimate)
 
         # (24 - 12) / 12 * 100 = 100%
-        assert result.roi_percentage == 100.0
+        assert result.net_roi_percentage == 100.0
 
 
 class TestFieldPropagation:
@@ -593,9 +593,9 @@ class TestFieldPropagation:
         assert result.listing_price == 12.0
 
         # Metrics
-        assert isinstance(result.estimated_profit, float)
-        assert isinstance(result.profit_margin_percentage, float)
-        assert isinstance(result.roi_percentage, float)
+        assert isinstance(result.net_profit, float)
+        assert isinstance(result.net_profit_margin_percentage, float)
+        assert isinstance(result.net_roi_percentage, float)
 
         # Confidence
         assert result.confidence_score == 0.80
@@ -620,7 +620,7 @@ class TestCustomThresholds:
         """Should use custom minimum profit threshold."""
         # Custom threshold: 15в‚¬ instead of 10в‚¬
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_profit_eur=15.0
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=15.0
         )
 
         market_estimate = create_market_estimate(
@@ -634,7 +634,7 @@ class TestCustomThresholds:
 
         # Would be BUY with default (10в‚¬), but not with 15в‚¬ threshold
         assert result.recommendation == Recommendation.MAYBE
-        assert result.estimated_profit == 12.0
+        assert result.net_profit == 12.0
 
     def test_custom_min_margin(
         self,
@@ -643,7 +643,7 @@ class TestCustomThresholds:
         """Should use custom minimum margin threshold."""
         # Custom threshold: 40% instead of 25%
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_margin_percent=40.0
+            ResaleEconomicPolicy.neutral(), min_net_profit_margin_percent=40.0
         )
 
         listing = CandidateListing(
@@ -725,8 +725,8 @@ class TestRealWorldScenarios:
 
         assert result.recommendation == Recommendation.BUY
         assert result.reason == ReasonCode.UNDERVALUED
-        assert result.estimated_profit == 12.0
-        assert result.roi_percentage == 150.0
+        assert result.net_profit == 12.0
+        assert result.net_roi_percentage == 150.0
 
     def test_market_price_listing(
         self,
@@ -754,4 +754,4 @@ class TestRealWorldScenarios:
 
         assert result.recommendation == Recommendation.SKIP
         assert result.reason == ReasonCode.OVERPRICED
-        assert result.estimated_profit == 0.0
+        assert result.net_profit == 0.0

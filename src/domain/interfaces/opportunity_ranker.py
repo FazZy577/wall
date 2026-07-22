@@ -48,9 +48,9 @@ class RankingStrategy(StrEnum):
     """Strategy for ranking arbitrage opportunities.
 
     Only OPPORTUNITY_SCORE is implemented. Future strategies:
-        ABSOLUTE_PROFIT — sort by estimated_profit descending
-        ROI — sort by roi_percentage descending
-        MARKET_DISCOUNT — sort by market_discount_percentage descending
+        ABSOLUTE_PROFIT — sort by net_profit descending
+        ROI — sort by net_roi_percentage descending
+        MARKET_DISCOUNT — sort by acquisition_discount_to_reference_market_percentage descending
         CONFIDENCE — sort by confidence_score descending
         HYBRID — weighted combination of multiple factors
     """
@@ -145,7 +145,7 @@ class RankingResult:
             for i, opp in enumerate(self.ordered_opportunities[:top_n], 1):
                 lines.append(f"{i}. {opp.listing.title}")
                 lines.append(f"   Score: {opp.opportunity_score:.2f}")
-                lines.append(f"   Profit: EUR {opp.estimated_profit:.2f}")
+                lines.append(f"   Profit: EUR {opp.net_profit:.2f}")
                 lines.append(f"   Recommendation: {opp.recommendation.upper()}")
                 lines.append("")
 
@@ -186,7 +186,7 @@ class IOpportunityRanker(ABC):
 
         Primary sort: Recommendation (BUY > MAYBE > SKIP).
         Secondary sort: opportunity_score descending.
-        Tie-breakers: estimated_profit, confidence_score, roi_percentage,
+        Tie-breakers: net_profit, confidence_score, net_roi_percentage,
         listing_id ascending.
 
         Args:

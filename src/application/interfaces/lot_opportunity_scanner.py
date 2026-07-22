@@ -148,16 +148,16 @@ class LotScanResult:
             lines.append("No LotOpportunity produced.")
         else:
             lines.append(
-                f"Total Market Value: {self.listing.currency} "
-                f"{self.opportunity.total_market_value:.2f}"
+                f"Reference Market Value: {self.listing.currency} "
+                f"{self.opportunity.reference_market_value:.2f}"
             )
             lines.append(f"Lot Price: {self.listing.currency} {self.opportunity.lot_price:.2f}")
             lines.append(
-                f"Estimated Profit: {self.listing.currency} "
-                f"{self.opportunity.estimated_profit:.2f}"
+                f"Net Profit: {self.listing.currency} "
+                f"{self.opportunity.net_profit:.2f}"
             )
-            lines.append(f"Margin: {self.opportunity.profit_margin_percentage:.2f}%")
-            lines.append(f"ROI: {self.opportunity.roi_percentage:.2f}%")
+            lines.append(f"Net Margin: {self.opportunity.net_profit_margin_percentage:.2f}%")
+            lines.append(f"Net ROI: {self.opportunity.net_roi_percentage:.2f}%")
             lines.append(f"Confidence: {self.opportunity.aggregate_confidence_score:.2f}")
             lines.append(f"Opportunity Score: {self.opportunity.opportunity_score:.1f}/100")
             lines.append(f"Recommendation: {self.opportunity.recommendation.upper()}")

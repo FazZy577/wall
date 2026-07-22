@@ -375,15 +375,15 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
-        # total_market_value = 15 + 20 + 18 = 53
-        assert lot.total_market_value == 53.0
+        # reference_market_value = 15 + 20 + 18 = 53
+        assert lot.reference_market_value == 53.0
         assert lot.lot_price == 40.0
-        # estimated_profit = 53 - 40 = 13
-        assert lot.estimated_profit == 13.0
+        # net_profit = 53 - 40 = 13
+        assert lot.net_profit == 13.0
         # profit_margin = 13 / 53 * 100 = 24.5283... в‰€ 24.5
-        assert lot.profit_margin_percentage == pytest.approx(13 / 53 * 100)
+        assert lot.net_profit_margin_percentage == pytest.approx(13 / 53 * 100)
         # roi = 13 / 40 * 100 = 32.5
-        assert lot.roi_percentage == 32.5
+        assert lot.net_roi_percentage == 32.5
         # aggregate_confidence = (0.85 + 0.90 + 0.80) / 3 = 0.85
         assert lot.aggregate_confidence_score == 0.85
 
@@ -413,10 +413,10 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
-        assert lot.total_market_value == 25.0
-        assert lot.estimated_profit == -75.0
-        assert lot.profit_margin_percentage == -300.0
-        assert lot.roi_percentage == -75.0
+        assert lot.reference_market_value == 25.0
+        assert lot.net_profit == -75.0
+        assert lot.net_profit_margin_percentage == -300.0
+        assert lot.net_roi_percentage == -75.0
 
     @pytest.mark.asyncio
     async def test_low_aggregate_confidence(self) -> None:
@@ -445,8 +445,8 @@ class TestLotOpportunity:
         )
 
         assert lot.aggregate_confidence_score == 0.3
-        assert lot.total_market_value == 40.0
-        assert lot.estimated_profit == 10.0
+        assert lot.reference_market_value == 40.0
+        assert lot.net_profit == 10.0
 
     @pytest.mark.asyncio
     async def test_no_games_detected(self) -> None:
@@ -469,10 +469,10 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, []),
         )
 
-        assert lot.total_market_value == 0.0
-        assert lot.estimated_profit == -20.0
-        assert lot.profit_margin_percentage == 0.0
-        assert lot.roi_percentage == -100.0
+        assert lot.reference_market_value == 0.0
+        assert lot.net_profit == -20.0
+        assert lot.net_profit_margin_percentage == 0.0
+        assert lot.net_roi_percentage == -100.0
         assert lot.aggregate_confidence_score == 0.0
 
     @pytest.mark.asyncio
@@ -501,11 +501,11 @@ class TestLotOpportunity:
         )
 
         assert lot.lot_price == 0.0
-        assert lot.total_market_value == 15.0
-        assert lot.estimated_profit == 15.0
+        assert lot.reference_market_value == 15.0
+        assert lot.net_profit == 15.0
         # roi = 15 / 0 в†’ edge case в†’ 0.0
-        assert lot.roi_percentage == 0.0
-        assert lot.profit_margin_percentage == 100.0
+        assert lot.net_roi_percentage == 0.0
+        assert lot.net_profit_margin_percentage == 100.0
 
     @pytest.mark.asyncio
     async def test_incomplete_valuation(self) -> None:
@@ -534,8 +534,8 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
-        assert lot.total_market_value == 35.0
-        assert lot.estimated_profit == 5.0
+        assert lot.reference_market_value == 35.0
+        assert lot.net_profit == 5.0
 
     @pytest.mark.asyncio
     async def test_aggregate_confidence_arithmetic_mean(self) -> None:
@@ -593,9 +593,9 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
-        assert lot.total_market_value == 0.0
-        assert lot.profit_margin_percentage == 0.0  # Not NaN
-        assert lot.roi_percentage == -100.0
+        assert lot.reference_market_value == 0.0
+        assert lot.net_profit_margin_percentage == 0.0  # Not NaN
+        assert lot.net_roi_percentage == -100.0
 
     @pytest.mark.asyncio
     async def test_all_reason_codes_exist(self) -> None:

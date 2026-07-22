@@ -70,9 +70,9 @@ class DefaultOpportunityRanker(IOpportunityRanker):
         Primary: Recommendation (BUY=0, MAYBE=1, SKIP=2).
         Secondary: opportunity_score (descending — negated).
         Tie-breakers (all descending except listing_id ascending):
-          1. estimated_profit (negated)
+          1. net_profit (negated)
           2. confidence_score (negated)
-          3. roi_percentage (negated)
+          3. net_roi_percentage (negated)
           4. listing_id (ascending — not negated)
 
         Args:
@@ -84,9 +84,9 @@ class DefaultOpportunityRanker(IOpportunityRanker):
         return (
             _RECOMMENDATION_ORDER[opp.recommendation],
             -opp.opportunity_score,
-            -opp.estimated_profit,
+            -opp.net_profit,
             -opp.confidence_score,
-            -opp.roi_percentage,
+            -opp.net_roi_percentage,
             opp.listing.listing_id,
         )
 

@@ -46,11 +46,7 @@ class ArbitrageOpportunity:
         game: Detected game in this listing
         market_price: Estimated market price
         listing_price: Price in the listing
-        estimated_profit: Net expected profit from the economic breakdown
-        profit_margin_percentage: Net profit / expected sale revenue
-        roi_percentage: Net profit / total acquisition cost
-        market_discount_percentage: Discount vs market ((market - listing) / market * 100)
-        break_even_price: Required gross sale revenue to break even (P1.8 naming pending)
+        economic_breakdown: Single source of financial values and metrics
         confidence_score: Confidence in market price estimate
         confidence_level: Human-readable confidence level
         opportunity_score: Numeric score 0-100 for ranking opportunities
@@ -63,11 +59,6 @@ class ArbitrageOpportunity:
     game: DetectedGame
     market_price: float
     listing_price: float
-    estimated_profit: float
-    profit_margin_percentage: float
-    roi_percentage: float
-    market_discount_percentage: float
-    break_even_price: float
     confidence_score: float
     confidence_level: ConfidenceLevel
     opportunity_score: float
@@ -75,6 +66,38 @@ class ArbitrageOpportunity:
     reason: ReasonCode
     created_at: datetime
     economic_breakdown: EconomicBreakdown
+
+    @property
+    def reference_market_value(self) -> float:
+        return self.economic_breakdown.reference_market_value
+
+    @property
+    def expected_sale_revenue(self) -> float:
+        return self.economic_breakdown.expected_sale_revenue
+
+    @property
+    def net_expected_proceeds(self) -> float:
+        return self.economic_breakdown.net_expected_proceeds
+
+    @property
+    def net_profit(self) -> float:
+        return self.economic_breakdown.net_profit
+
+    @property
+    def net_profit_margin_percentage(self) -> float:
+        return self.economic_breakdown.net_profit_margin_percentage
+
+    @property
+    def net_roi_percentage(self) -> float:
+        return self.economic_breakdown.net_roi_percentage
+
+    @property
+    def acquisition_discount_to_reference_market_percentage(self) -> float:
+        return self.economic_breakdown.acquisition_discount_to_reference_market_percentage
+
+    @property
+    def break_even_sale_revenue(self) -> float:
+        return self.economic_breakdown.break_even_sale_revenue
 
     def explain(self) -> str:
         """Generate human-readable explanation of the opportunity.
@@ -101,14 +124,17 @@ class ArbitrageOpportunity:
             f"Selling Costs and Buffer: EUR "
             f"{self.economic_breakdown.selling_fees + self.economic_breakdown.fixed_selling_costs + self.economic_breakdown.safety_buffer:.2f}"
         )
-        lines.append(f"Expected Profit: EUR {self.estimated_profit:.2f}")
+        lines.append(f"Net Profit: EUR {self.net_profit:.2f}")
         lines.append("")
         lines.append("PROFITABILITY METRICS")
         lines.append("-" * 60)
-        lines.append(f"Profit Margin: {self.profit_margin_percentage:.1f}%")
-        lines.append(f"ROI: {self.roi_percentage:.1f}%")
-        lines.append(f"Market Discount: {self.market_discount_percentage:.1f}%")
-        lines.append(f"Break-even Price: EUR {self.break_even_price:.2f}")
+        lines.append(f"Net Profit Margin: {self.net_profit_margin_percentage:.1f}%")
+        lines.append(f"Net ROI: {self.net_roi_percentage:.1f}%")
+        lines.append(
+            "Acquisition Discount to Reference Market: "
+            f"{self.acquisition_discount_to_reference_market_percentage:.1f}%"
+        )
+        lines.append(f"Break-even Sale Revenue: EUR {self.break_even_sale_revenue:.2f}")
         lines.append("")
         lines.append("CONFIDENCE")
         lines.append("-" * 60)
