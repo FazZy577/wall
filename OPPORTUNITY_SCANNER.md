@@ -1,7 +1,7 @@
 # Opportunity Scanner
 
-**Module**: `domain.interfaces.opportunity_scanner`  
-**Implementation**: `infrastructure.scanners.default_opportunity_scanner`
+**Module**: `application.interfaces.opportunity_scanner`
+**Implementation**: `application.use_cases.default_opportunity_scanner`
 
 ## Overview
 
@@ -185,7 +185,7 @@ Unimplemented strategies fall back to `OPPORTUNITY_SCORE` with a warning.
 Provides ranked opportunities + summary statistics for dashboards:
 
 ```python
-from domain.interfaces.opportunity_scanner import RankingResult, RankingStrategy
+from application.interfaces.opportunity_scanner import RankingResult, RankingStrategy
 
 ranking = RankingResult.from_opportunities(
     result.opportunities,
@@ -218,7 +218,7 @@ for opp in ranking.ordered_opportunities:
 ### Single Listing
 
 ```python
-from infrastructure.scanners.default_opportunity_scanner import (
+from application.use_cases.default_opportunity_scanner import (
     DefaultOpportunityScanner,
 )
 

@@ -2,6 +2,7 @@
 
 from unittest.mock import Mock
 
+from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
@@ -15,7 +16,6 @@ from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
-from infrastructure.scanners.default_opportunity_scanner import DefaultOpportunityScanner
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
 
 

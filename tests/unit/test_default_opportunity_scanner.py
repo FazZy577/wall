@@ -9,6 +9,8 @@ from unittest.mock import Mock
 
 import pytest
 
+from application.interfaces.opportunity_scanner import PipelineStage
+from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.arbitrage_opportunity_detector import (
@@ -19,8 +21,6 @@ from domain.interfaces.game_detector import (
     DetectionMethod,
     Platform,
 )
-from domain.interfaces.opportunity_scanner import PipelineStage
-from infrastructure.scanners.default_opportunity_scanner import DefaultOpportunityScanner
 
 
 @pytest.fixture

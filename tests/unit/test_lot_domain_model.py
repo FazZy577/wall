@@ -602,7 +602,7 @@ class TestDatasetContamination:
         """scan_listing should build dataset from comparables only, not candidate."""
         from unittest.mock import Mock
 
-        from infrastructure.scanners.default_opportunity_scanner import (
+        from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
         )
 
@@ -685,7 +685,7 @@ class TestDatasetContamination:
         """Small sample: outlier removal should not hide the contamination."""
         from unittest.mock import Mock
 
-        from infrastructure.scanners.default_opportunity_scanner import (
+        from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
         )
 

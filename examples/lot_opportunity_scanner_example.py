@@ -15,6 +15,9 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from application.use_cases.default_lot_opportunity_scanner import (
+    DefaultLotOpportunityScanner,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
@@ -39,9 +42,6 @@ from domain.interfaces.price_dataset_builder import (
 from domain.interfaces.price_statistics import IPriceStatistics, PriceStatisticsResult
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
-)
-from infrastructure.scanners.default_lot_opportunity_scanner import (
-    DefaultLotOpportunityScanner,
 )
 
 

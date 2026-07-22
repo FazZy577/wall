@@ -7,6 +7,9 @@ from unittest.mock import Mock
 
 import pytest
 
+from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
+from application.interfaces.opportunity_scanner import IOpportunityScanner
+from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import (
@@ -24,8 +27,6 @@ from domain.interfaces.game_detector import DetectedGame as PortDetectedGame
 from domain.interfaces.game_detector import DetectionMethod as PortDetectionMethod
 from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.game_detector import Platform as PortPlatform
-from domain.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
-from domain.interfaces.opportunity_scanner import IOpportunityScanner
 from domain.interfaces.price_collector import (
     ComparableListing as PortComparableListing,
 )
@@ -34,7 +35,6 @@ from domain.interfaces.price_dataset_builder import InvalidComparableListingErro
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
-from infrastructure.scanners.default_opportunity_scanner import DefaultOpportunityScanner
 
 
 def _game(platform: Platform = Platform.PS4) -> DetectedGame:

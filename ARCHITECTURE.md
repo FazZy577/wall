@@ -38,6 +38,25 @@ Infrastructure → Application → Domain
                     (no depende de nadie)
 ```
 
+La orquestación de escaneos pertenece a Application. Sus casos de uso reciben
+puertos por constructor y no conocen Wallapop, Playwright ni implementaciones
+concretas de Infrastructure.
+
+```text
+External wiring / example
+        │
+        ├── Infrastructure adapters
+        │       ├── WallapopPlaywrightClient
+        │       ├── WallapopPriceCollector
+        │       └── concrete implementations
+        │
+        └── Application use case
+                ├── DefaultOpportunityScanner
+                └── DefaultLotOpportunityScanner
+                        │
+                        └── Domain entities and ports
+```
+
 ## Estructura del Proyecto
 
 ```

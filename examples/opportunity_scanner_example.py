@@ -15,6 +15,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from application.interfaces.opportunity_scanner import RankingResult, RankingStrategy
+from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
@@ -24,7 +26,6 @@ from domain.interfaces.game_detector import (
     ListingText,
     Platform,
 )
-from domain.interfaces.opportunity_scanner import RankingResult, RankingStrategy
 from domain.interfaces.price_collector import IPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -36,7 +37,6 @@ from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
-from infrastructure.scanners.default_opportunity_scanner import DefaultOpportunityScanner
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
 
 # Configure logging

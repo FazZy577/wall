@@ -12,6 +12,13 @@ The price collector port retains only a compatibility re-export of the
 canonical `ComparableListing`; raw marketplace dictionaries and the filter's
 minimal `Listing` payload remain intentionally distinct.
 
+## P1.4 Application scanner use cases
+
+Los contratos, resultados de ejecución y casos de uso de los scanners viven
+en `application/interfaces` y `application/use_cases`. Domain conserva las
+entidades y puertos de negocio; Infrastructure conserva los adaptadores y las
+implementaciones concretas. Application no importa Infrastructure.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete

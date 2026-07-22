@@ -8,6 +8,12 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any, cast
 
+from application.interfaces.opportunity_scanner import (
+    FailureInfo,
+    IOpportunityScanner,
+    PipelineStage,
+    ScanResult,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
@@ -19,12 +25,6 @@ from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.market_price_estimator import (
     IMarketPriceEstimator,
     MarketPriceEstimate,
-)
-from domain.interfaces.opportunity_scanner import (
-    FailureInfo,
-    IOpportunityScanner,
-    PipelineStage,
-    ScanResult,
 )
 from domain.interfaces.outlier_removal import IOutlierRemoval
 from domain.interfaces.price_collector import IPriceCollector

@@ -13,18 +13,18 @@ from collections.abc import Coroutine
 from datetime import UTC, datetime
 from typing import Any, cast
 
+from application.interfaces.lot_opportunity_scanner import (
+    GameValuationFailure,
+    ILotOpportunityScanner,
+    LotPipelineStage,
+    LotScanResult,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
-from domain.interfaces.lot_opportunity_scanner import (
-    GameValuationFailure,
-    ILotOpportunityScanner,
-    LotPipelineStage,
-    LotScanResult,
-)
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
 from domain.interfaces.outlier_removal import IOutlierRemoval
 from domain.interfaces.price_collector import IPriceCollector

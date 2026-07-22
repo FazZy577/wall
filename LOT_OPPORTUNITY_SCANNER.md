@@ -1,5 +1,14 @@
 # Lot Opportunity Scanner
 
+**Contract and execution results:**
+`application.interfaces.lot_opportunity_scanner`
+
+**Use-case implementation:**
+`application.use_cases.default_lot_opportunity_scanner`
+
+El scanner pertenece a Application: coordina puertos inyectados y entidades
+del dominio, sin importar ni instanciar implementaciones de Infrastructure.
+
 ## Responsabilidad del scanner
 
 `LotOpportunityScanner` orquesta el pipeline de valoración de un lote ya detectado. Recibe un `CandidateListing` con su lista de `DetectedGame` y procesa cada juego por separado.
