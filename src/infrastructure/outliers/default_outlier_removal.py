@@ -5,6 +5,7 @@ Interquartile Range (IQR) method.
 """
 
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from domain.interfaces.outlier_removal import (
     IOutlierRemoval,
@@ -27,7 +28,7 @@ class DefaultOutlierRemoval(IOutlierRemoval):
     Observations outside [lower_bound, upper_bound] are removed.
     """
 
-    def __init__(self, multiplier: float = 1.5) -> None:
+    def __init__(self, multiplier: Decimal = Decimal("1.5")) -> None:
         """Initialize outlier removal.
 
         Args:
@@ -58,7 +59,7 @@ class DefaultOutlierRemoval(IOutlierRemoval):
             )
 
         # Special case: zero IQR (all prices similar)
-        if statistics.iqr == 0.0:
+        if statistics.iqr == Decimal("0"):
             return self._no_removal_result(
                 dataset=dataset,
                 lower_bound=statistics.q1,
@@ -117,8 +118,8 @@ class DefaultOutlierRemoval(IOutlierRemoval):
     def _no_removal_result(
         self,
         dataset: PriceDataset,
-        lower_bound: float,
-        upper_bound: float,
+        lower_bound: Decimal,
+        upper_bound: Decimal,
     ) -> OutlierRemovalResult:
         """Create result when no outliers can be removed.
 

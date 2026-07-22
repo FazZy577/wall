@@ -6,6 +6,7 @@ deterministic statistical methods.
 
 import statistics
 from collections.abc import Sequence
+from decimal import Decimal
 
 from domain.interfaces.price_dataset_builder import PriceDataset
 from domain.interfaces.price_statistics import (
@@ -53,8 +54,8 @@ class DefaultPriceStatistics(IPriceStatistics):
         # Calculate standard deviation and variance
         if count == 1:
             # Single observation: no variance
-            standard_deviation = 0.0
-            variance = 0.0
+            standard_deviation = Decimal("0")
+            variance = Decimal("0")
         else:
             # Sample standard deviation and variance
             standard_deviation = statistics.stdev(prices)
@@ -87,7 +88,9 @@ class DefaultPriceStatistics(IPriceStatistics):
             percentile_90=percentile_90,
         )
 
-    def _percentile(self, data: Sequence[float], percentile: float) -> float:
+    def _percentile(
+        self, data: Sequence[Decimal], percentile: int
+    ) -> Decimal:
         """Calculate percentile using linear interpolation.
 
         Args:

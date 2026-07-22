@@ -1,5 +1,18 @@
 # Arquitectura del Proyecto
 
+## Decimal monetary boundary (P1.11)
+
+Canonical prices, costs, revenues, financial rates, thresholds, statistics,
+outlier bounds and market estimates use `decimal.Decimal`. Wallapop values are
+normalized once in Infrastructure: strings with `Decimal(text)`, integers with
+`Decimal(integer)`, and unavoidable JSON floats with `Decimal(str(value))`.
+Domain rejects floats. Scores, confidence and coordinates remain `float`, and
+counts remain `int`; Application performs no external monetary parsing.
+
+There is no `Money` object, currency conversion, cent quantization, commercial
+rounding or global Decimal-context override. Currency remains metadata and JSON
+serialization of Decimal remains a future API decision.
+
 ## Visión General
 
 Plataforma para detectar oportunidades de arbitraje en marketplaces de segunda mano, comenzando con Wallapop y preparada para expandirse a otros marketplaces (Vinted, Milanuncios, eBay, etc.).

@@ -5,6 +5,7 @@ to collect valid comparable listings.
 """
 
 import logging
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from domain.entities.comparable_listing import ComparableListing
@@ -202,10 +203,12 @@ class WallapopPriceCollector(IPriceCollector):
         if not listing_id or not title or price is None:
             return None
 
-        # Convert price to float
+        # Normalize external numeric data exactly once at the infrastructure edge.
         try:
-            price_float = float(price)
-        except (ValueError, TypeError):
+            price_decimal = Decimal(str(price))
+            if not price_decimal.is_finite():
+                return None
+        except (InvalidOperation, ValueError, TypeError):
             return None
 
         # Detect games in listing
@@ -224,7 +227,7 @@ class WallapopPriceCollector(IPriceCollector):
 
         # Filter with comparable filter
         listing_obj = ComparableFilterInput(
-            title=title, description=description, price=price_float
+            title=title, description=description, price=price_decimal
         )
         is_valid = self.comparable_filter.is_valid_comparable(target_game, listing_obj)
 
@@ -238,7 +241,7 @@ class WallapopPriceCollector(IPriceCollector):
             listing_id=listing_id,
             title=title,
             description=description,
-            price=price_float,
+            price=price_decimal,
             currency=currency,
             detected_game=target_detected,
             url=url,

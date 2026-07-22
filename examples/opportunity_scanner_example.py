@@ -4,12 +4,13 @@ Demonstrates how to use the opportunity scanner to orchestrate
 the complete arbitrage detection pipeline.
 
 This example uses a mock price collector to avoid real API calls.
-The scanner itself contains NO business logic вЂ” it only coordinates.
+The scanner itself contains NO business logic РІР‚вЂќ it only coordinates.
 """
 
 import asyncio
 import logging
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -91,7 +92,7 @@ class MockPriceCollector(IPriceCollector):
                 listing_id=f"mock_{game.canonical_name.replace(' ', '_')}_{i}",
                 title=f"{game.canonical_name} {game.platform}",
                 description="Good condition",
-                price=15.0 + i * 3.0,  # Prices from 15в‚¬ to 39в‚¬
+                price=Decimal("15.0") + i * 3.0,  # Prices from 15РІвЂљВ¬ to 39РІвЂљВ¬
                 currency="EUR",
                 detected_game=game,
                 url=f"https://wallapop.com/item/mock_{i}",
@@ -104,7 +105,7 @@ async def main() -> None:
     """Demonstrate opportunity scanner with complete pipeline."""
 
     print("=" * 80)
-    print("OPPORTUNITY SCANNER вЂ” FULL PIPELINE EXAMPLE")
+    print("OPPORTUNITY SCANNER РІР‚вЂќ FULL PIPELINE EXAMPLE")
     print("=" * 80)
     print()
     print("This module contains NO business logic.")
@@ -124,16 +125,16 @@ async def main() -> None:
     outlier_removal = DefaultOutlierRemoval()
     market_estimator = DefaultMarketPriceEstimator()
     # Example strategy: 3 EUR below market; this is not a production default.
-    economic_policy = ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+    economic_policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
     arbitrage_detector = DefaultArbitrageOpportunityDetector(economic_policy)
 
-    print("  вњ“ GameDetector (mock)")
-    print("  вњ“ PriceCollector (mock)")
-    print("  вњ“ PriceDatasetBuilder")
-    print("  вњ“ PriceStatistics")
-    print("  вњ“ OutlierRemoval")
-    print("  вњ“ MarketPriceEstimator")
-    print("  вњ“ ArbitrageOpportunityDetector")
+    print("  РІСљвЂњ GameDetector (mock)")
+    print("  РІСљвЂњ PriceCollector (mock)")
+    print("  РІСљвЂњ PriceDatasetBuilder")
+    print("  РІСљвЂњ PriceStatistics")
+    print("  РІСљвЂњ OutlierRemoval")
+    print("  РІСљвЂњ MarketPriceEstimator")
+    print("  РІСљвЂњ ArbitrageOpportunityDetector")
     print()
 
     # =========================================================================
@@ -153,8 +154,8 @@ async def main() -> None:
         opportunity_ranker=DefaultOpportunityRanker(),
     )
 
-    print("  вњ“ All 7 dependencies injected into scanner")
-    print("  вњ“ Scanner does NOT instantiate any component internally")
+    print("  РІСљвЂњ All 7 dependencies injected into scanner")
+    print("  РІСљвЂњ Scanner does NOT instantiate any component internally")
     print()
 
     # =========================================================================
@@ -163,32 +164,32 @@ async def main() -> None:
     print("Step 3: Creating sample listings")
     print("-" * 80)
 
-    # A listing priced well below market в†’ should be BUY
+    # A listing priced well below market РІвЂ вЂ™ should be BUY
     cheap_listing = CandidateListing(
         listing_id="listing_001",
         title="GTA V PS4 - Cheap!",
         description="Good condition, quick sale",
-        price=5.0,
+        price=Decimal("5.0"),
         currency="EUR",
         url="https://wallapop.com/item/listing_001",
     )
 
-    # A listing priced near market в†’ should be MAYBE or SKIP
+    # A listing priced near market РІвЂ вЂ™ should be MAYBE or SKIP
     expensive_listing = CandidateListing(
         listing_id="listing_002",
         title="COD BO6 PS4 - Premium",
         description="Like new, collector's edition",
-        price=45.0,
+        price=Decimal("45.0"),
         currency="EUR",
         url="https://wallapop.com/item/listing_002",
     )
 
-    # A listing without a detected game в†’ will be skipped
+    # A listing without a detected game РІвЂ вЂ™ will be skipped
     unknown_listing = CandidateListing(
         listing_id="listing_003",
         title="Random stuff",
         description="Various items",
-        price=10.0,
+        price=Decimal("10.0"),
         currency="EUR",
         url="https://wallapop.com/item/listing_003",
     )
@@ -197,13 +198,13 @@ async def main() -> None:
 
     print(f"  Created {len(listings)} listings:")
     for item in listings:
-        print(f"    - {item.listing_id}: {item.title} (в‚¬{item.price:.2f})")
+        print(f"    - {item.listing_id}: {item.title} (РІвЂљВ¬{item.price:.2f})")
     print()
 
     # =========================================================================
     # Step 4: Scan a single listing
     # =========================================================================
-    print("Step 4: scan_listing() вЂ” Single listing pipeline")
+    print("Step 4: scan_listing() РІР‚вЂќ Single listing pipeline")
     print("-" * 80)
     print()
 
@@ -212,9 +213,9 @@ async def main() -> None:
     if opportunity:
         print()
         print(f"  Result: {opportunity.recommendation.upper()}")
-        print(f"  Listing price:  в‚¬{opportunity.listing_price:.2f}")
-        print(f"  Market price:   в‚¬{opportunity.market_price:.2f}")
-        print(f"  Expected profit: в‚¬{opportunity.net_profit:.2f}")
+        print(f"  Listing price:  РІвЂљВ¬{opportunity.listing_price:.2f}")
+        print(f"  Market price:   РІвЂљВ¬{opportunity.market_price:.2f}")
+        print(f"  Expected profit: РІвЂљВ¬{opportunity.net_profit:.2f}")
         print(f"  Profit margin:  {opportunity.net_profit_margin_percentage:.1f}%")
         print(f"  Score:          {opportunity.opportunity_score:.1f}/100")
         print()
@@ -225,7 +226,7 @@ async def main() -> None:
     # =========================================================================
     # Step 5: Scan multiple listings
     # =========================================================================
-    print("Step 5: scan_multiple() вЂ” Batch pipeline")
+    print("Step 5: scan_multiple() РІР‚вЂќ Batch pipeline")
     print("-" * 80)
     print()
 
@@ -265,9 +266,9 @@ async def main() -> None:
         for i, opp in enumerate(ranking.ordered_opportunities, 1):
             print(f"  {i}. {opp.listing.title}")
             print(f"     Listing ID:     {opp.listing.listing_id}")
-            print(f"     Listing Price:  в‚¬{opp.listing_price:.2f}")
-            print(f"     Market Price:   в‚¬{opp.market_price:.2f}")
-            print(f"     Expected Profit: в‚¬{opp.net_profit:.2f}")
+            print(f"     Listing Price:  РІвЂљВ¬{opp.listing_price:.2f}")
+            print(f"     Market Price:   РІвЂљВ¬{opp.market_price:.2f}")
+            print(f"     Expected Profit: РІвЂљВ¬{opp.net_profit:.2f}")
             print(f"     Profit Margin:  {opp.net_profit_margin_percentage:.1f}%")
             print(f"     ROI:            {opp.net_roi_percentage:.1f}%")
             print(f"     Score:          {opp.opportunity_score:.1f}/100")
@@ -280,7 +281,7 @@ async def main() -> None:
         print("-" * 80)
         print()
         for f in result.failures:
-            print(f"  вњ— {f.listing_id}")
+            print(f"  РІСљвЂ” {f.listing_id}")
             print(f"    Stage:  {f.stage}")
             print(f"    Reason: {f.reason}")
             if f.error_message:
@@ -296,14 +297,14 @@ async def main() -> None:
     print()
     print("The scanner coordinated these steps for each listing:")
     print()
-    print("  1. GameDetector         вЂ” Verify game is detected")
-    print("  2. PriceCollector       вЂ” Collect comparable listings")
-    print("  3. PriceDatasetBuilder  вЂ” Build price dataset")
-    print("  4. PriceStatistics      вЂ” Calculate statistics")
-    print("  5. OutlierRemoval       вЂ” Remove outliers")
-    print("  6. PriceStatistics      вЂ” Recalculate on clean data")
-    print("  7. MarketPriceEstimator вЂ” Estimate market price")
-    print("  8. ArbitrageDetector    вЂ” Detect opportunity")
+    print("  1. GameDetector         РІР‚вЂќ Verify game is detected")
+    print("  2. PriceCollector       РІР‚вЂќ Collect comparable listings")
+    print("  3. PriceDatasetBuilder  РІР‚вЂќ Build price dataset")
+    print("  4. PriceStatistics      РІР‚вЂќ Calculate statistics")
+    print("  5. OutlierRemoval       РІР‚вЂќ Remove outliers")
+    print("  6. PriceStatistics      РІР‚вЂќ Recalculate on clean data")
+    print("  7. MarketPriceEstimator РІР‚вЂќ Estimate market price")
+    print("  8. ArbitrageDetector    РІР‚вЂќ Detect opportunity")
     print()
     print("The scanner itself made ZERO decisions.")
     print("All business logic lives in the individual components.")

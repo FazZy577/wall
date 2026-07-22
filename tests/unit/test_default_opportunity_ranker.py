@@ -2,6 +2,7 @@
 
 import itertools
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 
@@ -37,35 +38,40 @@ def _make_opportunity(
     market_price: float = 30.0,
     listing_price: float = 10.0,
 ) -> ArbitrageOpportunity:
+    market_amount = Decimal(str(market_price))
+    listing_amount = Decimal(str(listing_price))
+    profit_amount = Decimal(str(net_profit))
+    roi = Decimal(str(net_roi_percentage))
+    discount = Decimal(str(acquisition_discount_to_reference_market_percentage))
     listing = CandidateListing(
-        listing_id, title, "Good condition", listing_price, "EUR",
+        listing_id, title, "Good condition", listing_amount, "EUR",
         f"https://wallapop.com/item/{listing_id}",
     )
-    total_cost = net_profit / (net_roi_percentage / 100.0) if net_roi_percentage else listing_price
-    acquisition_price = market_price * (
-        1 - acquisition_discount_to_reference_market_percentage / 100.0
+    total_cost = profit_amount / (roi / Decimal("100")) if roi else listing_amount
+    acquisition_price = market_amount * (
+        Decimal("1") - discount / Decimal("100")
     )
     breakdown = EconomicBreakdown(
-        reference_market_value=market_price,
-        expected_item_sale_prices=(market_price,),
-        expected_sale_revenue=market_price,
-        quick_sale_discount_total=0.0,
-        selling_fees=0.0,
-        fixed_selling_costs=0.0,
-        safety_buffer=0.0,
+        reference_market_value=market_amount,
+        expected_item_sale_prices=(market_amount,),
+        expected_sale_revenue=market_amount,
+        quick_sale_discount_total=Decimal("0.0"),
+        selling_fees=Decimal("0.0"),
+        fixed_selling_costs=Decimal("0.0"),
+        safety_buffer=Decimal("0.0"),
         acquisition_price=acquisition_price,
         acquisition_overhead=total_cost - acquisition_price,
         total_acquisition_cost=total_cost,
-        net_expected_proceeds=net_profit + total_cost,
-        net_profit=net_profit,
+        net_expected_proceeds=profit_amount + total_cost,
+        net_profit=profit_amount,
         break_even_sale_revenue=total_cost,
         item_count=1,
     )
     return ArbitrageOpportunity(
         listing=listing,
         game=_make_game(),
-        market_price=market_price,
-        listing_price=listing_price,
+        market_price=Decimal(str(market_price)),
+        listing_price=Decimal(str(listing_price)),
         confidence_score=confidence_score,
         confidence_level="high",  # type: ignore[arg-type]
         opportunity_score=opportunity_score,

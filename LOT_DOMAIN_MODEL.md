@@ -1,5 +1,9 @@
 # Lot Domain Model
 
+Lot acquisition prices, game market values and every financial property
+delegated to `EconomicBreakdown` use `Decimal`. Confidence and opportunity
+score remain `float`; item counts remain `int`.
+
 **Entities**: `src/domain/entities/`
 
 ## Overview

@@ -6,6 +6,7 @@ arbitrage opportunities. No Wallapop. No Playwright. No external calls.
 
 import sys
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -57,7 +58,7 @@ def _make_opportunity(
         listing_id=listing_id,
         title=title,
         description="Good condition",
-        price=listing_price,
+        price=Decimal(str(listing_price)),
         currency="EUR",
         url=f"https://wallapop.com/item/{listing_id}",
     )
@@ -70,26 +71,26 @@ def _make_opportunity(
         1 - acquisition_discount_to_reference_market_percentage / 100.0
     )
     breakdown = EconomicBreakdown(
-        reference_market_value=market_price,
+        reference_market_value=Decimal(str(market_price)),
         expected_item_sale_prices=(market_price,),
-        expected_sale_revenue=market_price,
-        quick_sale_discount_total=0.0,
-        selling_fees=0.0,
-        fixed_selling_costs=0.0,
-        safety_buffer=0.0,
-        acquisition_price=acquisition_price,
+        expected_sale_revenue=Decimal(str(market_price)),
+        quick_sale_discount_total=Decimal("0.0"),
+        selling_fees=Decimal("0.0"),
+        fixed_selling_costs=Decimal("0.0"),
+        safety_buffer=Decimal("0.0"),
+        acquisition_price=Decimal(str(acquisition_price)),
         acquisition_overhead=total_acquisition_cost - acquisition_price,
-        total_acquisition_cost=total_acquisition_cost,
+        total_acquisition_cost=Decimal(str(total_acquisition_cost)),
         net_expected_proceeds=net_profit + total_acquisition_cost,
-        net_profit=net_profit,
-        break_even_sale_revenue=total_acquisition_cost,
+        net_profit=Decimal(str(net_profit)),
+        break_even_sale_revenue=Decimal(str(total_acquisition_cost)),
         item_count=1,
     )
     return ArbitrageOpportunity(
         listing=listing,
         game=game,
-        market_price=market_price,
-        listing_price=listing_price,
+        market_price=Decimal(str(market_price)),
+        listing_price=Decimal(str(listing_price)),
         confidence_score=confidence_score,
         confidence_level="high",  # type: ignore[arg-type]
         opportunity_score=opportunity_score,
@@ -122,98 +123,98 @@ def main() -> None:
             listing_id="lst_001",
             title="Grand Theft Auto V PS4",
             opportunity_score=92.4,
-            net_profit=25.0,
+            net_profit=Decimal("25.0"),
             confidence_score=0.85,
             net_roi_percentage=200.0,
             acquisition_discount_to_reference_market_percentage=50.0,
             recommendation=Recommendation.BUY,
-            listing_price=10.0,
-            market_price=35.0,
+            listing_price=Decimal("10.0"),
+            market_price=Decimal("35.0"),
         ),
         _make_opportunity(
             listing_id="lst_002",
             title="Red Dead Redemption 2 PS4",
             opportunity_score=89.1,
-            net_profit=21.0,
+            net_profit=Decimal("21.0"),
             confidence_score=0.90,
             net_roi_percentage=150.0,
             acquisition_discount_to_reference_market_percentage=40.0,
             recommendation=Recommendation.BUY,
-            listing_price=14.0,
-            market_price=35.0,
+            listing_price=Decimal("14.0"),
+            market_price=Decimal("35.0"),
         ),
         _make_opportunity(
             listing_id="lst_003",
             title="The Last of Us Part II",
             opportunity_score=73.0,
-            net_profit=12.0,
+            net_profit=Decimal("12.0"),
             confidence_score=0.75,
             net_roi_percentage=80.0,
             acquisition_discount_to_reference_market_percentage=30.0,
             recommendation=Recommendation.MAYBE,
-            listing_price=15.0,
-            market_price=27.0,
+            listing_price=Decimal("15.0"),
+            market_price=Decimal("27.0"),
         ),
         _make_opportunity(
             listing_id="lst_004",
             title="Call of Duty Black Ops 6",
             opportunity_score=65.0,
-            net_profit=8.0,
+            net_profit=Decimal("8.0"),
             confidence_score=0.70,
             net_roi_percentage=50.0,
             acquisition_discount_to_reference_market_percentage=20.0,
             recommendation=Recommendation.MAYBE,
-            listing_price=16.0,
-            market_price=24.0,
+            listing_price=Decimal("16.0"),
+            market_price=Decimal("24.0"),
         ),
         _make_opportunity(
             listing_id="lst_005",
             title="FIFA 25 PS4",
             opportunity_score=41.7,
-            net_profit=3.0,
+            net_profit=Decimal("3.0"),
             confidence_score=0.60,
             net_roi_percentage=20.0,
             acquisition_discount_to_reference_market_percentage=10.0,
             recommendation=Recommendation.SKIP,
-            listing_price=15.0,
-            market_price=18.0,
+            listing_price=Decimal("15.0"),
+            market_price=Decimal("18.0"),
         ),
         _make_opportunity(
             listing_id="lst_006",
             title="Overpriced Game PS4",
             opportunity_score=30.0,
-            net_profit=-5.0,
+            net_profit=Decimal("-5.0"),
             confidence_score=0.55,
             net_roi_percentage=-30.0,
             acquisition_discount_to_reference_market_percentage=5.0,
             recommendation=Recommendation.SKIP,
-            listing_price=25.0,
-            market_price=20.0,
+            listing_price=Decimal("25.0"),
+            market_price=Decimal("20.0"),
         ),
         # Two opportunities with the SAME score to demonstrate tie-breaking
         _make_opportunity(
             listing_id="lst_007",
             title="NBA 2K25 PS4",
             opportunity_score=80.0,
-            net_profit=10.0,
+            net_profit=Decimal("10.0"),
             confidence_score=0.80,
             net_roi_percentage=60.0,
             acquisition_discount_to_reference_market_percentage=25.0,
             recommendation=Recommendation.BUY,
-            listing_price=12.0,
-            market_price=22.0,
+            listing_price=Decimal("12.0"),
+            market_price=Decimal("22.0"),
         ),
         _make_opportunity(
             listing_id="lst_008",
             title="NBA 2K25 PS4 (Steelbook)",
             opportunity_score=80.0,
-            net_profit=18.0,  # Higher profit в†’ wins tie-break
+            net_profit=Decimal("18.0"),  # Higher profit РІвЂ вЂ™ wins tie-break
             confidence_score=0.80,
             net_roi_percentage=80.0,
             acquisition_discount_to_reference_market_percentage=30.0,
             recommendation=Recommendation.BUY,
-            listing_price=12.0,
-            market_price=30.0,
+            listing_price=Decimal("12.0"),
+            market_price=Decimal("30.0"),
         ),
     ]
 
@@ -222,7 +223,7 @@ def main() -> None:
         print(
             f"    {opp.listing.listing_id}: {opp.listing.title[:30]:30s} "
             f"score={opp.opportunity_score:5.1f} "
-            f"profit=в‚¬{opp.net_profit:6.2f} "
+            f"profit=РІвЂљВ¬{opp.net_profit:6.2f} "
             f"{opp.recommendation.upper()}"
         )
     print()
@@ -286,8 +287,8 @@ def main() -> None:
     print()
 
     print("  Two opportunities with score=80.0:")
-    print("    lst_007 (NBA 2K25):          profit=в‚¬10.00")
-    print("    lst_008 (NBA 2K25 Steelbook): profit=в‚¬18.00")
+    print("    lst_007 (NBA 2K25):          profit=РІвЂљВ¬10.00")
+    print("    lst_008 (NBA 2K25 Steelbook): profit=РІвЂљВ¬18.00")
     print()
     print("  Result: lst_008 ranks HIGHER because tie-break #1 is net_profit.")
     print()
@@ -321,7 +322,7 @@ def main() -> None:
     print("  - Tie-breaking is fully deterministic.")
     print("  - Counts are over ALL received, not just returned.")
     print("  - limit applies AFTER sorting.")
-    print("  - Empty input в†’ best_score=None, average_score=None.")
+    print("  - Empty input РІвЂ вЂ™ best_score=None, average_score=None.")
     print()
 
 

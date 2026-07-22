@@ -5,6 +5,7 @@ Calculates confidence score based on sample size and price dispersion.
 """
 
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
@@ -93,7 +94,7 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
 
         # Calculate coefficient of variation
         coefficient_of_variation = (
-            statistics.standard_deviation / statistics.mean_price
+            float(statistics.standard_deviation / statistics.mean_price)
             if statistics.mean_price > 0
             else 0.0
         )
@@ -155,8 +156,8 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
 
     def _calculate_dispersion_factor(
         self,
-        standard_deviation: float,
-        mean_price: float,
+        standard_deviation: Decimal,
+        mean_price: Decimal,
     ) -> float:
         """Calculate confidence factor based on price dispersion.
 
@@ -180,14 +181,14 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
         if mean_price == 0:
             return 0.0
 
-        cv = standard_deviation / mean_price
+        cv = float(standard_deviation / mean_price)
         return max(0.0, 1.0 - cv)
 
     def _calculate_confidence_score(
         self,
         sample_size: int,
-        standard_deviation: float,
-        mean_price: float,
+        standard_deviation: Decimal,
+        mean_price: Decimal,
     ) -> float:
         """Calculate overall confidence score (0.0 to 1.0).
 
@@ -233,7 +234,7 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
     def _determine_reason_code(
         self,
         sample_size: int,
-        iqr: float,
+        iqr: Decimal,
         confidence_score: float,
     ) -> ReasonCode:
         """Determine reason code based on dataset characteristics.
@@ -251,7 +252,7 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
             return ReasonCode.INSUFFICIENT_DATA
 
         # Narrow range (all prices very similar)
-        if iqr == 0.0:
+        if iqr == Decimal("0"):
             return ReasonCode.NARROW_RANGE
 
         # High volatility (low confidence)

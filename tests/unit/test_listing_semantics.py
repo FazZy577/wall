@@ -1,6 +1,7 @@
 """Nominal, typed, and canonical boundaries for listing/game models."""
 
 import ast
+from decimal import Decimal
 from pathlib import Path
 from typing import get_type_hints
 from unittest.mock import AsyncMock, Mock
@@ -53,7 +54,7 @@ def _candidate(identifier: str = "candidate") -> CandidateListing:
         listing_id=identifier,
         title="Lote PS3 PS4 PS5",
         description="GTA V y otros juegos",
-        price=30.0,
+        price=Decimal("30.0"),
         currency="EUR",
         url=f"https://example.test/{identifier}",
         raw_listing={"candidate": identifier},
@@ -68,7 +69,7 @@ async def test_candidate_and_comparable_are_nominally_unrelated() -> None:
         listing_id="comparable",
         title="GTA V PS4",
         description="",
-        price=15.0,
+        price=Decimal("15.0"),
         currency="EUR",
         detected_game=_game(),
         url="https://example.test/comparable",
@@ -135,7 +136,7 @@ async def test_candidate_is_rejected_even_when_mixed_with_valid_comparables() ->
         listing_id="comparable",
         title="GTA V PS4",
         description="",
-        price=15.0,
+        price=Decimal("15.0"),
         currency="EUR",
         detected_game=_game(),
         url="https://example.test/comparable",

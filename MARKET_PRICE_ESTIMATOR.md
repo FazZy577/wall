@@ -1,5 +1,9 @@
 # Market Price Estimator Module
 
+Dataset prices, monetary statistics, outlier bounds and estimated-price fields
+are `Decimal`. Dimensionless confidence, coefficient of variation and outlier
+percentage remain `float`. The estimator neither quantizes nor converts money.
+
 ## Overview
 
 The Market Price Estimator is the **pricing brain** of the system. It estimates the fair market price for a game based on clean price data.

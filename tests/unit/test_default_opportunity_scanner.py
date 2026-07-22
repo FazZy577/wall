@@ -5,6 +5,7 @@ No Playwright. No Wallapop API calls.
 """
 
 from datetime import datetime
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -43,7 +44,7 @@ def sample_listing(sample_game: DetectedGame) -> CandidateListing:
         listing_id="test123",
         title="GTA V PS4",
         description="Great condition",
-        price=12.0,
+        price=Decimal("12.0"),
         currency="EUR",
         url="https://wallapop.com/item/test123",
     )
@@ -56,7 +57,7 @@ def listing_without_game() -> CandidateListing:
         listing_id="test456",
         title="Unknown Game",
         description="Some game",
-        price=10.0,
+        price=Decimal("10.0"),
         currency="EUR",
         url="https://wallapop.com/item/test456",
     )
@@ -69,7 +70,7 @@ def sample_comparable(sample_game: DetectedGame) -> ComparableListing:
         listing_id="comp001",
         title="GTA V PS4 - Like New",
         description="Perfect condition",
-        price=20.0,
+        price=Decimal("20.0"),
         currency="EUR",
         detected_game=sample_game,
         url="https://wallapop.com/item/comp001",
@@ -180,7 +181,7 @@ def _setup_successful_pipeline_mocks(
 
     # Market estimator
     mock_estimate = Mock()
-    mock_estimate.estimated_price = 22.0
+    mock_estimate.estimated_price = Decimal("22.0")
     mock_estimate.confidence_score = 0.80
     mock_market_estimator.estimate.return_value = mock_estimate
 
@@ -329,7 +330,7 @@ class TestScanMultiple:
                 listing_id=f"test{i}",
                 title=f"GTA V PS4 - {i}",
                 description="",
-                price=10.0 + i,
+                price=Decimal("10.0") + i,
                 currency="EUR",
                 url=f"https://wallapop.com/item/test{i}",
             )
@@ -376,7 +377,7 @@ class TestScanMultiple:
                 listing_id=f"candidate-{index}",
                 title=f"GTA V PS4 {index}",
                 description="",
-                price=10.0 + index,
+                price=Decimal("10.0") + index,
                 currency="EUR",
                 url=f"https://example.test/{index}",
             )
@@ -462,8 +463,8 @@ class TestScanMultiple:
     ) -> None:
         """Should handle mix of successes and failures."""
         listings = [
-            listing_without_game,  # No game в†’ fail
-            sample_listing,  # Has game в†’ success
+            listing_without_game,  # No game РІвЂ вЂ™ fail
+            sample_listing,  # Has game РІвЂ вЂ™ success
         ]
 
         _setup_successful_pipeline_mocks(
@@ -502,7 +503,7 @@ class TestScanMultiple:
                 listing_id="good1",
                 title="GTA V PS4",
                 description="",
-                price=10.0,
+                price=Decimal("10.0"),
                 currency="EUR",
                 url="https://wallapop.com/item/good1",
             ),
@@ -510,7 +511,7 @@ class TestScanMultiple:
                 listing_id="bad1",
                 title="GTA V PS4",
                 description="",
-                price=15.0,
+                price=Decimal("15.0"),
                 currency="EUR",
                 url="https://wallapop.com/item/bad1",
             ),
@@ -518,7 +519,7 @@ class TestScanMultiple:
                 listing_id="good2",
                 title="GTA V PS4",
                 description="",
-                price=20.0,
+                price=Decimal("20.0"),
                 currency="EUR",
                 url="https://wallapop.com/item/good2",
             ),
@@ -558,7 +559,7 @@ class TestScanMultiple:
         mock_outlier_removal.remove_outliers.return_value = mock_outlier_result
 
         mock_estimate = Mock()
-        mock_estimate.estimated_price = 22.0
+        mock_estimate.estimated_price = Decimal("22.0")
         mock_estimate.confidence_score = 0.80
         mock_market_estimator.estimate.return_value = mock_estimate
 

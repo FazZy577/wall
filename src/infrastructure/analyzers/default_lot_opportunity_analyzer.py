@@ -7,6 +7,7 @@ Contains business rules for lot decisions — but NO market data access.
 """
 
 import logging
+from decimal import Decimal
 
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
@@ -22,8 +23,8 @@ logger = logging.getLogger(__name__)
 # Decision thresholds (private constants)
 # ---------------------------------------------------------------------------
 
-_MIN_LOT_PROFIT_EUR = 10.0
-_MIN_LOT_MARGIN_PERCENTAGE = 25.0
+_MIN_LOT_PROFIT_EUR = Decimal("10.0")
+_MIN_LOT_MARGIN_PERCENTAGE = Decimal("25.0")
 _MIN_AGGREGATE_CONFIDENCE = 0.50
 
 # ---------------------------------------------------------------------------
@@ -138,8 +139,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         listing: CandidateListing,
         total_detected_games: int,
         valued_count: int,
-        net_profit: float,
-        net_profit_margin: float,
+        net_profit: Decimal,
+        net_profit_margin: Decimal,
         aggregate_confidence: float,
     ) -> tuple[Recommendation, LotReasonCode]:
         """Determine BUY/MAYBE/SKIP using explicit priority rules.
@@ -196,8 +197,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
     def _calculate_opportunity_score(
         self,
-        net_profit_margin: float,
-        net_profit: float,
+        net_profit_margin: Decimal,
+        net_profit: Decimal,
         aggregate_confidence: float,
         total_detected_games: int,
         valued_count: int,
@@ -227,14 +228,20 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         return round(max(0.0, min(100.0, score)), 1)
 
     @staticmethod
-    def _normalize_margin(net_profit_margin: float) -> float:
+    def _normalize_margin(net_profit_margin: Decimal) -> float:
         """Normalize profit margin: 0%→0, 50%+→100."""
-        return max(0.0, min(100.0, net_profit_margin / 50.0 * 100.0))
+        return max(
+            0.0,
+            min(100.0, float(net_profit_margin / Decimal("50") * Decimal("100"))),
+        )
 
     @staticmethod
-    def _normalize_profit(net_profit: float) -> float:
+    def _normalize_profit(net_profit: Decimal) -> float:
         """Normalize absolute profit: 0€→0, 50€+→100."""
-        return max(0.0, min(100.0, net_profit / 50.0 * 100.0))
+        return max(
+            0.0,
+            min(100.0, float(net_profit / Decimal("50") * Decimal("100"))),
+        )
 
     @staticmethod
     def _normalize_confidence(aggregate_confidence: float) -> float:

@@ -4,6 +4,7 @@ Tests arbitrage opportunity detection with various scenarios.
 """
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from unittest.mock import Mock
 
 import pytest
@@ -57,7 +58,7 @@ def sample_listing(sample_game: DetectedGame) -> CandidateListing:
         listing_id="test123",
         title="GTA V PS4",
         description="Great condition",
-        price=12.0,
+        price=Decimal("12.0"),
         currency="EUR",
         url="https://wallapop.com/item/test123",
     )
@@ -71,7 +72,7 @@ def create_market_estimate(
 ) -> MarketPriceEstimate:
     """Helper to create market estimate."""
     return MarketPriceEstimate(
-        estimated_price=estimated_price,
+        estimated_price=Decimal(str(estimated_price)),
         currency="EUR",
         confidence_score=confidence_score,
         confidence_level=confidence_level,
@@ -80,10 +81,10 @@ def create_market_estimate(
         sample_size=20,
         observations_removed=2,
         outlier_percentage=10.0,
-        minimum_price=10.0,
-        maximum_price=25.0,
-        standard_deviation=3.5,
-        iqr=5.0,
+        minimum_price=Decimal("10.0"),
+        maximum_price=Decimal("25.0"),
+        standard_deviation=Decimal("3.5"),
+        iqr=Decimal("5.0"),
         coefficient_of_variation=0.15,
         game=game,
         created_at=datetime.now(UTC),
@@ -94,38 +95,38 @@ class TestNewFields:
     """Test new fields: acquisition_discount_to_reference_market_percentage and break_even_sale_revenue."""
 
     def test_required_net_economic_case(self, sample_game: DetectedGame) -> None:
-        listing = CandidateListing("economic", "GTA V", "", 10.0, "EUR", "url")
+        listing = CandidateListing("economic", "GTA V", "", Decimal("10.0"), "EUR", "url")
         estimate = create_market_estimate(
             sample_game, 20.0, 0.8, ConfidenceLevel.HIGH
         )
-        configured_policy = ResaleEconomicPolicy(3.0, 0.10, 1.0, 2.0, 0.05)
-        breakdown = configured_policy.calculate([20.0], 10.0)
+        configured_policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05"))
+        breakdown = configured_policy.calculate([Decimal("20.0")], Decimal("10.0"))
         policy = Mock(spec=ResaleEconomicPolicy)
         policy.calculate.return_value = breakdown
 
         result = DefaultArbitrageOpportunityDetector(policy).detect(listing, estimate)
 
         policy.calculate.assert_called_once_with(
-            reference_item_prices=[20.0], acquisition_price=10.0
+            reference_item_prices=[20.0], acquisition_price=Decimal("10.0")
         )
         assert result.economic_breakdown is breakdown
-        assert result.economic_breakdown.net_profit == pytest.approx(1.45)
-        assert result.net_profit == pytest.approx(1.45)
-        assert result.net_roi_percentage == pytest.approx(1.45 / 12 * 100)
-        assert result.net_profit_margin_percentage == pytest.approx(1.45 / 17 * 100)
+        assert result.economic_breakdown.net_profit == Decimal("1.45")
+        assert result.net_profit == Decimal("1.45")
+        assert result.net_roi_percentage == Decimal("1.45") / Decimal("12") * Decimal("100")
+        assert result.net_profit_margin_percentage == Decimal("1.45") / Decimal("17") * Decimal("100")
         assert result.acquisition_discount_to_reference_market_percentage == 50.0
-        assert result.break_even_sale_revenue == pytest.approx(13 / 0.85)
+        assert result.break_even_sale_revenue == Decimal("13") / Decimal("0.85")
 
     def test_cost_policy_can_legitimately_lower_recommendation(
         self, sample_game: DetectedGame
     ) -> None:
-        listing = CandidateListing("same", "GTA V", "", 5.0, "EUR", "url")
+        listing = CandidateListing("same", "GTA V", "", Decimal("5.0"), "EUR", "url")
         estimate = create_market_estimate(
             sample_game, 30.0, 0.8, ConfidenceLevel.HIGH
         )
         neutral = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
         costly = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy(10.0, 0.20, 2.0, 5.0, 0.10)
+            ResaleEconomicPolicy(Decimal("10.0"), Decimal("0.20"), Decimal("2.0"), Decimal("5.0"), Decimal("0.10"))
         )
 
         neutral_result = neutral.detect(listing, estimate)
@@ -143,19 +144,19 @@ class TestNewFields:
         sample_game: DetectedGame,
     ) -> None:
         """Should calculate market discount correctly."""
-        # Market: 40в‚¬, Listing: 20в‚¬ в†’ 50% discount
+        # Market: 40РІвЂљВ¬, Listing: 20РІвЂљВ¬ РІвЂ вЂ™ 50% discount
         listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=40.0,
+            estimated_price=Decimal("40.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -174,7 +175,7 @@ class TestNewFields:
         """Should set break_even_sale_revenue equal to listing_price."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=22.0,
+            estimated_price=Decimal("22.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -193,7 +194,7 @@ class TestNewFields:
         """Should calculate opportunity_score in range 0-100."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=22.0,
+            estimated_price=Decimal("22.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -208,19 +209,19 @@ class TestNewFields:
         sample_game: DetectedGame,
     ) -> None:
         """Should give high score to excellent deals."""
-        # Market: 40в‚¬, Listing: 10в‚¬ в†’ 75% margin, 30в‚¬ profit, ROI 300%
+        # Market: 40РІвЂљВ¬, Listing: 10РІвЂљВ¬ РІвЂ вЂ™ 75% margin, 30РІвЂљВ¬ profit, ROI 300%
         listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=40.0,
+            estimated_price=Decimal("40.0"),
             confidence_score=0.95,
             confidence_level=ConfidenceLevel.VERY_HIGH,
         )
@@ -242,14 +243,14 @@ class TestNewFields:
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -266,22 +267,22 @@ class TestNewFields:
         sample_game: DetectedGame,
     ) -> None:
         """Should rank better deals with higher scores."""
-        # Deal 1: Good (Market: 30в‚¬, Listing: 15в‚¬ в†’ 50% margin, 15в‚¬ profit)
+        # Deal 1: Good (Market: 30РІвЂљВ¬, Listing: 15РІвЂљВ¬ РІвЂ вЂ™ 50% margin, 15РІвЂљВ¬ profit)
         listing1 = CandidateListing(
             listing_id="deal1",
             title="GTA V PS4 - Good Deal",
             description="",
-            price=15.0,
+            price=Decimal("15.0"),
             currency="EUR",
             url="https://wallapop.com/item/deal1",
         )
 
-        # Deal 2: Excellent (Market: 40в‚¬, Listing: 10в‚¬ в†’ 75% margin, 30в‚¬ profit)
+        # Deal 2: Excellent (Market: 40РІвЂљВ¬, Listing: 10РІвЂљВ¬ РІвЂ вЂ™ 75% margin, 30РІвЂљВ¬ profit)
         listing2 = CandidateListing(
             listing_id="deal2",
             title="GTA V PS4 - Excellent Deal",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://wallapop.com/item/deal2",
         )
@@ -310,10 +311,10 @@ class TestBuyRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should recommend BUY when all criteria are met."""
-        # Listing: 12в‚¬, Market: 22в‚¬, Profit: 10в‚¬, Margin: 45%, Confidence: 0.80
+        # Listing: 12РІвЂљВ¬, Market: 22РІвЂљВ¬, Profit: 10РІвЂљВ¬, Margin: 45%, Confidence: 0.80
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=22.0,
+            estimated_price=Decimal("22.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -323,7 +324,7 @@ class TestBuyRecommendation:
         assert result.recommendation == Recommendation.BUY
         assert result.reason == ReasonCode.UNDERVALUED
         assert result.net_profit == 10.0
-        assert result.net_profit_margin_percentage == pytest.approx(45.45, abs=0.1)
+        assert result.net_profit_margin_percentage == Decimal("10") / Decimal("22") * Decimal("100")
         assert result.confidence_score == 0.80
 
     def test_high_profit_buy(
@@ -333,10 +334,10 @@ class TestBuyRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should recommend BUY for high profit margins."""
-        # Listing: 12в‚¬, Market: 30в‚¬, Profit: 18в‚¬, Margin: 60%
+        # Listing: 12РІвЂљВ¬, Market: 30РІвЂљВ¬, Profit: 18РІвЂљВ¬, Margin: 60%
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=30.0,
+            estimated_price=Decimal("30.0"),
             confidence_score=0.75,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -362,14 +363,14 @@ class TestSkipRecommendation:
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=25.0,
+            price=Decimal("25.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -387,10 +388,10 @@ class TestSkipRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should SKIP when confidence is below threshold."""
-        # Even with good profit, low confidence в†’ SKIP
+        # Even with good profit, low confidence РІвЂ вЂ™ SKIP
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=25.0,
+            estimated_price=Decimal("25.0"),
             confidence_score=0.40,
             confidence_level=ConfidenceLevel.LOW,
         )
@@ -412,14 +413,14 @@ class TestSkipRecommendation:
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=0.0,
+            price=Decimal("0.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -439,19 +440,19 @@ class TestMaybeRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should return MAYBE when profit is positive but below threshold."""
-        # Listing: 12в‚¬, Market: 18в‚¬, Profit: 6в‚¬ (< 10в‚¬ threshold)
+        # Listing: 12РІвЂљВ¬, Market: 18РІвЂљВ¬, Profit: 6РІвЂљВ¬ (< 10РІвЂљВ¬ threshold)
         listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=12.0,
+            price=Decimal("12.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=18.0,
+            estimated_price=Decimal("18.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -468,30 +469,30 @@ class TestMaybeRecommendation:
         sample_game: DetectedGame,
     ) -> None:
         """Should return MAYBE for fair prices with low margins."""
-        # Listing: 16в‚¬, Market: 28в‚¬, Profit: 12в‚¬ (>10в‚¬), Margin: 42.9% but needs >25%
-        # Wait, that would be BUY. Let me use: Listing: 23в‚¬, Market: 28в‚¬
-        # Profit: 5в‚¬ (<10в‚¬) в†’ would be LOW_EXPECTED_PROFIT
-        # Actually need: profit >= 10в‚¬ but margin < 25%
-        # Listing: 22в‚¬, Market: 28в‚¬, Profit: 6в‚¬ в†’ LOW_EXPECTED_PROFIT
-        # Let's try: Listing: 16в‚¬, Market: 22в‚¬, Profit: 6в‚¬, Margin: 27.3%
-        # Profit < 10в‚¬ в†’ LOW_EXPECTED_PROFIT takes priority
+        # Listing: 16РІвЂљВ¬, Market: 28РІвЂљВ¬, Profit: 12РІвЂљВ¬ (>10РІвЂљВ¬), Margin: 42.9% but needs >25%
+        # Wait, that would be BUY. Let me use: Listing: 23РІвЂљВ¬, Market: 28РІвЂљВ¬
+        # Profit: 5РІвЂљВ¬ (<10РІвЂљВ¬) РІвЂ вЂ™ would be LOW_EXPECTED_PROFIT
+        # Actually need: profit >= 10РІвЂљВ¬ but margin < 25%
+        # Listing: 22РІвЂљВ¬, Market: 28РІвЂљВ¬, Profit: 6РІвЂљВ¬ РІвЂ вЂ™ LOW_EXPECTED_PROFIT
+        # Let's try: Listing: 16РІвЂљВ¬, Market: 22РІвЂљВ¬, Profit: 6РІвЂљВ¬, Margin: 27.3%
+        # Profit < 10РІвЂљВ¬ РІвЂ вЂ™ LOW_EXPECTED_PROFIT takes priority
 
-        # To get FAIR_PRICE, need profit >= 10в‚¬ but margin < 25%
-        # Listing: 32в‚¬, Market: 40в‚¬, Profit: 8в‚¬, Margin: 20% в†’ LOW_EXPECTED_PROFIT
-        # Listing: 32в‚¬, Market: 44в‚¬, Profit: 12в‚¬, Margin: 27.3% в†’ BUY
-        # Listing: 34в‚¬, Market: 44в‚¬, Profit: 10в‚¬, Margin: 22.7% в†’ should be MAYBE/FAIR_PRICE
+        # To get FAIR_PRICE, need profit >= 10РІвЂљВ¬ but margin < 25%
+        # Listing: 32РІвЂљВ¬, Market: 40РІвЂљВ¬, Profit: 8РІвЂљВ¬, Margin: 20% РІвЂ вЂ™ LOW_EXPECTED_PROFIT
+        # Listing: 32РІвЂљВ¬, Market: 44РІвЂљВ¬, Profit: 12РІвЂљВ¬, Margin: 27.3% РІвЂ вЂ™ BUY
+        # Listing: 34РІвЂљВ¬, Market: 44РІвЂљВ¬, Profit: 10РІвЂљВ¬, Margin: 22.7% РІвЂ вЂ™ should be MAYBE/FAIR_PRICE
         listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=34.0,
+            price=Decimal("34.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=44.0,
+            estimated_price=Decimal("44.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -501,7 +502,7 @@ class TestMaybeRecommendation:
         assert result.recommendation == Recommendation.MAYBE
         assert result.reason == ReasonCode.FAIR_PRICE
         assert result.net_profit == 10.0
-        assert result.net_profit_margin_percentage == pytest.approx(22.73, abs=0.1)
+        assert result.net_profit_margin_percentage == Decimal("10") / Decimal("44") * Decimal("100")
 
 
 class TestProfitabilityCalculations:
@@ -516,7 +517,7 @@ class TestProfitabilityCalculations:
         """Should calculate profit correctly."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=25.0,
+            estimated_price=Decimal("25.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -535,7 +536,7 @@ class TestProfitabilityCalculations:
         """Should calculate profit margin correctly."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -554,7 +555,7 @@ class TestProfitabilityCalculations:
         """Should calculate ROI correctly."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=24.0,
+            estimated_price=Decimal("24.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -577,7 +578,7 @@ class TestFieldPropagation:
         """Should populate all fields correctly."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=22.0,
+            estimated_price=Decimal("22.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -593,9 +594,9 @@ class TestFieldPropagation:
         assert result.listing_price == 12.0
 
         # Metrics
-        assert isinstance(result.net_profit, float)
-        assert isinstance(result.net_profit_margin_percentage, float)
-        assert isinstance(result.net_roi_percentage, float)
+        assert isinstance(result.net_profit, Decimal)
+        assert isinstance(result.net_profit_margin_percentage, Decimal)
+        assert isinstance(result.net_roi_percentage, Decimal)
 
         # Confidence
         assert result.confidence_score == 0.80
@@ -618,21 +619,21 @@ class TestCustomThresholds:
         sample_game: DetectedGame,
     ) -> None:
         """Should use custom minimum profit threshold."""
-        # Custom threshold: 15в‚¬ instead of 10в‚¬
+        # Custom threshold: 15РІвЂљВ¬ instead of 10РІвЂљВ¬
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=15.0
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("15.0")
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=24.0,  # Profit: 12в‚¬ (below 15в‚¬)
+            estimated_price=Decimal("24.0"),  # Profit: 12РІвЂљВ¬ (below 15РІвЂљВ¬)
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
 
         result = detector.detect(sample_listing, market_estimate)
 
-        # Would be BUY with default (10в‚¬), but not with 15в‚¬ threshold
+        # Would be BUY with default (10РІвЂљВ¬), but not with 15РІвЂљВ¬ threshold
         assert result.recommendation == Recommendation.MAYBE
         assert result.net_profit == 12.0
 
@@ -643,21 +644,21 @@ class TestCustomThresholds:
         """Should use custom minimum margin threshold."""
         # Custom threshold: 40% instead of 25%
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_margin_percent=40.0
+            ResaleEconomicPolicy.neutral(), min_net_profit_margin_percent=Decimal("40.0")
         )
 
         listing = CandidateListing(
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=16.0,
+            price=Decimal("16.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=26.0,  # Profit: 10в‚¬, Margin: 38.5%
+            estimated_price=Decimal("26.0"),  # Profit: 10РІвЂљВ¬, Margin: 38.5%
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -680,7 +681,7 @@ class TestExplainMethod:
         """Should return formatted explanation string."""
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=22.0,
+            estimated_price=Decimal("22.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )
@@ -709,14 +710,14 @@ class TestRealWorldScenarios:
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=8.0,
+            price=Decimal("8.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.90,
             confidence_level=ConfidenceLevel.VERY_HIGH,
         )
@@ -738,14 +739,14 @@ class TestRealWorldScenarios:
             listing_id="test123",
             title="GTA V PS4",
             description="",
-            price=15.0,
+            price=Decimal("15.0"),
             currency="EUR",
             url="https://wallapop.com/item/test123",
         )
 
         market_estimate = create_market_estimate(
             game=sample_game,
-            estimated_price=15.0,
+            estimated_price=Decimal("15.0"),
             confidence_score=0.80,
             confidence_level=ConfidenceLevel.HIGH,
         )

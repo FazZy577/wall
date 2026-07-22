@@ -6,6 +6,7 @@ using Tukey's IQR method.
 
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -46,7 +47,7 @@ def main() -> None:
 
     observations = [
         PriceObservation(
-            price=price,
+            price=Decimal(str(price)),
             currency="EUR",
             listing_id=str(i),
             title=f"GTA V PS4 Listing {i}",

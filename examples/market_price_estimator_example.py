@@ -6,6 +6,7 @@ using the MEDIAN strategy with confidence scoring.
 
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -206,7 +207,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
     """Helper to create PriceDataset from list of prices."""
     observations = [
         PriceObservation(
-            price=price,
+            price=Decimal(str(price)),
             currency="EUR",
             listing_id=str(i),
             title=f"GTA V PS4 Listing {i}",

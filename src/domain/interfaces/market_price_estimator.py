@@ -6,8 +6,10 @@ Defines the contract for estimating fair market prices from clean datasets.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 
+from domain._decimal import require_decimal
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.price_dataset_builder import PriceDataset
 from domain.interfaces.price_statistics import PriceStatisticsResult
@@ -66,7 +68,7 @@ class MarketPriceEstimate:
         created_at: Estimation timestamp
     """
 
-    estimated_price: float
+    estimated_price: Decimal
     currency: str
     confidence_score: float
     confidence_level: ConfidenceLevel
@@ -75,13 +77,20 @@ class MarketPriceEstimate:
     sample_size: int
     observations_removed: int
     outlier_percentage: float
-    minimum_price: float
-    maximum_price: float
-    standard_deviation: float
-    iqr: float
+    minimum_price: Decimal
+    maximum_price: Decimal
+    standard_deviation: Decimal
+    iqr: Decimal
     coefficient_of_variation: float
     game: DetectedGame
     created_at: datetime
+
+    def __post_init__(self) -> None:
+        for name in (
+            "estimated_price", "minimum_price", "maximum_price",
+            "standard_deviation", "iqr",
+        ):
+            require_decimal(name, getattr(self, name))
 
     def explain(self) -> str:
         """Generate human-readable explanation of the estimation.
@@ -120,7 +129,9 @@ class MarketPriceEstimate:
 
         # Calculate mean from std_dev and CV
         if self.coefficient_of_variation > 0:
-            mean = self.standard_deviation / self.coefficient_of_variation
+            mean = self.standard_deviation / Decimal(
+                str(self.coefficient_of_variation)
+            )
             lines.append(f"Mean: {self.currency} {mean:.2f}")
 
         lines.append(f"Standard Deviation: {self.currency} {self.standard_deviation:.2f}")

@@ -6,7 +6,9 @@ for price estimation.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from decimal import Decimal
 
+from domain._decimal import require_decimal
 from domain.entities.detected_game import DetectedGame
 
 
@@ -22,7 +24,11 @@ class ComparableFilterInput:
 
     title: str
     description: str = ""
-    price: float | None = None
+    price: Decimal | None = None
+
+    def __post_init__(self) -> None:
+        if self.price is not None:
+            require_decimal("price", self.price)
 
 
 class IComparableFilter(ABC):

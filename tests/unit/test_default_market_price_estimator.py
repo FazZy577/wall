@@ -4,6 +4,7 @@ Tests market price estimation using MEDIAN strategy with confidence scoring.
 """
 
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import pytest
 
@@ -15,7 +16,6 @@ from domain.interfaces.game_detector import (
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     EstimationStrategy,
-    MarketPriceEstimate,
     ReasonCode,
 )
 from domain.interfaces.price_dataset_builder import (
@@ -50,7 +50,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
     """Helper to create PriceDataset from list of prices."""
     observations = [
         PriceObservation(
-            price=price,
+            price=Decimal(str(price)),
             currency="EUR",
             listing_id=str(i),
             title=f"Listing {i}",
@@ -85,19 +85,19 @@ def create_statistics(
 
     return PriceStatisticsResult(
         count=count,
-        min_price=min_price,
-        max_price=max_price,
-        mean_price=mean_price,
-        median_price=median_price,
-        standard_deviation=std_dev,
-        variance=variance,
-        q1=q1,
-        q3=q3,
-        iqr=iqr,
-        percentile_10=min_price,
-        percentile_25=q1,
-        percentile_75=q3,
-        percentile_90=max_price,
+        min_price=Decimal(str(min_price)),
+        max_price=Decimal(str(max_price)),
+        mean_price=Decimal(str(mean_price)),
+        median_price=Decimal(str(median_price)),
+        standard_deviation=Decimal(str(std_dev)),
+        variance=Decimal(str(variance)),
+        q1=Decimal(str(q1)),
+        q3=Decimal(str(q3)),
+        iqr=Decimal(str(iqr)),
+        percentile_10=Decimal(str(min_price)),
+        percentile_25=Decimal(str(q1)),
+        percentile_75=Decimal(str(q3)),
+        percentile_90=Decimal(str(max_price)),
     )
 
 
@@ -190,7 +190,7 @@ class TestConfidenceScoreCalculation:
         # size_factor = 3/20 = 0.15
         # cv = 0.82/15 = 0.055
         # dispersion_factor = 1 - 0.055 = 0.945
-        # confidence = 0.15 * 0.945 ≈ 0.14
+        # confidence = 0.15 * 0.945 РІвЂ°в‚¬ 0.14
         assert result.confidence_score < 0.20
         assert result.sample_size == 3
 
@@ -210,7 +210,7 @@ class TestConfidenceScoreCalculation:
         # size_factor = 20/20 = 1.0
         # cv = 0.58/14.95 = 0.039
         # dispersion_factor = 1 - 0.039 = 0.961
-        # confidence = 1.0 * 0.961 ≈ 0.96
+        # confidence = 1.0 * 0.961 РІвЂ°в‚¬ 0.96
         assert result.confidence_score > 0.90
         assert result.sample_size == 20
 
@@ -300,7 +300,7 @@ class TestReasonCodes:
 
         result = estimator.estimate(dataset, statistics, observations_removed=0)
 
-        # cv = 14.58/27.5 = 0.53 → very high
+        # cv = 14.58/27.5 = 0.53 РІвЂ вЂ™ very high
         # confidence will be low (< 0.50)
         assert result.reason_code == ReasonCode.HIGH_VOLATILITY
         assert result.confidence_score < 0.50
@@ -319,7 +319,7 @@ class TestReasonCodes:
 
         result = estimator.estimate(dataset, statistics, observations_removed=0)
 
-        # Good sample size (15), low dispersion (CV ≈ 0.057)
+        # Good sample size (15), low dispersion (CV РІвЂ°в‚¬ 0.057)
         # size_factor = 15/20 = 0.75
         # cv = 0.91/16.0 = 0.057
         # dispersion_factor = 1 - 0.057 = 0.943
@@ -362,7 +362,7 @@ class TestFieldPropagation:
         assert result.maximum_price == 20.0
 
         # Statistics propagated
-        assert result.standard_deviation == 3.74
+        assert result.standard_deviation == Decimal("3.74")
         assert result.iqr == 6.0
         assert isinstance(result.coefficient_of_variation, float)
 
@@ -454,7 +454,7 @@ class TestConfidenceScoreExamples:
         estimator: DefaultMarketPriceEstimator,
         sample_game: DetectedGame,
     ) -> None:
-        """5 observations, CV=0.45 → confidence ≈ 0.14."""
+        """5 observations, CV=0.45 РІвЂ вЂ™ confidence РІвЂ°в‚¬ 0.14."""
         prices = [8.0, 12.0, 15.0, 18.0, 22.0]
         dataset = create_dataset(prices, sample_game)
         statistics = create_statistics(5, 8.0, 22.0, 15.0, 15.0, 6.75, 6.0)
@@ -464,7 +464,7 @@ class TestConfidenceScoreExamples:
         # size_factor = 5/20 = 0.25
         # cv = 6.75/15 = 0.45
         # dispersion_factor = 1 - 0.45 = 0.55
-        # confidence = 0.25 * 0.55 = 0.1375 ≈ 0.14
+        # confidence = 0.25 * 0.55 = 0.1375 РІвЂ°в‚¬ 0.14
         assert result.confidence_score == pytest.approx(0.14, abs=0.01)
 
     def test_example_10_obs_low_cv(
@@ -472,7 +472,7 @@ class TestConfidenceScoreExamples:
         estimator: DefaultMarketPriceEstimator,
         sample_game: DetectedGame,
     ) -> None:
-        """10 observations, CV=0.10 → confidence ≈ 0.45."""
+        """10 observations, CV=0.10 РІвЂ вЂ™ confidence РІвЂ°в‚¬ 0.45."""
         prices = [14.0, 14.5, 15.0, 15.0, 15.0, 15.0, 15.5, 16.0, 16.0, 16.5]
         dataset = create_dataset(prices, sample_game)
         statistics = create_statistics(10, 14.0, 16.5, 15.25, 15.0, 1.50, 1.5)
@@ -480,7 +480,7 @@ class TestConfidenceScoreExamples:
         result = estimator.estimate(dataset, statistics, observations_removed=0)
 
         # size_factor = 10/20 = 0.50
-        # cv = 1.50/15.25 = 0.098 ≈ 0.10
+        # cv = 1.50/15.25 = 0.098 РІвЂ°в‚¬ 0.10
         # dispersion_factor = 1 - 0.10 = 0.90
         # confidence = 0.50 * 0.90 = 0.45
         assert result.confidence_score == pytest.approx(0.45, abs=0.02)
@@ -490,7 +490,7 @@ class TestConfidenceScoreExamples:
         estimator: DefaultMarketPriceEstimator,
         sample_game: DetectedGame,
     ) -> None:
-        """20 observations, CV=0.09 → confidence ≈ 0.91."""
+        """20 observations, CV=0.09 РІвЂ вЂ™ confidence РІвЂ°в‚¬ 0.91."""
         prices = [14.0 + i * 0.15 for i in range(20)]
         dataset = create_dataset(prices, sample_game)
         statistics = create_statistics(20, 14.0, 16.85, 15.42, 15.43, 1.35, 2.0)
@@ -498,7 +498,7 @@ class TestConfidenceScoreExamples:
         result = estimator.estimate(dataset, statistics, observations_removed=0)
 
         # size_factor = 20/20 = 1.0
-        # cv = 1.35/15.42 = 0.0875 ≈ 0.09
+        # cv = 1.35/15.42 = 0.0875 РІвЂ°в‚¬ 0.09
         # dispersion_factor = 1 - 0.09 = 0.91
         # confidence = 1.0 * 0.91 = 0.91
         assert result.confidence_score == pytest.approx(0.91, abs=0.02)
@@ -513,7 +513,7 @@ class TestRealWorldScenarios:
         sample_game: DetectedGame,
     ) -> None:
         """Stable market with many listings should have high confidence."""
-        # 25 listings, prices tightly clustered around 15€
+        # 25 listings, prices tightly clustered around 15РІвЂљВ¬
         prices = [14.0, 14.5, 14.5, 15.0, 15.0, 15.0, 15.0, 15.0]
         prices += [15.5, 15.5, 15.5, 15.5, 16.0, 16.0, 16.0]
         prices += [16.5, 16.5, 17.0, 14.0, 15.0, 16.0, 15.5, 15.0, 14.5, 16.0]
@@ -620,7 +620,7 @@ class TestOutlierPercentage:
         dataset = create_dataset(prices, sample_game)
         statistics = create_statistics(3, 15.0, 17.0, 16.0, 16.0, 0.82, 1.0)
 
-        # 3 kept, 2 removed → 2/5 = 40%
+        # 3 kept, 2 removed РІвЂ вЂ™ 2/5 = 40%
         result = estimator.estimate(dataset, statistics, observations_removed=2)
 
         assert result.outlier_percentage == pytest.approx(40.0, abs=0.1)
@@ -662,4 +662,3 @@ class TestExplainMethod:
         assert "EUR 16.00" in explanation
         assert "MEDIAN" in explanation
         assert "CONFIDENCE" in explanation
-

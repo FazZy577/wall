@@ -6,8 +6,10 @@ Defines the contract for detecting profitable arbitrage opportunities.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 
+from domain._decimal import require_decimal
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.resale_economics import EconomicBreakdown
@@ -57,8 +59,8 @@ class ArbitrageOpportunity:
 
     listing: CandidateListing
     game: DetectedGame
-    market_price: float
-    listing_price: float
+    market_price: Decimal
+    listing_price: Decimal
     confidence_score: float
     confidence_level: ConfidenceLevel
     opportunity_score: float
@@ -67,36 +69,40 @@ class ArbitrageOpportunity:
     created_at: datetime
     economic_breakdown: EconomicBreakdown
 
+    def __post_init__(self) -> None:
+        require_decimal("market_price", self.market_price)
+        require_decimal("listing_price", self.listing_price, non_negative=True)
+
     @property
-    def reference_market_value(self) -> float:
+    def reference_market_value(self) -> Decimal:
         return self.economic_breakdown.reference_market_value
 
     @property
-    def expected_sale_revenue(self) -> float:
+    def expected_sale_revenue(self) -> Decimal:
         return self.economic_breakdown.expected_sale_revenue
 
     @property
-    def net_expected_proceeds(self) -> float:
+    def net_expected_proceeds(self) -> Decimal:
         return self.economic_breakdown.net_expected_proceeds
 
     @property
-    def net_profit(self) -> float:
+    def net_profit(self) -> Decimal:
         return self.economic_breakdown.net_profit
 
     @property
-    def net_profit_margin_percentage(self) -> float:
+    def net_profit_margin_percentage(self) -> Decimal:
         return self.economic_breakdown.net_profit_margin_percentage
 
     @property
-    def net_roi_percentage(self) -> float:
+    def net_roi_percentage(self) -> Decimal:
         return self.economic_breakdown.net_roi_percentage
 
     @property
-    def acquisition_discount_to_reference_market_percentage(self) -> float:
+    def acquisition_discount_to_reference_market_percentage(self) -> Decimal:
         return self.economic_breakdown.acquisition_discount_to_reference_market_percentage
 
     @property
-    def break_even_sale_revenue(self) -> float:
+    def break_even_sale_revenue(self) -> Decimal:
         return self.economic_breakdown.break_even_sale_revenue
 
     def explain(self) -> str:

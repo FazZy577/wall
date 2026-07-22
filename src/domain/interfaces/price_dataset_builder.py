@@ -6,7 +6,9 @@ Defines the contract for transforming comparable listings into clean price datas
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 
+from domain._decimal import require_decimal
 from domain.entities.detected_game import DetectedGame
 
 
@@ -28,13 +30,16 @@ class PriceObservation:
         raw_listing: Original listing data for reference
     """
 
-    price: float
+    price: Decimal
     currency: str
     listing_id: str
     title: str
     platform: str
     source: str
-    raw_listing: dict[str, str | float]
+    raw_listing: dict[str, str | Decimal]
+
+    def __post_init__(self) -> None:
+        require_decimal("price", self.price)
 
 
 @dataclass

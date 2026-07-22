@@ -1,5 +1,13 @@
 # Wallapop Arbitrage - Project Setup Complete ✅
 
+## P1.11 exact monetary representation
+
+The complete monetary pipeline uses `Decimal`, from Infrastructure parsing
+through listings, datasets, statistics, outliers, estimates and economic
+breakdowns. Domain rejects monetary floats. Scores and confidence remain float.
+No Money object, currency conversion, JSON encoder, cent quantization or
+commercial rounding policy was introduced.
+
 ## Project Overview
 
 Platform for detecting arbitrage opportunities in second-hand marketplaces, starting with Wallapop and designed for multi-marketplace expansion.

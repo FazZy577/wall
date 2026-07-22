@@ -5,7 +5,9 @@ Represents the valuation of a single game within a lot or candidate listing.
 
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 
+from domain._decimal import require_decimal
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.market_price_estimator import MarketPriceEstimate
 
@@ -30,11 +32,14 @@ class GameValuation:
 
     game: DetectedGame
     market_price_estimate: MarketPriceEstimate
-    estimated_market_value: float
+    estimated_market_value: Decimal
     confidence_score: float
     observations_used: int
     observations_removed: int
     created_at: datetime
+
+    def __post_init__(self) -> None:
+        require_decimal("estimated_market_value", self.estimated_market_value)
 
     @classmethod
     def from_market_estimate(

@@ -1,5 +1,9 @@
 # Lot Opportunity Scanner
 
+The scanner preserves Decimal prices through collection, datasets, statistics,
+estimation and lot economics. Only final dimensionless ratios used to construct
+`opportunity_score` are explicitly converted to float.
+
 **Contract and execution results:**
 `application.interfaces.lot_opportunity_scanner`
 

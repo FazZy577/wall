@@ -1,5 +1,9 @@
 # Opportunity Scanner
 
+Candidate and comparable prices, datasets, statistics, estimates and economic
+results are `Decimal`. The scanner coordinates these values without parsing
+external numbers, rounding to cents or converting currency.
+
 Batch results use a strict recommendation barrier before they are returned:
 all BUY opportunities precede MAYBE, and all MAYBE precede SKIP. Within each
 group the current strategy applies (`opportunity_score` descending by

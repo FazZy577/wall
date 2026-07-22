@@ -1,6 +1,7 @@
 """P1.1/P1.6 tests for execution-scoped comparable collection reuse."""
 
 from dataclasses import fields
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -30,7 +31,7 @@ def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -
             f"{detected_game.platform.value}"
         ),
         description="",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         url=f"https://example.test/{identifier}",
     )
@@ -43,7 +44,7 @@ def comparable(
         listing_id=identifier,
         title=f"{detected_game.matched_text} {detected_game.platform.value}",
         description="",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         detected_game=detected_game,
         url=f"https://example.test/{identifier}",
@@ -99,7 +100,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
         removed_count=0,
     )
     dependencies["estimator"].estimate.return_value = Mock(
-        estimated_price=20.0,
+        estimated_price=Decimal("20.0"),
         confidence_score=0.8,
     )
 
@@ -109,7 +110,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
             listing_price=candidate.price,
             market_estimate=estimate,
             recommendation=Recommendation.BUY,
-            opportunity_score=100.0 - candidate.price,
+            opportunity_score=100.0 - float(candidate.price),
         )
 
     dependencies["detector"].detect.side_effect = make_opportunity
@@ -190,7 +191,9 @@ async def test_candidate_prices_are_detected_individually(
     candidates = [listing(str(price), game(), price) for price in (5.0, 10.0, 14.0)]
     result = await scanner.scan_multiple(candidates)
     assert [call.args[0] for call in mocks["detector"].detect.call_args_list] == candidates
-    assert [opportunity.listing_price for opportunity in result.opportunities] == [5.0, 10.0, 14.0]
+    assert [opportunity.listing_price for opportunity in result.opportunities] == [
+        Decimal("5.0"), Decimal("10.0"), Decimal("14.0")
+    ]
     assert len({id(call.args[1]) for call in mocks["detector"].detect.call_args_list}) == 1
 
 

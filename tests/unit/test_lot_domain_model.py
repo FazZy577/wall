@@ -5,6 +5,7 @@ No external calls. No Playwright. No Wallapop.
 """
 
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 
@@ -49,8 +50,9 @@ def _make_market_estimate(
     observations_removed: int = 2,
 ) -> MarketPriceEstimate:
     """Create a sample MarketPriceEstimate."""
+    amount = Decimal(str(estimated_price))
     return MarketPriceEstimate(
-        estimated_price=estimated_price,
+        estimated_price=amount,
         currency="EUR",
         confidence_score=confidence_score,
         confidence_level=ConfidenceLevel.HIGH,
@@ -59,10 +61,10 @@ def _make_market_estimate(
         sample_size=sample_size,
         observations_removed=observations_removed,
         outlier_percentage=round(observations_removed / sample_size * 100, 1),
-        minimum_price=estimated_price * 0.8,
-        maximum_price=estimated_price * 1.2,
-        standard_deviation=5.0,
-        iqr=7.0,
+        minimum_price=amount * Decimal("0.8"),
+        maximum_price=amount * Decimal("1.2"),
+        standard_deviation=Decimal("5.0"),
+        iqr=Decimal("7.0"),
         coefficient_of_variation=0.25,
         game=game,
         created_at=datetime.now(),
@@ -93,7 +95,7 @@ class TestCandidateListing:
             listing_id="lst001",
             title="GTA V PS4",
             description="Good condition",
-            price=15.0,
+            price=Decimal("15.0"),
             currency="EUR",
             url="https://example.com/lst001",
         )
@@ -109,7 +111,7 @@ class TestCandidateListing:
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
             description="Bundle of 3 games",
-            price=40.0,
+            price=Decimal("40.0"),
             currency="EUR",
             url="https://example.com/lot001",
         )
@@ -123,7 +125,7 @@ class TestCandidateListing:
             listing_id="empty001",
             title="Unknown",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/empty001",
         )
@@ -137,7 +139,7 @@ class TestCandidateListing:
             listing_id="lot2",
             title="2 games",
             description="",
-            price=25.0,
+            price=Decimal("25.0"),
             currency="EUR",
             url="https://example.com/lot2",
         )
@@ -152,7 +154,7 @@ class TestCandidateListing:
                 listing_id="",
                 title="Test",
                 description="",
-                price=10.0,
+                price=Decimal("10.0"),
                 currency="EUR",
                 url="https://example.com/test",
             )
@@ -165,7 +167,7 @@ class TestCandidateListing:
                 listing_id="test",
                 title="",
                 description="",
-                price=10.0,
+                price=Decimal("10.0"),
                 currency="EUR",
                 url="https://example.com/test",
             )
@@ -178,7 +180,7 @@ class TestCandidateListing:
                 listing_id="test",
                 title="Test",
                 description="",
-                price=-5.0,
+                price=Decimal("-5.0"),
                 currency="EUR",
                 url="https://example.com/test",
             )
@@ -190,7 +192,7 @@ class TestCandidateListing:
             listing_id="test",
             title="Free Game",
             description="",
-            price=0.0,
+            price=Decimal("0.0"),
             currency="EUR",
             url="https://example.com/test",
         )
@@ -204,7 +206,7 @@ class TestCandidateListing:
                 listing_id="test",
                 title="Test",
                 description="",
-                price=10.0,
+                price=Decimal("10.0"),
                 currency="",
                 url="https://example.com/test",
             )
@@ -218,7 +220,7 @@ class TestCandidateListing:
             listing_id="test",
             title="Test",
             description="",
-            price=40.0,
+            price=Decimal("40.0"),
             currency="EUR",
             url="https://example.com/test",
             raw_listing=raw,
@@ -235,7 +237,7 @@ class TestCandidateListing:
             listing_id="test",
             title="Test",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/test",
         )
@@ -251,7 +253,7 @@ class TestCandidateListing:
             listing_id="test",
             title="Test",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/test",
             published_at=now,
@@ -274,7 +276,7 @@ class TestGameValuation:
     async def test_from_market_estimate(self) -> None:
         """Should propagate values from MarketPriceEstimate."""
         game = _make_game("GTA V")
-        estimate = _make_market_estimate(game, estimated_price=15.0, confidence_score=0.85)
+        estimate = _make_market_estimate(game, estimated_price=Decimal("15.0"), confidence_score=0.85)
 
         valuation = GameValuation.from_market_estimate(
             game=game,
@@ -293,7 +295,7 @@ class TestGameValuation:
     async def test_estimated_market_value_matches_estimate(self) -> None:
         """estimated_market_value should equal estimate.estimated_price."""
         game = _make_game("RDR2")
-        estimate = _make_market_estimate(game, estimated_price=20.0)
+        estimate = _make_market_estimate(game, estimated_price=Decimal("20.0"))
 
         valuation = GameValuation.from_market_estimate(game, estimate)
 
@@ -344,7 +346,7 @@ class TestLotOpportunity:
         """Helper to create a GameValuation."""
         game = _make_game(name)
         estimate = _make_market_estimate(
-            game, estimated_price=estimated_price, confidence_score=confidence_score
+            game, estimated_price=Decimal(str(estimated_price)), confidence_score=confidence_score
         )
         return GameValuation.from_market_estimate(game, estimate)
 
@@ -355,15 +357,15 @@ class TestLotOpportunity:
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
             description="Bundle of 3 games",
-            price=40.0,
+            price=Decimal("40.0"),
             currency="EUR",
             url="https://example.com/lot001",
         )
 
         valuations = [
-            self._make_valuation("GTA V", estimated_price=15.0, confidence_score=0.85),
-            self._make_valuation("RDR2", estimated_price=20.0, confidence_score=0.90),
-            self._make_valuation("Spider-Man", estimated_price=18.0, confidence_score=0.80),
+            self._make_valuation("GTA V", estimated_price=Decimal("15.0"), confidence_score=0.85),
+            self._make_valuation("RDR2", estimated_price=Decimal("20.0"), confidence_score=0.90),
+            self._make_valuation("Spider-Man", estimated_price=Decimal("18.0"), confidence_score=0.80),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -375,13 +377,13 @@ class TestLotOpportunity:
             economic_breakdown=_economic_breakdown(candidate, valuations),
         )
 
-        # reference_market_value = 15 + 20 + 18 = 53
+        # reference_market_value = Decimal("15") + 20 + 18 = 53
         assert lot.reference_market_value == 53.0
         assert lot.lot_price == 40.0
-        # net_profit = 53 - 40 = 13
+        # net_profit = Decimal("53") - 40 = 13
         assert lot.net_profit == 13.0
-        # profit_margin = 13 / 53 * 100 = 24.5283... в‰€ 24.5
-        assert lot.net_profit_margin_percentage == pytest.approx(13 / 53 * 100)
+        # profit_margin = 13 / 53 * 100 = 24.5283... РІвЂ°в‚¬ 24.5
+        assert lot.net_profit_margin_percentage == Decimal("13") / Decimal("53") * Decimal("100")
         # roi = 13 / 40 * 100 = 32.5
         assert lot.net_roi_percentage == 32.5
         # aggregate_confidence = (0.85 + 0.90 + 0.80) / 3 = 0.85
@@ -394,14 +396,14 @@ class TestLotOpportunity:
             listing_id="overpriced",
             title="Overpriced Lot",
             description="",
-            price=100.0,
+            price=Decimal("100.0"),
             currency="EUR",
             url="https://example.com/overpriced",
         )
 
         valuations = [
-            self._make_valuation("GTA V", estimated_price=15.0),
-            self._make_valuation("FIFA", estimated_price=10.0),
+            self._make_valuation("GTA V", estimated_price=Decimal("15.0")),
+            self._make_valuation("FIFA", estimated_price=Decimal("10.0")),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -425,14 +427,14 @@ class TestLotOpportunity:
             listing_id="lowconf",
             title="Low confidence lot",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/lowconf",
         )
 
         valuations = [
-            self._make_valuation("GTA V", estimated_price=20.0, confidence_score=0.35),
-            self._make_valuation("RDR2", estimated_price=20.0, confidence_score=0.25),
+            self._make_valuation("GTA V", estimated_price=Decimal("20.0"), confidence_score=0.35),
+            self._make_valuation("RDR2", estimated_price=Decimal("20.0"), confidence_score=0.25),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -455,7 +457,7 @@ class TestLotOpportunity:
             listing_id="nogames",
             title="Unknown bundle",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/nogames",
         )
@@ -482,13 +484,13 @@ class TestLotOpportunity:
             listing_id="free",
             title="Free games",
             description="",
-            price=0.0,
+            price=Decimal("0.0"),
             currency="EUR",
             url="https://example.com/free",
         )
 
         valuations = [
-            self._make_valuation("GTA V", estimated_price=15.0),
+            self._make_valuation("GTA V", estimated_price=Decimal("15.0")),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -503,7 +505,7 @@ class TestLotOpportunity:
         assert lot.lot_price == 0.0
         assert lot.reference_market_value == 15.0
         assert lot.net_profit == 15.0
-        # roi = 15 / 0 в†’ edge case в†’ 0.0
+        # roi = 15 / 0 РІвЂ вЂ™ edge case РІвЂ вЂ™ 0.0
         assert lot.net_roi_percentage == 0.0
         assert lot.net_profit_margin_percentage == 100.0
 
@@ -514,15 +516,15 @@ class TestLotOpportunity:
             listing_id="incomplete",
             title="Partial lot",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/incomplete",
         )
 
         # Only 2 of 3 games valued
         valuations = [
-            self._make_valuation("GTA V", estimated_price=15.0),
-            self._make_valuation("RDR2", estimated_price=20.0),
+            self._make_valuation("GTA V", estimated_price=Decimal("15.0")),
+            self._make_valuation("RDR2", estimated_price=Decimal("20.0")),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -544,16 +546,16 @@ class TestLotOpportunity:
             listing_id="mean_test",
             title="Confidence test",
             description="",
-            price=50.0,
+            price=Decimal("50.0"),
             currency="EUR",
             url="https://example.com/test",
         )
 
         valuations = [
-            self._make_valuation("A", estimated_price=20.0, confidence_score=1.0),
-            self._make_valuation("B", estimated_price=20.0, confidence_score=0.5),
-            self._make_valuation("C", estimated_price=20.0, confidence_score=0.5),
-            self._make_valuation("D", estimated_price=20.0, confidence_score=0.0),
+            self._make_valuation("A", estimated_price=Decimal("20.0"), confidence_score=1.0),
+            self._make_valuation("B", estimated_price=Decimal("20.0"), confidence_score=0.5),
+            self._make_valuation("C", estimated_price=Decimal("20.0"), confidence_score=0.5),
+            self._make_valuation("D", estimated_price=Decimal("20.0"), confidence_score=0.0),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -575,13 +577,13 @@ class TestLotOpportunity:
             listing_id="zero_market",
             title="Worthless",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/zero",
         )
 
         valuations = [
-            self._make_valuation("Bad Game", estimated_price=0.0),
+            self._make_valuation("Bad Game", estimated_price=Decimal("0.0")),
         ]
 
         lot = LotOpportunity.from_valuations(
@@ -642,7 +644,7 @@ class TestDatasetContamination:
             listing_id="candidate001",
             title="GTA V PS4 - Candidate",
             description="",
-            price=40.0,  # This is the candidate price - should NOT be in dataset
+            price=Decimal("40.0"),  # This is the candidate price - should NOT be in dataset
             currency="EUR",
             url="https://example.com/candidate001",
         )
@@ -652,7 +654,7 @@ class TestDatasetContamination:
                 listing_id=f"comp{i}",
                 title=f"GTA V PS4 {i}",
                 description="",
-                price=12.0 + i * 3,
+                price=Decimal("12.0") + i * 3,
                 currency="EUR",
                 detected_game=game,
                 url=f"https://example.com/comp{i}",
@@ -728,7 +730,7 @@ class TestDatasetContamination:
             listing_id="candidate002",
             title="GTA V PS4 - Candidate",
             description="",
-            price=40.0,  # Candidate price - should NOT be in dataset
+            price=Decimal("40.0"),  # Candidate price - should NOT be in dataset
             currency="EUR",
             url="https://example.com/candidate002",
         )
@@ -739,7 +741,7 @@ class TestDatasetContamination:
                 listing_id=f"comp{i}",
                 title=f"GTA V PS4 {i}",
                 description="",
-                price=12.0 + i * 3,
+                price=Decimal("12.0") + i * 3,
                 currency="EUR",
                 detected_game=game,
                 url=f"https://example.com/comp{i}",

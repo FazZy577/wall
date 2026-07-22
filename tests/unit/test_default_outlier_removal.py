@@ -4,6 +4,7 @@ Tests outlier detection and removal using Tukey's IQR method.
 """
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import pytest
 
@@ -15,7 +16,6 @@ from domain.interfaces.game_detector import (
 from domain.interfaces.outlier_removal import (
     OutlierMethod,
     OutlierReason,
-    OutlierRemovalResult,
 )
 from domain.interfaces.price_dataset_builder import (
     PriceDataset,
@@ -47,7 +47,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
     """Helper to create PriceDataset from list of prices."""
     observations = [
         PriceObservation(
-            price=price,
+            price=Decimal(str(price)),
             currency="EUR",
             listing_id=str(i),
             title=f"Listing {i}",
@@ -77,19 +77,19 @@ def create_statistics(
     """Helper to create PriceStatisticsResult."""
     return PriceStatisticsResult(
         count=count,
-        min_price=min_price,
-        max_price=max_price,
-        mean_price=(min_price + max_price) / 2,
-        median_price=(q1 + q3) / 2,
-        standard_deviation=5.0,
-        variance=25.0,
-        q1=q1,
-        q3=q3,
-        iqr=iqr,
-        percentile_10=min_price,
-        percentile_25=q1,
-        percentile_75=q3,
-        percentile_90=max_price,
+        min_price=Decimal(str(min_price)),
+        max_price=Decimal(str(max_price)),
+        mean_price=(Decimal(str(min_price)) + Decimal(str(max_price))) / 2,
+        median_price=(Decimal(str(q1)) + Decimal(str(q3))) / 2,
+        standard_deviation=Decimal("5.0"),
+        variance=Decimal("25.0"),
+        q1=Decimal(str(q1)),
+        q3=Decimal(str(q3)),
+        iqr=Decimal(str(iqr)),
+        percentile_10=Decimal(str(min_price)),
+        percentile_25=Decimal(str(q1)),
+        percentile_75=Decimal(str(q3)),
+        percentile_90=Decimal(str(max_price)),
     )
 
 

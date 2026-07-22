@@ -1,5 +1,6 @@
 """Offline integration coverage for the unified lot analysis flow."""
 
+from decimal import Decimal
 from unittest.mock import Mock
 
 import pytest
@@ -44,7 +45,11 @@ class _Detector:
 
 
 class _Collector:
-    prices = {"GTA V": 15.0, "RDR2": 20.0, "FIFA 24": 10.0}
+    prices = {
+        "GTA V": Decimal("15.0"),
+        "RDR2": Decimal("20.0"),
+        "FIFA 24": Decimal("10.0"),
+    }
 
     def __init__(self, candidate_id: str) -> None:
         self.candidate_id = candidate_id
@@ -66,7 +71,7 @@ class _Collector:
                 listing_id=identifier,
                 title=game.canonical_name,
                 description="",
-                price=40.0 if identifier == self.candidate_id else price,
+                price=Decimal("40.0") if identifier == self.candidate_id else price,
                 currency="EUR",
                 detected_game=game,
                 url=f"https://example.test/{identifier}",
@@ -83,7 +88,7 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
         listing_id="lot-123",
         title="Lote GTA V, RDR2 y FIFA 24 para PS4",
         description="Tres juegos",
-        price=40.0,
+        price=Decimal("40.0"),
         currency="EUR",
         url="https://example.test/lot-123",
         raw_listing={"kind": "candidate"},

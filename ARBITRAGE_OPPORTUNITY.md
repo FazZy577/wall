@@ -1,5 +1,10 @@
 # Arbitrage Opportunity Detector
 
+P1.11 represents all prices and financial values exposed through
+`EconomicBreakdown`, including financial percentages, as `Decimal`.
+`confidence_score` and `opportunity_score` remain `float`. Internal values are
+not automatically rounded or quantized to cents.
+
 **Module**: `domain.interfaces.arbitrage_opportunity_detector`  
 **Implementation**: `infrastructure.detectors.default_arbitrage_opportunity_detector`
 

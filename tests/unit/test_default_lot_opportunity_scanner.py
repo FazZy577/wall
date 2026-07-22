@@ -4,6 +4,7 @@ Tests the orchestration of the lot valuation pipeline with mocks.
 No Playwright. No Wallapop API calls.
 """
 
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -52,7 +53,7 @@ def _make_comparable(game: DetectedGame, price: float, listing_id: str) -> Compa
         listing_id=listing_id,
         title=f"{game.canonical_name} PS4",
         description="Good condition",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         detected_game=game,
         url=f"https://wallapop.com/item/{listing_id}",
@@ -163,7 +164,10 @@ def _setup_pipeline_mocks(
     mock_outlier_removal.remove_outliers.return_value = mock_outlier_result
 
     mock_estimate = Mock()
-    mock_estimate.estimated_price = sum(comparable_prices) / len(comparable_prices)
+    mock_estimate.estimated_price = sum(
+        (Decimal(str(price)) for price in comparable_prices),
+        start=Decimal("0"),
+    ) / len(comparable_prices)
     mock_estimate.currency = "EUR"
     mock_estimate.confidence_score = 0.80
     mock_estimate.sample_size = len(comparable_prices)
@@ -173,9 +177,9 @@ def _setup_pipeline_mocks(
     mock_opportunity.recommendation = Recommendation.BUY
     mock_opportunity.reason = "undervalued_lot"
     mock_opportunity.opportunity_score = 85.0
-    mock_opportunity.reference_market_value = 53.0
-    mock_opportunity.lot_price = 35.0
-    mock_opportunity.net_profit = 18.0
+    mock_opportunity.reference_market_value = Decimal("53.0")
+    mock_opportunity.lot_price = Decimal("35.0")
+    mock_opportunity.net_profit = Decimal("18.0")
     mock_opportunity.net_profit_margin_percentage = 34.0
     mock_opportunity.net_roi_percentage = 51.4
     mock_opportunity.aggregate_confidence_score = 0.80
@@ -204,7 +208,7 @@ class TestFullPipeline:
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/lot001",
         )
@@ -247,7 +251,7 @@ class TestFullPipeline:
             listing_id="lot002",
             title="2 games",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/lot002",
         )
@@ -286,7 +290,7 @@ class TestFullPipeline:
             listing_id="lot003",
             title="1 game",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/lot003",
         )
@@ -323,7 +327,7 @@ class TestFullPipeline:
             listing_id="lot004",
             title="1 game",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/lot004",
         )
@@ -361,7 +365,7 @@ class TestFullPipeline:
             listing_id="lot005",
             title="3 games",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/lot005",
         )
@@ -407,7 +411,7 @@ class TestFailureHandling:
             listing_id="fail1",
             title="3 games, 1 fails",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/fail1",
         )
@@ -443,7 +447,7 @@ class TestFailureHandling:
         mock_outlier_removal.remove_outliers.return_value = mock_outlier_result
 
         mock_estimate = Mock()
-        mock_estimate.estimated_price = 15.0
+        mock_estimate.estimated_price = Decimal("15.0")
         mock_estimate.confidence_score = 0.80
         mock_estimate.sample_size = 3
         mock_market_estimator.estimate.return_value = mock_estimate
@@ -477,7 +481,7 @@ class TestFailureHandling:
             listing_id="fail_est",
             title="1 game, estimator fails",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/fail_est",
         )
@@ -525,7 +529,7 @@ class TestFailureHandling:
             listing_id="analyzer_fail",
             title="Analyzer fails",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/analyzer_fail",
         )
@@ -560,7 +564,7 @@ class TestFailureHandling:
             listing_id="empty",
             title="No games",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/empty",
         )
@@ -598,7 +602,7 @@ class TestFailureHandling:
             listing_id="immutable",
             title="Immutable test",
             description="",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             url="https://example.com/immutable",
         )
@@ -635,7 +639,7 @@ class TestFailureHandling:
             listing_id="dup",
             title="Two GTA V copies",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/dup",
         )
@@ -675,7 +679,7 @@ class TestLotScanExplanation:
             listing_id="explain_lot",
             title="Lote PS4 GTA V RDR2",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/explain_lot",
         )
@@ -737,7 +741,7 @@ async def test_lot_scanner_runs_inside_an_already_active_event_loop(
         listing_id="active-loop-lot",
         title="GTA V PS4",
         description="",
-        price=10.0,
+        price=Decimal("10.0"),
         currency="EUR",
         url="https://example.test/active-loop-lot",
     )
@@ -759,7 +763,7 @@ async def test_lot_candidate_is_excluded_from_market_comparables(
         listing_id="candidate-id",
         title="GTA V PS4",
         description="",
-        price=10.0,
+        price=Decimal("10.0"),
         currency="EUR",
         url="https://example.test/candidate-id",
     )

@@ -5,7 +5,9 @@ Defines the contract for calculating statistical metrics from price datasets.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from decimal import Decimal
 
+from domain._decimal import require_decimal
 from domain.interfaces.price_dataset_builder import PriceDataset
 
 
@@ -20,7 +22,8 @@ class PriceStatisticsResult:
     """Statistical metrics calculated from a price dataset.
 
     All prices are in the original currency (no conversion).
-    All values are unrounded floats (rounding is responsibility of upper layers).
+    All monetary values are unrounded Decimals; presentation rounding belongs to
+    upper layers.
 
     Attributes:
         count: Number of observations
@@ -40,19 +43,27 @@ class PriceStatisticsResult:
     """
 
     count: int
-    min_price: float
-    max_price: float
-    mean_price: float
-    median_price: float
-    standard_deviation: float
-    variance: float
-    q1: float
-    q3: float
-    iqr: float
-    percentile_10: float
-    percentile_25: float
-    percentile_75: float
-    percentile_90: float
+    min_price: Decimal
+    max_price: Decimal
+    mean_price: Decimal
+    median_price: Decimal
+    standard_deviation: Decimal
+    variance: Decimal
+    q1: Decimal
+    q3: Decimal
+    iqr: Decimal
+    percentile_10: Decimal
+    percentile_25: Decimal
+    percentile_75: Decimal
+    percentile_90: Decimal
+
+    def __post_init__(self) -> None:
+        for name in (
+            "min_price", "max_price", "mean_price", "median_price",
+            "standard_deviation", "variance", "q1", "q3", "iqr",
+            "percentile_10", "percentile_25", "percentile_75", "percentile_90",
+        ):
+            require_decimal(name, getattr(self, name))
 
 
 class IPriceStatistics(ABC):

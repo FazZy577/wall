@@ -10,6 +10,7 @@ No Playwright. No Wallapop API calls.
 import asyncio
 import sys
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -73,7 +74,7 @@ class FakePriceCollector(IPriceCollector):
                 listing_id=f"comp-{game.canonical_name.lower().replace(' ', '-')}",
                 title=f"{game.canonical_name} PS4",
                 description="Comparable deterministic listing",
-                price=price,
+                price=Decimal(str(price)),
                 currency="EUR",
                 detected_game=game,
                 url=f"https://example.com/{game.canonical_name.lower().replace(' ', '-')}",
@@ -113,19 +114,19 @@ class FakePriceStatistics(IPriceStatistics):
         price = dataset.observations[0].price
         return PriceStatisticsResult(
             count=dataset.sample_size,
-            min_price=price,
-            max_price=price,
-            mean_price=price,
-            median_price=price,
-            standard_deviation=0.0,
-            variance=0.0,
-            q1=price,
-            q3=price,
-            iqr=0.0,
-            percentile_10=price,
-            percentile_25=price,
-            percentile_75=price,
-            percentile_90=price,
+            min_price=Decimal(str(price)),
+            max_price=Decimal(str(price)),
+            mean_price=Decimal(str(price)),
+            median_price=Decimal(str(price)),
+            standard_deviation=Decimal("0.0"),
+            variance=Decimal("0.0"),
+            q1=Decimal(str(price)),
+            q3=Decimal(str(price)),
+            iqr=Decimal("0.0"),
+            percentile_10=Decimal(str(price)),
+            percentile_25=Decimal(str(price)),
+            percentile_75=Decimal(str(price)),
+            percentile_90=Decimal(str(price)),
         )
 
 
@@ -201,7 +202,7 @@ async def main() -> None:
         listing_id="lot-example-001",
         title="Lote PS4 GTA V RDR2 Spider-Man",
         description="GTA V, Red Dead Redemption 2 y Spider-Man para PS4",
-        price=35.0,
+        price=Decimal("35.0"),
         currency="EUR",
         url="https://example.com/lot-example-001",
     )
@@ -221,7 +222,7 @@ async def main() -> None:
         market_estimator=FakeMarketPriceEstimator(),
         # Explicit example policy: 3 EUR below market for each valued game.
         lot_analyzer=DefaultLotOpportunityAnalyzer(
-            ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+            ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
         ),
     )
 

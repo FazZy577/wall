@@ -1,5 +1,6 @@
 """Offline regression test for execution-scoped comparable collection reuse."""
 
+from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -38,7 +39,7 @@ def _candidate(identifier: str, price: float) -> CandidateListing:
         listing_id=identifier,
         title="GTA V PS4",
         description="",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         url=f"https://example.test/{identifier}",
         raw_listing={"kind": "candidate", "id": identifier},
@@ -50,7 +51,7 @@ def _comparable(identifier: str, price: float) -> ComparableListing:
         listing_id=identifier,
         title="GTA V PS4",
         description="",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         detected_game=_game(),
         url=f"https://example.test/{identifier}",
@@ -117,7 +118,7 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
         listing_id="lot-30",
         title="Lote GTA V + RDR2",
         description="",
-        price=30.0,
+        price=Decimal("30.0"),
         currency="EUR",
         url="https://example.test/lot-30",
         raw_listing={"kind": "candidate", "price": 30.0},

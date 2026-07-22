@@ -5,6 +5,7 @@ No external calls. No Playwright. No Wallapop.
 """
 
 from datetime import datetime
+from decimal import Decimal
 
 import pytest
 
@@ -49,8 +50,9 @@ def _make_estimate(
     confidence_score: float = 0.80,
     sample_size: int = 25,
 ) -> MarketPriceEstimate:
+    amount = Decimal(str(estimated_price))
     return MarketPriceEstimate(
-        estimated_price=estimated_price,
+        estimated_price=amount,
         currency="EUR",
         confidence_score=confidence_score,
         confidence_level=ConfidenceLevel.HIGH,
@@ -59,10 +61,10 @@ def _make_estimate(
         sample_size=sample_size,
         observations_removed=2,
         outlier_percentage=8.0,
-        minimum_price=estimated_price * 0.8,
-        maximum_price=estimated_price * 1.2,
-        standard_deviation=5.0,
-        iqr=7.0,
+        minimum_price=amount * Decimal("0.8"),
+        maximum_price=amount * Decimal("1.2"),
+        standard_deviation=Decimal("5.0"),
+        iqr=Decimal("7.0"),
         coefficient_of_variation=0.25,
         game=game,
         created_at=datetime.now(),
@@ -104,7 +106,7 @@ def test_p16_detection_source_change_preserves_economic_results(
     prices: list[float],
     expected: tuple[float, float, float, float, Recommendation, LotReasonCode, float],
 ) -> None:
-    candidate = CandidateListing("lot-40", "Lot", "", 40.0, "EUR", "https://test/lot")
+    candidate = CandidateListing("lot-40", "Lot", "", Decimal("40.0"), "EUR", "https://test/lot")
     valuations = [
         _make_valuation(f"Game {index}", price)
         for index, price in enumerate(prices)
@@ -121,15 +123,19 @@ def test_p16_detection_source_change_preserves_economic_results(
         opportunity.reason,
         opportunity.opportunity_score,
     )
-    assert actual[:4] == pytest.approx(expected[:4], abs=0.02)
+    expected_decimal = tuple(Decimal(str(value)) for value in expected[:4])
+    assert actual[:2] == expected_decimal[:2]
+    assert actual[2:4] == pytest.approx(
+        expected_decimal[2:4], abs=Decimal("0.02")
+    )
     assert actual[4:] == expected[4:]
 
 
 def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+        ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
     )
-    candidate = CandidateListing("lot", "Lot", "", 40.0, "EUR", "url")
+    candidate = CandidateListing("lot", "Lot", "", Decimal("40.0"), "EUR", "url")
     valuations = [
         _make_valuation("GTA V", 15.0),
         _make_valuation("RDR2", 20.0),
@@ -147,9 +153,9 @@ def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
 
 def test_partial_and_empty_valuations_only_charge_successful_items() -> None:
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy(3.0, 0.0, 1.0, 2.0, 0.0)
+        ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("1.0"), Decimal("2.0"), Decimal("0.0"))
     )
-    candidate = CandidateListing("lot", "Lot", "", 40.0, "EUR", "url")
+    candidate = CandidateListing("lot", "Lot", "", Decimal("40.0"), "EUR", "url")
     valuations = [_make_valuation("GTA V", 15.0), _make_valuation("RDR2", 20.0)]
 
     partial = analyzer.analyze(candidate, valuations, 3)
@@ -175,12 +181,12 @@ def test_partial_and_empty_valuations_only_charge_successful_items() -> None:
 
 class TestBuyRecommendation:
     def test_clear_buy_lot(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """35в‚¬ lot with 53в‚¬ market value в†’ BUY."""
+        """35РІвЂљВ¬ lot with 53РІвЂљВ¬ market value РІвЂ вЂ™ BUY."""
         candidate = CandidateListing(
             listing_id="lot001",
             title="Lote PS4 GTA V RDR2 Spider-Man",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/lot001",
         )
@@ -193,17 +199,17 @@ class TestBuyRecommendation:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # reference_market_value = 53, profit = 18, margin = 33.96%
+        # reference_market_value = Decimal("53"), profit = 18, margin = 33.96%
         assert lot.reference_market_value == 53.0
         assert lot.net_profit == 18.0
-        assert lot.net_profit_margin_percentage == pytest.approx(18 / 53 * 100)
-        assert lot.net_roi_percentage == pytest.approx(18 / 35 * 100)
+        assert lot.net_profit_margin_percentage == Decimal("18") / Decimal("53") * Decimal("100")
+        assert lot.net_roi_percentage == Decimal("18") / Decimal("35") * Decimal("100")
         assert lot.recommendation == Recommendation.BUY
         assert lot.reason == LotReasonCode.UNDERVALUED_LOT
 
 
 # ---------------------------------------------------------------------------
-# Margin below threshold в†’ MAYBE
+# Margin below threshold РІвЂ вЂ™ MAYBE
 # ---------------------------------------------------------------------------
 
 
@@ -211,12 +217,12 @@ class TestMarginThreshold:
     def test_margin_below_threshold_returns_maybe(
         self, analyzer: DefaultLotOpportunityAnalyzer
     ) -> None:
-        """40в‚¬ lot with 53в‚¬ market value в†’ margin 24.5% < 25% в†’ MAYBE."""
+        """40РІвЂљВ¬ lot with 53РІвЂљВ¬ market value РІвЂ вЂ™ margin 24.5% < 25% РІвЂ вЂ™ MAYBE."""
         candidate = CandidateListing(
             listing_id="lot002",
             title="Lote PS4 GTA V RDR2 Spider-Man",
             description="",
-            price=40.0,
+            price=Decimal("40.0"),
             currency="EUR",
             url="https://example.com/lot002",
         )
@@ -229,27 +235,27 @@ class TestMarginThreshold:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # reference_market_value = 53, profit = 13, margin = 24.5%
+        # reference_market_value = Decimal("53"), profit = 13, margin = 24.5%
         assert lot.reference_market_value == 53.0
         assert lot.net_profit == 13.0
-        assert lot.net_profit_margin_percentage == pytest.approx(13 / 53 * 100)
+        assert lot.net_profit_margin_percentage == Decimal("13") / Decimal("53") * Decimal("100")
         assert lot.recommendation == Recommendation.MAYBE
         assert lot.reason == LotReasonCode.FAIR_VALUE_LOT
 
 
 # ---------------------------------------------------------------------------
-# Overpriced в†’ SKIP
+# Overpriced РІвЂ вЂ™ SKIP
 # ---------------------------------------------------------------------------
 
 
 class TestOverpriced:
     def test_overpriced_lot(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """100в‚¬ lot with 25в‚¬ market value в†’ SKIP."""
+        """100РІвЂљВ¬ lot with 25РІвЂљВ¬ market value РІвЂ вЂ™ SKIP."""
         candidate = CandidateListing(
             listing_id="overpriced",
             title="Overpriced Lot",
             description="",
-            price=100.0,
+            price=Decimal("100.0"),
             currency="EUR",
             url="https://example.com/overpriced",
         )
@@ -267,12 +273,12 @@ class TestOverpriced:
         assert lot.reason == LotReasonCode.OVERPRICED_LOT
 
     def test_fair_value_exact(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Price exactly equals market value в†’ SKIP/FAIR_VALUE_LOT."""
+        """Price exactly equals market value РІвЂ вЂ™ SKIP/FAIR_VALUE_LOT."""
         candidate = CandidateListing(
             listing_id="fair",
             title="Fair Value Lot",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/fair",
         )
@@ -297,12 +303,12 @@ class TestOverpriced:
 
 class TestLowConfidence:
     def test_low_aggregate_confidence(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Confidence 0.30 < 0.50 в†’ SKIP."""
+        """Confidence 0.30 < 0.50 РІвЂ вЂ™ SKIP."""
         candidate = CandidateListing(
             listing_id="lowconf",
             title="Low confidence lot",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/lowconf",
         )
@@ -326,12 +332,12 @@ class TestLowConfidence:
 
 class TestIncompleteValuation:
     def test_incomplete_positive_profit(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """2 of 3 valued, known profit positive в†’ MAYBE."""
+        """2 of 3 valued, known profit positive РІвЂ вЂ™ MAYBE."""
         candidate = CandidateListing(
             listing_id="incomplete",
             title="Partial lot",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/incomplete",
         )
@@ -348,12 +354,12 @@ class TestIncompleteValuation:
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
     def test_incomplete_negative_profit(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """2 of 3 valued, known profit negative в†’ SKIP."""
+        """2 of 3 valued, known profit negative РІвЂ вЂ™ SKIP."""
         candidate = CandidateListing(
             listing_id="incomplete_neg",
             title="Bad partial lot",
             description="",
-            price=50.0,
+            price=Decimal("50.0"),
             currency="EUR",
             url="https://example.com/incomplete_neg",
         )
@@ -370,12 +376,12 @@ class TestIncompleteValuation:
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
     def test_no_valuations(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """No games valued в†’ SKIP/INCOMPLETE_VALUATION."""
+        """No games valued РІвЂ вЂ™ SKIP/INCOMPLETE_VALUATION."""
         candidate = CandidateListing(
             listing_id="no_vals",
             title="Failed lot",
             description="",
-            price=30.0,
+            price=Decimal("30.0"),
             currency="EUR",
             url="https://example.com/no_vals",
         )
@@ -393,12 +399,12 @@ class TestIncompleteValuation:
 
 class TestEdgeCases:
     def test_no_games_detected(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Empty detected_games в†’ SKIP/NO_GAMES_DETECTED."""
+        """Empty detected_games РІвЂ вЂ™ SKIP/NO_GAMES_DETECTED."""
         candidate = CandidateListing(
             listing_id="nogames",
             title="Unknown",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/nogames",
         )
@@ -409,12 +415,12 @@ class TestEdgeCases:
         assert lot.reason == LotReasonCode.NO_GAMES_DETECTED
 
     def test_zero_price(self, analyzer: DefaultLotOpportunityAnalyzer) -> None:
-        """Price 0 в†’ SKIP/INVALID_LOT_PRICE."""
+        """Price 0 РІвЂ вЂ™ SKIP/INVALID_LOT_PRICE."""
         candidate = CandidateListing(
             listing_id="free",
             title="Free games",
             description="",
-            price=0.0,
+            price=Decimal("0.0"),
             currency="EUR",
             url="https://example.com/free",
         )
@@ -439,7 +445,7 @@ class TestOpportunityScore:
             listing_id="score_test",
             title="Score test",
             description="",
-            price=35.0,
+            price=Decimal("35.0"),
             currency="EUR",
             url="https://example.com/score",
         )
@@ -462,7 +468,7 @@ class TestOpportunityScore:
             listing_id="incomplete_high_score",
             title="Incomplete but high score",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/incomplete",
         )
@@ -472,7 +478,7 @@ class TestOpportunityScore:
 
         lot = analyzer.analyze(candidate, valuations, 3)
 
-        # Must NOT be BUY вЂ” incomplete
+        # Must NOT be BUY РІР‚вЂќ incomplete
         assert lot.recommendation != Recommendation.BUY
         assert lot.reason == LotReasonCode.INCOMPLETE_VALUATION
 
@@ -484,7 +490,7 @@ class TestOpportunityScore:
             listing_id="lowconf_buy",
             title="Low confidence",
             description="",
-            price=10.0,
+            price=Decimal("10.0"),
             currency="EUR",
             url="https://example.com/lowconf",
         )
@@ -497,6 +503,6 @@ class TestOpportunityScore:
 
         lot = analyzer.analyze(candidate, valuations, 2)
 
-        # Must NOT be BUY вЂ” low confidence
+        # Must NOT be BUY РІР‚вЂќ low confidence
         assert lot.recommendation != Recommendation.BUY
         assert lot.reason == LotReasonCode.LOW_AGGREGATE_CONFIDENCE

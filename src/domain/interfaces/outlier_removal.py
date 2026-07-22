@@ -5,8 +5,10 @@ Defines the contract for detecting and removing anomalous price observations.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import StrEnum
 
+from domain._decimal import require_decimal
 from domain.interfaces.price_dataset_builder import (
     PriceDataset,
     PriceObservation,
@@ -40,10 +42,13 @@ class OutlierObservation:
         original_observation: Complete original PriceObservation
     """
 
-    price: float
+    price: Decimal
     currency: str
     reason: OutlierReason
     original_observation: PriceObservation
+
+    def __post_init__(self) -> None:
+        require_decimal("price", self.price)
 
 
 @dataclass
@@ -64,9 +69,13 @@ class OutlierRemovalResult:
     removed_observations: list[OutlierObservation]
     removed_count: int
     kept_count: int
-    lower_bound: float
-    upper_bound: float
+    lower_bound: Decimal
+    upper_bound: Decimal
     method: OutlierMethod
+
+    def __post_init__(self) -> None:
+        require_decimal("lower_bound", self.lower_bound)
+        require_decimal("upper_bound", self.upper_bound)
 
 
 class IOutlierRemoval(ABC):

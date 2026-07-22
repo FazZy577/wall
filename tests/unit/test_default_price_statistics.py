@@ -4,6 +4,7 @@ Tests statistical calculations on various price datasets.
 """
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import pytest
 
@@ -45,7 +46,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
     """Helper to create PriceDataset from list of prices."""
     observations = [
         PriceObservation(
-            price=price,
+            price=Decimal(str(price)),
             currency="EUR",
             listing_id=str(i),
             title=f"Listing {i}",
@@ -491,8 +492,10 @@ class TestNoPrecisionLoss:
         result = statistics_calculator.calculate(dataset)
 
         # Mean should preserve precision
-        expected_mean = (10.123 + 20.456 + 30.789) / 3
-        assert abs(result.mean_price - expected_mean) < 0.0001
+        expected_mean = (
+            Decimal("10.123") + Decimal("20.456") + Decimal("30.789")
+        ) / Decimal("3")
+        assert result.mean_price == expected_mean
 
     def test_float_precision(
         self,
@@ -505,8 +508,8 @@ class TestNoPrecisionLoss:
         result = statistics_calculator.calculate(dataset)
 
         # Should preserve precision
-        assert result.min_price == 15.999999
-        assert result.max_price == 16.000001
+        assert result.min_price == Decimal("15.999999")
+        assert result.max_price == Decimal("16.000001")
 
 
 class TestResultStructure:

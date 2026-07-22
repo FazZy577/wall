@@ -11,6 +11,7 @@ Shows various scenarios:
 
 import sys
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -47,7 +48,7 @@ def create_listing(
         listing_id=listing_id,
         title=title,
         description="",
-        price=price,
+        price=Decimal(str(price)),
         currency="EUR",
         url=f"https://wallapop.com/item/{listing_id}",
     )
@@ -61,7 +62,7 @@ def create_market_estimate(
 ) -> MarketPriceEstimate:
     """Helper to create market estimate."""
     return MarketPriceEstimate(
-        estimated_price=estimated_price,
+        estimated_price=Decimal(str(estimated_price)),
         currency="EUR",
         confidence_score=confidence_score,
         confidence_level=confidence_level,
@@ -72,8 +73,8 @@ def create_market_estimate(
         outlier_percentage=10.0,
         minimum_price=estimated_price - 10.0,
         maximum_price=estimated_price + 10.0,
-        standard_deviation=3.5,
-        iqr=5.0,
+        standard_deviation=Decimal("3.5"),
+        iqr=Decimal("5.0"),
         coefficient_of_variation=0.15,
         game=game,
         created_at=datetime.now(UTC),
@@ -106,7 +107,7 @@ def main() -> None:
 
     # Create detector
     # Example strategy: sell 3 EUR below market. Configure real channel costs.
-    policy = ResaleEconomicPolicy(3.0, 0.0, 0.0, 0.0, 0.0)
+    policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
     detector = DefaultArbitrageOpportunityDetector(policy)
 
     # Create game

@@ -6,6 +6,7 @@ without performing any statistical calculations.
 
 import logging
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
@@ -154,7 +155,7 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             return None
 
         # Build raw listing dict for reference
-        raw_listing: dict[str, str | float] = {
+        raw_listing: dict[str, str | Decimal] = {
             "listing_id": listing.listing_id,
             "title": listing.title,
             "description": listing.description,

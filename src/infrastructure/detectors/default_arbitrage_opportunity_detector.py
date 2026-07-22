@@ -5,7 +5,9 @@ against estimated market prices using configurable business rules.
 """
 
 from datetime import UTC, datetime
+from decimal import Decimal
 
+from domain._decimal import require_decimal
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
@@ -25,15 +27,15 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
     """
 
     # Business rule constants
-    MIN_NET_PROFIT_EUR = 10.0
-    MIN_NET_PROFIT_MARGIN_PERCENT = 25.0
+    MIN_NET_PROFIT_EUR = Decimal("10.0")
+    MIN_NET_PROFIT_MARGIN_PERCENT = Decimal("25.0")
     MIN_CONFIDENCE_SCORE = 0.50
 
     def __init__(
         self,
         economic_policy: ResaleEconomicPolicy,
-        min_net_profit_eur: float | None = None,
-        min_net_profit_margin_percent: float | None = None,
+        min_net_profit_eur: Decimal | None = None,
+        min_net_profit_margin_percent: Decimal | None = None,
         min_confidence_score: float | None = None,
     ) -> None:
         """Initialize with optional custom thresholds.
@@ -43,6 +45,12 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             min_net_profit_margin_percent: Minimum profit margin % (default: 25.0)
             min_confidence_score: Minimum confidence score (default: 0.50)
         """
+        if min_net_profit_eur is not None:
+            require_decimal("min_net_profit_eur", min_net_profit_eur)
+        if min_net_profit_margin_percent is not None:
+            require_decimal(
+                "min_net_profit_margin_percent", min_net_profit_margin_percent
+            )
         self.economic_policy = economic_policy
         self.min_net_profit_eur = min_net_profit_eur or self.MIN_NET_PROFIT_EUR
         self.min_net_profit_margin_percent = (
@@ -109,9 +117,9 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
     def _make_recommendation(
         self,
-        listing_price: float,
-        net_profit: float,
-        net_profit_margin_percentage: float,
+        listing_price: Decimal,
+        net_profit: Decimal,
+        net_profit_margin_percentage: Decimal,
         confidence_score: float,
     ) -> tuple[Recommendation, ReasonCode]:
         """Determine recommendation and reason based on business rules.
@@ -158,10 +166,10 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
     def _calculate_opportunity_score(
         self,
-        net_profit_margin_percentage: float,
-        net_profit: float,
+        net_profit_margin_percentage: Decimal,
+        net_profit: Decimal,
         confidence_score: float,
-        net_roi_percentage: float,
+        net_roi_percentage: Decimal,
     ) -> float:
         """Calculate opportunity score (0-100) for ranking.
 
@@ -181,16 +189,23 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             Score from 0 to 100
         """
         # Normalize profit margin: 0% = 0, 50%+ = 100
-        margin_score = min(net_profit_margin_percentage / 50.0 * 100.0, 100.0)
+        margin_score = min(
+            float(net_profit_margin_percentage / Decimal("50") * Decimal("100")),
+            100.0,
+        )
 
         # Normalize absolute profit: 0€ = 0, 20€+ = 100
-        profit_score = min(net_profit / 20.0 * 100.0, 100.0)
+        profit_score = min(
+            float(net_profit / Decimal("20") * Decimal("100")), 100.0
+        )
 
         # Normalize confidence: 0.0 = 0, 1.0 = 100
         confidence_score_normalized = confidence_score * 100.0
 
         # Normalize ROI: 0% = 0, 100%+ = 100
-        roi_score = min(net_roi_percentage / 100.0 * 100.0, 100.0)
+        roi_score = min(
+            float(net_roi_percentage / Decimal("100") * Decimal("100")), 100.0
+        )
 
         # Weighted combination
         opportunity_score = (

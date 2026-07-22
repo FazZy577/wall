@@ -3,6 +3,7 @@
 import ast
 from dataclasses import asdict, fields
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -46,19 +47,21 @@ def _game() -> DetectedGame:
 
 
 def _candidate() -> CandidateListing:
-    return CandidateListing("candidate", "GTA V", "", 10.0, "EUR", "url")
+    return CandidateListing("candidate", "GTA V", "", Decimal("10.0"), "EUR", "url")
 
 
 def _breakdown() -> EconomicBreakdown:
-    return ResaleEconomicPolicy(3.0, 0.10, 1.0, 2.0, 0.05).calculate([20.0], 10.0)
+    return ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05")).calculate(
+        [Decimal("20.0")], Decimal("10.0")
+    )
 
 
 def _opportunity() -> ArbitrageOpportunity:
     return ArbitrageOpportunity(
         listing=_candidate(),
         game=_game(),
-        market_price=20.0,
-        listing_price=10.0,
+        market_price=Decimal("20.0"),
+        listing_price=Decimal("10.0"),
         confidence_score=0.8,
         confidence_level=ConfidenceLevel.HIGH,
         opportunity_score=42.0,
@@ -73,17 +76,17 @@ def test_opportunities_delegate_uniform_financial_api_to_breakdown() -> None:
     opportunity = _opportunity()
     estimate = MarketPriceEstimate(
             game=_game(),
-            estimated_price=20.0,
+            estimated_price=Decimal("20.0"),
             confidence_score=0.8,
             confidence_level=ConfidenceLevel.HIGH,
             strategy=EstimationStrategy.MEDIAN,
             sample_size=3,
             observations_removed=0,
             outlier_percentage=0.0,
-            minimum_price=18.0,
-            maximum_price=22.0,
-            standard_deviation=1.0,
-            iqr=2.0,
+            minimum_price=Decimal("18.0"),
+            maximum_price=Decimal("22.0"),
+            standard_deviation=Decimal("1.0"),
+            iqr=Decimal("2.0"),
             coefficient_of_variation=0.05,
             currency="EUR",
             reason_code=EstimateReasonCode.NORMAL,
@@ -121,7 +124,7 @@ def test_opportunities_delegate_uniform_financial_api_to_breakdown() -> None:
 def test_asdict_contains_only_nested_stored_financial_values() -> None:
     serialized = asdict(_opportunity())
 
-    assert serialized["economic_breakdown"]["net_profit"] == pytest.approx(1.45)
+    assert serialized["economic_breakdown"]["net_profit"] == Decimal("1.45")
     assert OLD_FINANCIAL_NAMES.isdisjoint(serialized)
     assert "net_profit" not in serialized
 
@@ -150,7 +153,7 @@ def test_detector_constructor_rejects_old_threshold_keywords(old_name: str) -> N
 
 
 def test_zero_denominator_behavior_is_preserved() -> None:
-    zero = ResaleEconomicPolicy.neutral().calculate([], 0.0)
+    zero = ResaleEconomicPolicy.neutral().calculate([], Decimal("0.0"))
 
     assert zero.net_profit_margin_percentage == 0.0
     assert zero.net_roi_percentage == 0.0

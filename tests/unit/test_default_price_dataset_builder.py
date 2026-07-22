@@ -5,6 +5,7 @@ using mocks (no real data).
 """
 
 from datetime import datetime, timezone
+from decimal import Decimal
 from unittest.mock import Mock
 
 import pytest
@@ -15,7 +16,7 @@ from domain.interfaces.game_detector import (
     DetectionMethod,
     Platform,
 )
-from domain.interfaces.price_dataset_builder import PriceDataset, PriceObservation
+from domain.interfaces.price_dataset_builder import PriceDataset
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
@@ -60,7 +61,7 @@ def create_comparable_listing(
         listing_id=listing_id,
         title=title,
         description="Test listing",
-        price=price,
+        price=Decimal(str(price)),
         currency=currency,
         detected_game=game,
         url=f"https://example.com/item/{listing_id}",
@@ -161,11 +162,12 @@ class TestInvalidPrices:
             listing_id="1",
             title="GTA V",
             description="",
-            price=None,  # type: ignore
+            price=Decimal("1"),
             currency="EUR",
             detected_game=target_game,
             url="",
         )
+        listing.price = None  # type: ignore[assignment]
 
         result = dataset_builder.build([listing])
 
@@ -228,7 +230,7 @@ class TestCurrencyHandling:
         target_game: DetectedGame,
     ) -> None:
         """Should accept EUR currency."""
-        listing = create_comparable_listing("1", "GTA V", 15.0, "EUR", game=target_game)
+        listing = create_comparable_listing("1", "GTA V", Decimal("15.0"), "EUR", game=target_game)
 
         result = dataset_builder.build([listing])
 
@@ -294,7 +296,7 @@ class TestCurrencyHandling:
     ) -> None:
         """Should keep valid currencies and discard invalid ones."""
         listings = [
-            create_comparable_listing("1", "Valid EUR", 15.0, "EUR", game=target_game),
+            create_comparable_listing("1", "Valid EUR", Decimal("15.0"), "EUR", game=target_game),
             create_comparable_listing("2", "Invalid XYZ", 20.0, "XYZ", game=target_game),
             create_comparable_listing("3", "Valid USD", 18.0, "USD", game=target_game),
         ]
@@ -565,5 +567,5 @@ class TestNoStatisticalCalculations:
         result = dataset_builder.build(listings)
 
         # Prices should be exactly as provided
-        assert result.observations[0].price == 15.99
-        assert result.observations[1].price == 20.50
+        assert result.observations[0].price == Decimal("15.99")
+        assert result.observations[1].price == Decimal("20.50")

@@ -6,7 +6,11 @@ This is separate from ComparableListing, which is used as a price reference.
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal
 from typing import Any
+
+from domain._decimal import require_decimal
+
 
 @dataclass
 class CandidateListing:
@@ -31,7 +35,7 @@ class CandidateListing:
     listing_id: str
     title: str
     description: str
-    price: float
+    price: Decimal
     currency: str
     url: str
     raw_listing: dict[str, Any] = field(default_factory=dict)
@@ -44,7 +48,8 @@ class CandidateListing:
             raise ValueError("listing_id must not be empty")
         if not self.title:
             raise ValueError("title must not be empty")
-        if self.price < 0:
+        require_decimal("price", self.price, non_negative=True)
+        if self.price < Decimal("0"):
             raise ValueError(f"price must be >= 0, got {self.price}")
         if not self.currency:
             raise ValueError("currency must not be empty")

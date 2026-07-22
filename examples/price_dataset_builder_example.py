@@ -4,6 +4,7 @@ Demonstrates how to transform comparable listings into a clean price dataset.
 """
 
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -39,7 +40,7 @@ def main() -> None:
             listing_id="1",
             title="GTA V PS4",
             description="Juego en buen estado",
-            price=15.0,
+            price=Decimal("15.0"),
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-ps4-1",
@@ -48,7 +49,7 @@ def main() -> None:
             listing_id="2",
             title="GTA V Premium Edition",
             description="Edicion premium completa",
-            price=18.0,
+            price=Decimal("18.0"),
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-premium-2",
@@ -57,7 +58,7 @@ def main() -> None:
             listing_id="3",
             title="GTA V PS4 Usado",
             description="Buen estado",
-            price=12.0,
+            price=Decimal("12.0"),
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-usado-3",
@@ -66,7 +67,7 @@ def main() -> None:
             listing_id="4",
             title="GTA V Steelbook",
             description="Edicion steelbook",
-            price=20.0,
+            price=Decimal("20.0"),
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-steelbook-4",
@@ -75,7 +76,7 @@ def main() -> None:
             listing_id="5",
             title="GTA V PS4",
             description="Como nuevo",
-            price=16.5,
+            price=Decimal("16.5"),
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-nuevo-5",
@@ -85,7 +86,7 @@ def main() -> None:
             listing_id="6",
             title="GTA V Invalid",
             description="Precio invalido",
-            price=0.0,  # Invalid: price = 0
+            price=Decimal("0.0"),  # Invalid: price = Decimal("0")
             currency="EUR",
             detected_game=target_game,
             url="https://es.wallapop.com/item/gta-v-invalid-6",

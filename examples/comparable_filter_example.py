@@ -4,6 +4,7 @@ Demonstrates how to filter valid comparable listings for price estimation.
 """
 
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 # Add src to path
@@ -31,14 +32,14 @@ def main() -> None:
 
     # Sample listings
     listings = [
-        ComparableFilterInput(title="GTA V PS4", description="Juego en buen estado", price=15.0),
-        ComparableFilterInput(title="Lote GTA V + RDR2 + FIFA", description="3 juegos", price=40.0),
-        ComparableFilterInput(title="Mando DualShock 4 PS4", description="Controller", price=25.0),
-        ComparableFilterInput(title="Caja GTA V sin disco", description="Solo caja", price=5.0),
-        ComparableFilterInput(title="GTA Trilogy", description="3 juegos clásicos", price=30.0),
-        ComparableFilterInput(title="GTA V Premium Edition PS4", description="Completo", price=18.0),
-        ComparableFilterInput(title="PS4 (PlayStation 4) Negra", description="Consola", price=150.0),
-        ComparableFilterInput(title="GTA V PS4 Usado", description="Buen estado", price=12.0),
+        ComparableFilterInput(title="GTA V PS4", description="Juego en buen estado", price=Decimal("15.0")),
+        ComparableFilterInput(title="Lote GTA V + RDR2 + FIFA", description="3 juegos", price=Decimal("40.0")),
+        ComparableFilterInput(title="Mando DualShock 4 PS4", description="Controller", price=Decimal("25.0")),
+        ComparableFilterInput(title="Caja GTA V sin disco", description="Solo caja", price=Decimal("5.0")),
+        ComparableFilterInput(title="GTA Trilogy", description="3 juegos clásicos", price=Decimal("30.0")),
+        ComparableFilterInput(title="GTA V Premium Edition PS4", description="Completo", price=Decimal("18.0")),
+        ComparableFilterInput(title="PS4 (PlayStation 4) Negra", description="Consola", price=Decimal("150.0")),
+        ComparableFilterInput(title="GTA V PS4 Usado", description="Buen estado", price=Decimal("12.0")),
     ]
 
     print("=" * 80)
