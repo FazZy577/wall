@@ -4,7 +4,7 @@ Tests the orchestration of the lot valuation pipeline with mocks.
 No Playwright. No Wallapop API calls.
 """
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -49,8 +49,8 @@ def _make_comparable(game: DetectedGame, price: float, listing_id: str) -> Compa
 
 
 @pytest.fixture
-def mock_price_collector() -> Mock:
-    return Mock()
+def mock_price_collector() -> AsyncMock:
+    return AsyncMock()
 
 
 @pytest.fixture
@@ -112,7 +112,7 @@ def _setup_pipeline_mocks(
     comparables = [
         _make_comparable(game, p, f"comp_{i}") for i, p in enumerate(comparable_prices)
     ]
-    scanner._run_async = Mock(return_value=comparables)
+    mock_price_collector.collect_comparables.return_value = comparables
 
     mock_dataset = Mock()
     mock_dataset.sample_size = len(comparable_prices)
@@ -152,7 +152,8 @@ def _setup_pipeline_mocks(
 
 
 class TestFullPipeline:
-    def test_complete_pipeline_three_games(
+    @pytest.mark.asyncio
+    async def test_complete_pipeline_three_games(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -184,7 +185,7 @@ class TestFullPipeline:
             comparable_prices=[12.0, 15.0, 18.0, 20.0, 14.0],
         )
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         assert result.total_detected_games == 3
         assert result.successfully_valued_games == 3
@@ -195,7 +196,8 @@ class TestFullPipeline:
         assert len(result.game_valuations) == 3
         assert len(result.failures) == 0
 
-    def test_each_game_gets_own_dataset(
+    @pytest.mark.asyncio
+    async def test_each_game_gets_own_dataset(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -227,14 +229,15 @@ class TestFullPipeline:
             comparable_prices=[12.0, 15.0, 18.0],
         )
 
-        scanner.scan_lot(candidate)
+        await scanner.scan_lot(candidate)
 
         # Dataset builder called once per game (2 times)
         assert mock_dataset_builder.build.call_count == 2
         # Price collector called once per game
-        assert scanner._run_async.call_count == 2
+        assert scanner.price_collector.collect_comparables.await_count == 2
 
-    def test_statistics_called_before_and_after_outlier(
+    @pytest.mark.asyncio
+    async def test_statistics_called_before_and_after_outlier(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -266,12 +269,13 @@ class TestFullPipeline:
             comparable_prices=[12.0, 15.0],
         )
 
-        scanner.scan_lot(candidate)
+        await scanner.scan_lot(candidate)
 
         # 2 calls per game (before + after outlier removal)
         assert mock_statistics.calculate.call_count == 2
 
-    def test_observations_removed_passed_to_estimator(
+    @pytest.mark.asyncio
+    async def test_observations_removed_passed_to_estimator(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -303,13 +307,14 @@ class TestFullPipeline:
             comparable_prices=[12.0, 15.0],
         )
 
-        scanner.scan_lot(candidate)
+        await scanner.scan_lot(candidate)
 
         # Verify observations_removed was passed
         call_kwargs = mock_market_estimator.estimate.call_args.kwargs
         assert call_kwargs["observations_removed"] == 1
 
-    def test_analyzer_called_with_correct_params(
+    @pytest.mark.asyncio
+    async def test_analyzer_called_with_correct_params(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -341,7 +346,7 @@ class TestFullPipeline:
             comparable_prices=[10.0, 12.0, 14.0],
         )
 
-        scanner.scan_lot(candidate)
+        await scanner.scan_lot(candidate)
 
         call_kwargs = mock_lot_analyzer.analyze.call_args.kwargs
         assert call_kwargs["listing"] == candidate
@@ -355,7 +360,8 @@ class TestFullPipeline:
 
 
 class TestFailureHandling:
-    def test_price_collector_failure_continues(
+    @pytest.mark.asyncio
+    async def test_price_collector_failure_continues(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -384,7 +390,7 @@ class TestFailureHandling:
 
         call_count = [0]
 
-        def side_effect(coro: object) -> list[ComparableListing]:
+        def side_effect(**_kwargs: object) -> list[ComparableListing]:
             call_count[0] += 1
             if call_count[0] == 2:  # Second call (game B) fails
                 return []
@@ -392,7 +398,7 @@ class TestFailureHandling:
                 return comparables_c
             return comparables_a
 
-        scanner._run_async = Mock(side_effect=side_effect)
+        scanner.price_collector.collect_comparables = AsyncMock(side_effect=side_effect)
 
         mock_dataset = Mock()
         mock_dataset.sample_size = 3
@@ -417,7 +423,7 @@ class TestFailureHandling:
         mock_opportunity.opportunity_score = 50.0
         mock_lot_analyzer.analyze.return_value = mock_opportunity
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         assert result.successfully_valued_games == 2
         assert result.failed_games == 1
@@ -425,7 +431,8 @@ class TestFailureHandling:
         assert len(result.failures) == 1
         assert result.failures[0].stage == LotPipelineStage.PRICE_COLLECTION
 
-    def test_market_estimator_failure(
+    @pytest.mark.asyncio
+    async def test_market_estimator_failure(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -447,7 +454,7 @@ class TestFailureHandling:
         )
 
         comparables = [_make_comparable(_make_game("A"), 12.0, "comp_1")]
-        scanner._run_async = Mock(return_value=comparables)
+        scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
 
         mock_dataset = Mock()
         mock_dataset.sample_size = 3
@@ -466,14 +473,15 @@ class TestFailureHandling:
         mock_opportunity = Mock()
         mock_lot_analyzer.analyze.return_value = mock_opportunity
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         assert result.successfully_valued_games == 0
         assert result.failed_games == 1
         assert result.failures[0].stage == LotPipelineStage.MARKET_ESTIMATION
         assert "Estimation failed" in (result.failures[0].error_message or "")
 
-    def test_analyzer_failure_preserves_valuations(
+    @pytest.mark.asyncio
+    async def test_analyzer_failure_preserves_valuations(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -507,12 +515,13 @@ class TestFailureHandling:
 
         mock_lot_analyzer.analyze.side_effect = RuntimeError("Analyzer crashed")
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         assert result.opportunity is None
         assert len(result.game_valuations) == 1  # Valuations preserved
 
-    def test_empty_detected_games(
+    @pytest.mark.asyncio
+    async def test_empty_detected_games(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_lot_analyzer: Mock,
@@ -531,13 +540,14 @@ class TestFailureHandling:
         mock_opportunity.recommendation = Recommendation.SKIP
         mock_lot_analyzer.analyze.return_value = mock_opportunity
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         assert result.total_detected_games == 0
         assert result.successfully_valued_games == 0
         assert result.is_complete is False
 
-    def test_original_detected_games_not_modified(
+    @pytest.mark.asyncio
+    async def test_original_detected_games_not_modified(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -570,12 +580,13 @@ class TestFailureHandling:
             comparable_prices=[12.0, 15.0],
         )
 
-        scanner.scan_lot(candidate)
+        await scanner.scan_lot(candidate)
 
         assert len(candidate.detected_games) == 2
         assert candidate.detected_games is games
 
-    def test_no_silent_deduplication(
+    @pytest.mark.asyncio
+    async def test_no_silent_deduplication(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -608,16 +619,17 @@ class TestFailureHandling:
             comparable_prices=[12.0, 15.0],
         )
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
 
         # Both copies should be processed
         assert result.total_detected_games == 2
         assert result.successfully_valued_games == 2
-        assert scanner._run_async.call_count == 2
+        assert scanner.price_collector.collect_comparables.await_count == 2
 
 
 class TestLotScanExplanation:
-    def test_explain_includes_required_lot_fields(
+    @pytest.mark.asyncio
+    async def test_explain_includes_required_lot_fields(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -649,7 +661,7 @@ class TestLotScanExplanation:
             comparable_prices=[12.0, 15.0],
         )
 
-        result = scanner.scan_lot(candidate)
+        result = await scanner.scan_lot(candidate)
         explanation = result.explain()
 
         assert "LOT OPPORTUNITY SCAN" in explanation
@@ -669,3 +681,39 @@ class TestLotScanExplanation:
         assert "Opportunity Score: 85.0/100" in explanation
         assert "Recommendation: BUY" in explanation
         assert "Reason: UNDERVALUED_LOT" in explanation
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_runs_inside_an_already_active_event_loop(
+    scanner: DefaultLotOpportunityScanner,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    _setup_pipeline_mocks(
+        scanner,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_lot_analyzer,
+        [12.0, 15.0, 18.0],
+    )
+    candidate = CandidateListing(
+        listing_id="active-loop-lot",
+        title="GTA V PS4",
+        description="",
+        price=10.0,
+        currency="EUR",
+        url="https://example.test/active-loop-lot",
+        detected_games=[_make_game("GTA V")],
+    )
+
+    result = await scanner.scan_lot(candidate)
+
+    assert result.successfully_valued_games == 1
+    mock_price_collector.collect_comparables.assert_awaited_once()

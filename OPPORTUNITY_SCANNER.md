@@ -3,6 +3,11 @@
 **Module**: `application.interfaces.opportunity_scanner`
 **Implementation**: `application.use_cases.default_opportunity_scanner`
 
+The scanner API is asynchronous because `PriceCollector` performs asynchronous
+marketplace I/O. Application propagates that contract with `async def` and
+direct `await`; it does not create, run, or close event loops. Candidates are
+still processed sequentially and no concurrency was added.
+
 ## Overview
 
 The Opportunity Scanner is a **pure orchestrator** that coordinates the complete arbitrage detection pipeline. It contains **NO business logic** — only coordination.
@@ -234,7 +239,7 @@ scanner = DefaultOpportunityScanner(
 )
 
 # Scan a single listing
-opportunity = scanner.scan_listing(listing)
+opportunity = await scanner.scan_listing(listing)
 
 if opportunity:
     print(f"{opportunity.recommendation}: {opportunity.opportunity_score:.1f}/100")
@@ -244,7 +249,7 @@ if opportunity:
 
 ```python
 # Scan multiple listings
-result = scanner.scan_multiple(listings)
+result = await scanner.scan_multiple(listings)
 
 print(f"Processed: {result.total_processed}")
 print(f"Successful: {result.successful}")
@@ -445,11 +450,11 @@ scanner = DefaultOpportunityScanner(
     market_estimator=Mock(),
     arbitrage_detector=Mock(),
 )
-# Mock async runner for sync tests
-scanner._run_async = Mock(return_value=[...])
+# The async collector contract uses AsyncMock
+price_collector.collect_comparables = AsyncMock(return_value=[...])
 
 # Test orchestration
-result = scanner.scan_listing(listing)
+result = await scanner.scan_listing(listing)
 ```
 
 Tests verify:

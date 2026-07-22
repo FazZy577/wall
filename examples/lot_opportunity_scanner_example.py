@@ -181,7 +181,7 @@ def make_game(name: str) -> DetectedGame:
     )
 
 
-def main() -> None:
+async def main() -> None:
     """Run the deterministic lot scanner example."""
     listing = CandidateListing(
         listing_id="lot-example-001",
@@ -212,7 +212,7 @@ def main() -> None:
         lot_analyzer=DefaultLotOpportunityAnalyzer(),
     )
 
-    result = scanner.scan_lot(listing)
+    result = await scanner.scan_lot(listing)
     opportunity = result.opportunity
     if opportunity is None:
         raise RuntimeError("Expected lot opportunity")
@@ -236,4 +236,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

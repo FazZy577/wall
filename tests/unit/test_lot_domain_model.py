@@ -76,7 +76,8 @@ def _make_market_estimate(
 class TestCandidateListing:
     """Test CandidateListing entity."""
 
-    def test_single_game_candidate(self) -> None:
+    @pytest.mark.asyncio
+    async def test_single_game_candidate(self) -> None:
         """Should create candidate with one game."""
         game = _make_game("GTA V")
         candidate = CandidateListing(
@@ -94,7 +95,8 @@ class TestCandidateListing:
         assert candidate.is_lot is False
         assert candidate.game_count == 1
 
-    def test_lot_with_three_games(self) -> None:
+    @pytest.mark.asyncio
+    async def test_lot_with_three_games(self) -> None:
         """Should create lot candidate with three games."""
         games = [
             _make_game("GTA V"),
@@ -114,7 +116,8 @@ class TestCandidateListing:
         assert candidate.is_lot is True
         assert candidate.game_count == 3
 
-    def test_empty_games_is_not_lot(self) -> None:
+    @pytest.mark.asyncio
+    async def test_empty_games_is_not_lot(self) -> None:
         """Empty games list should not be a lot."""
         candidate = CandidateListing(
             listing_id="empty001",
@@ -128,7 +131,8 @@ class TestCandidateListing:
         assert candidate.is_lot is False
         assert candidate.game_count == 0
 
-    def test_two_games_is_lot(self) -> None:
+    @pytest.mark.asyncio
+    async def test_two_games_is_lot(self) -> None:
         """Two games is already a lot."""
         candidate = CandidateListing(
             listing_id="lot2",
@@ -143,7 +147,8 @@ class TestCandidateListing:
         assert candidate.is_lot is True
         assert candidate.game_count == 2
 
-    def test_empty_listing_id_raises(self) -> None:
+    @pytest.mark.asyncio
+    async def test_empty_listing_id_raises(self) -> None:
         """Should raise for empty listing_id."""
         with pytest.raises(ValueError, match="listing_id"):
             CandidateListing(
@@ -155,7 +160,8 @@ class TestCandidateListing:
                 url="https://example.com/test",
             )
 
-    def test_empty_title_raises(self) -> None:
+    @pytest.mark.asyncio
+    async def test_empty_title_raises(self) -> None:
         """Should raise for empty title."""
         with pytest.raises(ValueError, match="title"):
             CandidateListing(
@@ -167,7 +173,8 @@ class TestCandidateListing:
                 url="https://example.com/test",
             )
 
-    def test_negative_price_raises(self) -> None:
+    @pytest.mark.asyncio
+    async def test_negative_price_raises(self) -> None:
         """Should raise for negative price."""
         with pytest.raises(ValueError, match="price"):
             CandidateListing(
@@ -179,7 +186,8 @@ class TestCandidateListing:
                 url="https://example.com/test",
             )
 
-    def test_zero_price_is_valid(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zero_price_is_valid(self) -> None:
         """Zero price should be valid (free listings)."""
         candidate = CandidateListing(
             listing_id="test",
@@ -191,7 +199,8 @@ class TestCandidateListing:
         )
         assert candidate.price == 0.0
 
-    def test_empty_currency_raises(self) -> None:
+    @pytest.mark.asyncio
+    async def test_empty_currency_raises(self) -> None:
         """Should raise for empty currency."""
         with pytest.raises(ValueError, match="currency"):
             CandidateListing(
@@ -203,7 +212,8 @@ class TestCandidateListing:
                 url="https://example.com/test",
             )
 
-    def test_raw_listing_immutable_from_outside(self) -> None:
+    @pytest.mark.asyncio
+    async def test_raw_listing_immutable_from_outside(self) -> None:
         """raw_listing is a dict; the entity stores the reference but
         does not modify it. The caller should not mutate it after passing."""
         raw = {"id": "123", "price": {"amount": 40}}
@@ -221,7 +231,8 @@ class TestCandidateListing:
         assert candidate.raw_listing is raw
         assert candidate.raw_listing["id"] == "123"
 
-    def test_optional_fields_default_to_none(self) -> None:
+    @pytest.mark.asyncio
+    async def test_optional_fields_default_to_none(self) -> None:
         """published_at and seller_id should default to None."""
         candidate = CandidateListing(
             listing_id="test",
@@ -235,7 +246,8 @@ class TestCandidateListing:
         assert candidate.published_at is None
         assert candidate.seller_id is None
 
-    def test_optional_fields_can_be_set(self) -> None:
+    @pytest.mark.asyncio
+    async def test_optional_fields_can_be_set(self) -> None:
         """published_at and seller_id can be explicitly set."""
         now = datetime.now()
         candidate = CandidateListing(
@@ -261,7 +273,8 @@ class TestCandidateListing:
 class TestGameValuation:
     """Test GameValuation entity."""
 
-    def test_from_market_estimate(self) -> None:
+    @pytest.mark.asyncio
+    async def test_from_market_estimate(self) -> None:
         """Should propagate values from MarketPriceEstimate."""
         game = _make_game("GTA V")
         estimate = _make_market_estimate(game, estimated_price=15.0, confidence_score=0.85)
@@ -279,7 +292,8 @@ class TestGameValuation:
         assert valuation.observations_removed == 2
         assert isinstance(valuation.created_at, datetime)
 
-    def test_estimated_market_value_matches_estimate(self) -> None:
+    @pytest.mark.asyncio
+    async def test_estimated_market_value_matches_estimate(self) -> None:
         """estimated_market_value should equal estimate.estimated_price."""
         game = _make_game("RDR2")
         estimate = _make_market_estimate(game, estimated_price=20.0)
@@ -288,7 +302,8 @@ class TestGameValuation:
 
         assert valuation.estimated_market_value == estimate.estimated_price
 
-    def test_confidence_score_propagated(self) -> None:
+    @pytest.mark.asyncio
+    async def test_confidence_score_propagated(self) -> None:
         """confidence_score should match the estimate."""
         game = _make_game("Spider-Man")
         estimate = _make_market_estimate(game, confidence_score=0.72)
@@ -297,7 +312,8 @@ class TestGameValuation:
 
         assert valuation.confidence_score == 0.72
 
-    def test_observations_used_matches_sample_size(self) -> None:
+    @pytest.mark.asyncio
+    async def test_observations_used_matches_sample_size(self) -> None:
         """observations_used should match sample_size after outlier removal."""
         game = _make_game("FIFA")
         estimate = _make_market_estimate(game, sample_size=30)
@@ -306,7 +322,8 @@ class TestGameValuation:
 
         assert valuation.observations_used == 30
 
-    def test_observations_removed_defaults_to_zero(self) -> None:
+    @pytest.mark.asyncio
+    async def test_observations_removed_defaults_to_zero(self) -> None:
         """observations_removed should default to 0."""
         game = _make_game("NBA")
         estimate = _make_market_estimate(game)
@@ -334,7 +351,8 @@ class TestLotOpportunity:
         )
         return GameValuation.from_market_estimate(game, estimate)
 
-    def test_lot_with_three_games(self) -> None:
+    @pytest.mark.asyncio
+    async def test_lot_with_three_games(self) -> None:
         """Canonical lot example: GTA V + RDR2 + Spider-Man at 40 EUR."""
         candidate = CandidateListing(
             listing_id="lot001",
@@ -372,7 +390,8 @@ class TestLotOpportunity:
         # aggregate_confidence = (0.85 + 0.90 + 0.80) / 3 = 0.85
         assert lot.aggregate_confidence_score == 0.85
 
-    def test_overpriced_lot(self) -> None:
+    @pytest.mark.asyncio
+    async def test_overpriced_lot(self) -> None:
         """Lot priced above total market value."""
         candidate = CandidateListing(
             listing_id="overpriced",
@@ -402,7 +421,8 @@ class TestLotOpportunity:
         assert lot.profit_margin_percentage == -300.0
         assert lot.roi_percentage == -75.0
 
-    def test_low_aggregate_confidence(self) -> None:
+    @pytest.mark.asyncio
+    async def test_low_aggregate_confidence(self) -> None:
         """Low confidence should result in lower aggregate."""
         candidate = CandidateListing(
             listing_id="lowconf",
@@ -431,7 +451,8 @@ class TestLotOpportunity:
         assert lot.total_market_value == 40.0
         assert lot.estimated_profit == 10.0
 
-    def test_no_games_detected(self) -> None:
+    @pytest.mark.asyncio
+    async def test_no_games_detected(self) -> None:
         """Lot with no detected games."""
         candidate = CandidateListing(
             listing_id="nogames",
@@ -456,7 +477,8 @@ class TestLotOpportunity:
         assert lot.roi_percentage == -100.0
         assert lot.aggregate_confidence_score == 0.0
 
-    def test_zero_lot_price(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zero_lot_price(self) -> None:
         """Free lot should have infinite ROI edge case."""
         candidate = CandidateListing(
             listing_id="free",
@@ -487,7 +509,8 @@ class TestLotOpportunity:
         assert lot.roi_percentage == 0.0
         assert lot.profit_margin_percentage == 100.0
 
-    def test_incomplete_valuation(self) -> None:
+    @pytest.mark.asyncio
+    async def test_incomplete_valuation(self) -> None:
         """Some games not yet valued."""
         candidate = CandidateListing(
             listing_id="incomplete",
@@ -516,7 +539,8 @@ class TestLotOpportunity:
         assert lot.total_market_value == 35.0
         assert lot.estimated_profit == 5.0
 
-    def test_aggregate_confidence_arithmetic_mean(self) -> None:
+    @pytest.mark.asyncio
+    async def test_aggregate_confidence_arithmetic_mean(self) -> None:
         """Should use arithmetic mean for aggregate confidence."""
         candidate = CandidateListing(
             listing_id="mean_test",
@@ -546,7 +570,8 @@ class TestLotOpportunity:
         # (1.0 + 0.5 + 0.5 + 0.0) / 4 = 0.5
         assert lot.aggregate_confidence_score == 0.5
 
-    def test_market_value_zero_edge_case(self) -> None:
+    @pytest.mark.asyncio
+    async def test_market_value_zero_edge_case(self) -> None:
         """Zero market value should not divide by zero."""
         candidate = CandidateListing(
             listing_id="zero_market",
@@ -574,7 +599,8 @@ class TestLotOpportunity:
         assert lot.profit_margin_percentage == 0.0  # Not NaN
         assert lot.roi_percentage == -100.0
 
-    def test_all_reason_codes_exist(self) -> None:
+    @pytest.mark.asyncio
+    async def test_all_reason_codes_exist(self) -> None:
         """All LotReasonCode values should be defined."""
         codes = [
             LotReasonCode.UNDERVALUED_LOT,
@@ -596,11 +622,12 @@ class TestLotOpportunity:
 class TestDatasetContamination:
     """Test that candidate listing does NOT contaminate price dataset."""
 
-    def test_candidate_not_in_dataset_scan_listing(
+    @pytest.mark.asyncio
+    async def test_candidate_not_in_dataset_scan_listing(
         self,
     ) -> None:
         """scan_listing should build dataset from comparables only, not candidate."""
-        from unittest.mock import Mock
+        from unittest.mock import AsyncMock, Mock
 
         from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
@@ -643,7 +670,7 @@ class TestDatasetContamination:
             market_estimator=Mock(),
             arbitrage_detector=Mock(),
         )
-        scanner._run_async = Mock(return_value=comparables)
+        scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
         scanner.game_detector.detect_games.return_value = [game]
 
         # Capture what is passed to dataset_builder.build()
@@ -669,7 +696,7 @@ class TestDatasetContamination:
         mock_opp.opportunity_score = 75.0
         scanner.arbitrage_detector.detect.return_value = mock_opp
 
-        scanner.scan_listing(candidate)
+        await scanner.scan_listing(candidate)
 
         # Verify: candidate price (40.0) should NOT be in the dataset
         prices_in_dataset = [getattr(lst, "price", None) for lst in captured_listings]
@@ -679,11 +706,12 @@ class TestDatasetContamination:
         # Only comparable prices should be present
         assert len(captured_listings) == 5
 
-    def test_candidate_not_in_dataset_small_sample(
+    @pytest.mark.asyncio
+    async def test_candidate_not_in_dataset_small_sample(
         self,
     ) -> None:
         """Small sample: outlier removal should not hide the contamination."""
-        from unittest.mock import Mock
+        from unittest.mock import AsyncMock, Mock
 
         from application.use_cases.default_opportunity_scanner import (
             DefaultOpportunityScanner,
@@ -725,7 +753,7 @@ class TestDatasetContamination:
             market_estimator=Mock(),
             arbitrage_detector=Mock(),
         )
-        scanner._run_async = Mock(return_value=comparables)
+        scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
         scanner.game_detector.detect_games.return_value = [game]
 
         captured_listings: list = []
@@ -748,7 +776,7 @@ class TestDatasetContamination:
         mock_opp.opportunity_score = 75.0
         scanner.arbitrage_detector.detect.return_value = mock_opp
 
-        scanner.scan_listing(candidate)
+        await scanner.scan_listing(candidate)
 
         prices_in_dataset = [getattr(lst, "price", None) for lst in captured_listings]
         assert 40.0 not in prices_in_dataset, (

@@ -19,6 +19,12 @@ en `application/interfaces` y `application/use_cases`. Domain conserva las
 entidades y puertos de negocio; Infrastructure conserva los adaptadores y las
 implementaciones concretas. Application no importa Infrastructure.
 
+## P1.5 Async scanner boundary
+
+Los casos de uso de escaneo propagan ahora la interfaz async de
+`PriceCollector`: sus métodos públicos son awaitables, el procesamiento sigue
+siendo secuencial y el event loop se controla únicamente desde entry points.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete

@@ -5,7 +5,7 @@ No Playwright. No Wallapop API calls.
 """
 
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -87,9 +87,9 @@ def mock_game_detector(sample_game: DetectedGame) -> Mock:
 
 
 @pytest.fixture
-def mock_price_collector() -> Mock:
+def mock_price_collector() -> AsyncMock:
     """Create mock price collector."""
-    return Mock()
+    return AsyncMock()
 
 
 @pytest.fixture
@@ -142,8 +142,6 @@ def scanner(
         market_estimator=mock_market_estimator,
         arbitrage_detector=mock_arbitrage_detector,
     )
-    # Mock _run_async to avoid asyncio.run() in sync tests
-    scanner._run_async = Mock()
     return scanner
 
 
@@ -162,7 +160,7 @@ def _setup_successful_pipeline_mocks(
     Returns the mock opportunity for assertions.
     """
     # Price collection returns some comparables
-    scanner._run_async.return_value = [sample_comparable]
+    mock_price_collector.collect_comparables.return_value = [sample_comparable]
 
     # Dataset builder
     mock_dataset = Mock()
@@ -197,7 +195,8 @@ def _setup_successful_pipeline_mocks(
 class TestScanListing:
     """Test scan_listing() method."""
 
-    def test_complete_pipeline_success(
+    @pytest.mark.asyncio
+    async def test_complete_pipeline_success(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -223,14 +222,14 @@ class TestScanListing:
         )
 
         # Execute
-        result = scanner.scan_listing(sample_listing)
+        result = await scanner.scan_listing(sample_listing)
 
         # Verify result
         assert result is not None
         assert result.recommendation == Recommendation.BUY
 
         # Verify pipeline order: _run_async (price collection) was called
-        scanner._run_async.assert_called_once()
+        scanner.price_collector.collect_comparables.assert_awaited_once()
         # Dataset builder called with original listing + comparables
         mock_dataset_builder.build.assert_called_once()
         # Statistics called twice (before and after outlier removal)
@@ -242,69 +241,74 @@ class TestScanListing:
         # Arbitrage detector called once
         mock_arbitrage_detector.detect.assert_called_once()
 
-    def test_listing_without_game(
+    @pytest.mark.asyncio
+    async def test_listing_without_game(
         self,
         scanner: DefaultOpportunityScanner,
         listing_without_game: CandidateListing,
     ) -> None:
         """Should skip listing without detected game."""
-        result = scanner.scan_listing(listing_without_game)
+        result = await scanner.scan_listing(listing_without_game)
 
         assert result is None
         # Price collector should NOT be called
-        scanner._run_async.assert_not_called()
+        scanner.price_collector.collect_comparables.assert_not_awaited()
 
-    def test_no_comparable_listings_empty_dataset(
+    @pytest.mark.asyncio
+    async def test_no_comparable_listings_empty_dataset(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should return None when dataset is empty after building."""
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
 
         mock_dataset = Mock()
         mock_dataset.sample_size = 0
         mock_dataset_builder.build.return_value = mock_dataset
 
-        result = scanner.scan_listing(sample_listing)
+        result = await scanner.scan_listing(sample_listing)
 
         assert result is None
 
-    def test_pipeline_failure_returns_none(
+    @pytest.mark.asyncio
+    async def test_pipeline_failure_returns_none(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
     ) -> None:
         """Should return None when pipeline fails with exception."""
-        scanner._run_async.side_effect = Exception("Price collection error")
+        scanner.price_collector.collect_comparables.side_effect = Exception("Price collection error")
 
-        result = scanner.scan_listing(sample_listing)
+        result = await scanner.scan_listing(sample_listing)
 
         assert result is None
 
-    def test_price_collector_called_with_correct_params(
+    @pytest.mark.asyncio
+    async def test_price_collector_called_with_correct_params(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
         sample_game: DetectedGame,
     ) -> None:
         """Should call price collector with the detected game and coordinates."""
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
 
         # Make dataset empty so we don't need full pipeline mocks
         scanner.dataset_builder.build.return_value = Mock(sample_size=0)
 
-        scanner.scan_listing(sample_listing)
+        await scanner.scan_listing(sample_listing)
 
         # Verify _run_async was called with the collect_comparables coroutine
-        scanner._run_async.assert_called_once()
+        scanner.price_collector.collect_comparables.assert_awaited_once()
 
 
 class TestScanMultiple:
     """Test scan_multiple() method."""
 
-    def test_multiple_listings_all_successful(
+    @pytest.mark.asyncio
+    async def test_multiple_listings_all_successful(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -344,7 +348,7 @@ class TestScanMultiple:
         )
 
         # Execute
-        result = scanner.scan_multiple(listings)
+        result = await scanner.scan_multiple(listings)
 
         # Verify
         assert result.total_processed == 3
@@ -355,12 +359,13 @@ class TestScanMultiple:
         assert result.processing_time > 0.0
         assert isinstance(result.created_at, datetime)
 
-    def test_empty_list(
+    @pytest.mark.asyncio
+    async def test_empty_list(
         self,
         scanner: DefaultOpportunityScanner,
     ) -> None:
         """Should handle empty list gracefully."""
-        result = scanner.scan_multiple([])
+        result = await scanner.scan_multiple([])
 
         assert result.total_processed == 0
         assert result.successful == 0
@@ -368,7 +373,8 @@ class TestScanMultiple:
         assert len(result.opportunities) == 0
         assert len(result.failures) == 0
 
-    def test_continues_after_failure(
+    @pytest.mark.asyncio
+    async def test_continues_after_failure(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -383,10 +389,10 @@ class TestScanMultiple:
             listing_without_game,  # Will fail (no game)
         ]
 
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
         scanner.dataset_builder.build.return_value = Mock(sample_size=0)
 
-        result = scanner.scan_multiple(listings)
+        result = await scanner.scan_multiple(listings)
 
         assert result.total_processed == 3
         assert result.failed == 3
@@ -394,7 +400,8 @@ class TestScanMultiple:
         # Check that failures contain stage information
         assert all(f.stage for f in result.failures)
 
-    def test_mixed_success_and_failure(
+    @pytest.mark.asyncio
+    async def test_mixed_success_and_failure(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -425,7 +432,7 @@ class TestScanMultiple:
             mock_arbitrage_detector,
         )
 
-        result = scanner.scan_multiple(listings)
+        result = await scanner.scan_multiple(listings)
 
         assert result.total_processed == 2
         assert result.successful == 1
@@ -433,7 +440,8 @@ class TestScanMultiple:
         assert len(result.opportunities) == 1
         assert len(result.failures) == 1
 
-    def test_repeated_game_reuses_successful_valuation(
+    @pytest.mark.asyncio
+    async def test_repeated_game_reuses_successful_valuation(
         self,
         scanner: DefaultOpportunityScanner,
         sample_game: DetectedGame,
@@ -477,13 +485,13 @@ class TestScanMultiple:
         # A hypothetical second collection would fail, but must never occur.
         call_count = [0]
 
-        def run_async_side_effect(coro: object) -> list[ComparableListing]:
+        def collector_side_effect(**_kwargs: object) -> list[ComparableListing]:
             call_count[0] += 1
             if call_count[0] == 2:
                 raise RuntimeError("Price collection failed")
             return []
 
-        scanner._run_async.side_effect = run_async_side_effect
+        scanner.price_collector.collect_comparables.side_effect = collector_side_effect
 
         # Dataset: first and third succeed, second is never reached
         def build_side_effect(listings_arg: list[object]) -> Mock:
@@ -517,7 +525,7 @@ class TestScanMultiple:
         mock_opportunity.opportunity_score = 75.0
         mock_arbitrage_detector.detect.return_value = mock_opportunity
 
-        result = scanner.scan_multiple(listings)
+        result = await scanner.scan_multiple(listings)
 
         assert result.total_processed == 3
         assert result.successful == 3
@@ -532,13 +540,14 @@ class TestScanMultiple:
 class TestPipelineStageTracking:
     """Test PipelineStage tracking in failures."""
 
-    def test_game_detection_failure_tracked(
+    @pytest.mark.asyncio
+    async def test_game_detection_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
         listing_without_game: CandidateListing,
     ) -> None:
         """Should track GAME_DETECTION stage for listings without games."""
-        result = scanner.scan_multiple([listing_without_game])
+        result = await scanner.scan_multiple([listing_without_game])
 
         assert result.failed == 1
         assert len(result.failures) == 1
@@ -547,15 +556,16 @@ class TestPipelineStageTracking:
         assert failure.listing_id == listing_without_game.listing_id
         assert "No game detected" in failure.reason
 
-    def test_price_collection_failure_tracked(
+    @pytest.mark.asyncio
+    async def test_price_collection_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
     ) -> None:
         """Should track PRICE_COLLECTION stage when price collector fails."""
-        scanner._run_async.side_effect = Exception("API error")
+        scanner.price_collector.collect_comparables.side_effect = Exception("API error")
 
-        result = scanner.scan_multiple([sample_listing])
+        result = await scanner.scan_multiple([sample_listing])
 
         assert result.failed == 1
         assert len(result.failures) == 1
@@ -565,19 +575,20 @@ class TestPipelineStageTracking:
         assert failure.error_message is not None
         assert "API error" in failure.error_message
 
-    def test_dataset_building_failure_tracked(
+    @pytest.mark.asyncio
+    async def test_dataset_building_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should track DATASET_BUILDING stage for empty datasets."""
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
         mock_dataset = Mock()
         mock_dataset.sample_size = 0
         mock_dataset_builder.build.return_value = mock_dataset
 
-        result = scanner.scan_multiple([sample_listing])
+        result = await scanner.scan_multiple([sample_listing])
 
         assert result.failed == 1
         assert len(result.failures) == 1
@@ -586,7 +597,8 @@ class TestPipelineStageTracking:
         assert failure.listing_id == sample_listing.listing_id
         assert "Empty dataset" in failure.reason
 
-    def test_statistics_failure_tracked(
+    @pytest.mark.asyncio
+    async def test_statistics_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -594,13 +606,13 @@ class TestPipelineStageTracking:
         mock_dataset_builder: Mock,
     ) -> None:
         """Should track STATISTICS stage when statistics calculation fails."""
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
         mock_dataset = Mock()
         mock_dataset.sample_size = 5
         mock_dataset_builder.build.return_value = mock_dataset
         mock_statistics.calculate.side_effect = ValueError("Math error")
 
-        result = scanner.scan_multiple([sample_listing])
+        result = await scanner.scan_multiple([sample_listing])
 
         assert result.failed == 1
         failure = result.failures[0]
@@ -608,7 +620,8 @@ class TestPipelineStageTracking:
         assert failure.error_message is not None
         assert "Math error" in failure.error_message
 
-    def test_market_estimation_failure_tracked(
+    @pytest.mark.asyncio
+    async def test_market_estimation_failure_tracked(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -618,7 +631,7 @@ class TestPipelineStageTracking:
         mock_market_estimator: Mock,
     ) -> None:
         """Should track MARKET_ESTIMATION stage when estimator fails."""
-        scanner._run_async.return_value = []
+        scanner.price_collector.collect_comparables.return_value = []
         mock_dataset = Mock()
         mock_dataset.sample_size = 5
         mock_dataset_builder.build.return_value = mock_dataset
@@ -633,7 +646,7 @@ class TestPipelineStageTracking:
 
         mock_market_estimator.estimate.side_effect = ValueError("Estimation error")
 
-        result = scanner.scan_multiple([sample_listing])
+        result = await scanner.scan_multiple([sample_listing])
 
         assert result.failed == 1
         failure = result.failures[0]
@@ -645,7 +658,8 @@ class TestPipelineStageTracking:
 class TestScanResult:
     """Test ScanResult data."""
 
-    def test_scan_result_fields(
+    @pytest.mark.asyncio
+    async def test_scan_result_fields(
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
@@ -670,7 +684,7 @@ class TestScanResult:
             mock_arbitrage_detector,
         )
 
-        result = scanner.scan_multiple([sample_listing])
+        result = await scanner.scan_multiple([sample_listing])
 
         assert result.total_processed == 1
         assert result.successful == 1
@@ -680,16 +694,46 @@ class TestScanResult:
         assert result.processing_time > 0.0
         assert isinstance(result.created_at, datetime)
 
-    def test_scan_result_with_only_failures(
+    @pytest.mark.asyncio
+    async def test_scan_result_with_only_failures(
         self,
         scanner: DefaultOpportunityScanner,
         listing_without_game: CandidateListing,
     ) -> None:
         """Should return ScanResult with failures but no opportunities."""
-        result = scanner.scan_multiple([listing_without_game, listing_without_game])
+        result = await scanner.scan_multiple([listing_without_game, listing_without_game])
 
         assert result.total_processed == 2
         assert result.successful == 0
         assert result.failed == 2
         assert len(result.opportunities) == 0
         assert len(result.failures) == 2
+
+
+@pytest.mark.asyncio
+async def test_scanner_runs_inside_an_already_active_event_loop(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_comparable: ComparableListing,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+
+    result = await scanner.scan_multiple([sample_listing])
+
+    assert result.successful == 1
+    mock_price_collector.collect_comparables.assert_awaited_once()

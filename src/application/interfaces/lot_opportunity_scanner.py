@@ -165,7 +165,7 @@ class ILotOpportunityScanner(ABC):
     """
 
     @abstractmethod
-    def scan_lot(self, listing: CandidateListing) -> LotScanResult:
+    async def scan_lot(self, listing: CandidateListing) -> LotScanResult:
         """Scan a candidate listing through the complete lot pipeline.
 
         For each detected game in the listing, runs the full valuation

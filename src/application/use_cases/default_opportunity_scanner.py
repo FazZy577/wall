@@ -1,12 +1,10 @@
 """Default opportunity scanner implementation."""
 
-import asyncio
 import logging
 import time
-from collections.abc import Coroutine
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import cast
 
 from application.interfaces.opportunity_scanner import (
     FailureInfo,
@@ -15,7 +13,6 @@ from application.interfaces.opportunity_scanner import (
     ScanResult,
 )
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
@@ -96,16 +93,13 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         self.latitude = latitude
         self.longitude = longitude
 
-    def _run_async(self, coro: Coroutine[Any, Any, Any]) -> Any:
-        return asyncio.run(coro)
-
     @staticmethod
     def _build_valuation_cache_key(game: DetectedGame) -> _ValuationCacheKey:
         """Build an alias-independent, platform-sensitive valuation key."""
         normalized_name = " ".join(game.canonical_name.strip().casefold().split())
         return _ValuationCacheKey(normalized_name, game.platform.value)
 
-    def _get_or_create_market_valuation(
+    async def _get_or_create_market_valuation(
         self,
         game: DetectedGame,
         context: _ScanExecutionContext,
@@ -131,15 +125,10 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         current_stage = PipelineStage.PRICE_COLLECTION
 
         try:
-            comparables = cast(
-                list[ComparableListing],
-                self._run_async(
-                    self.price_collector.collect_comparables(
-                        game=game,
-                        latitude=self.latitude,
-                        longitude=self.longitude,
-                    )
-                ),
+            comparables = await self.price_collector.collect_comparables(
+                game=game,
+                latitude=self.latitude,
+                longitude=self.longitude,
             )
 
             current_stage = PipelineStage.DATASET_BUILDING
@@ -182,7 +171,9 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         context.valuations[key] = result
         return result
 
-    def scan_listing(self, listing: CandidateListing) -> ArbitrageOpportunity | None:
+    async def scan_listing(
+        self, listing: CandidateListing
+    ) -> ArbitrageOpportunity | None:
         """Scan one listing with a fresh, non-persistent valuation context."""
         context = _ScanExecutionContext()
         start_time = time.time()
@@ -196,7 +187,9 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                 logger.warning(f"Listing {listing.listing_id} has no detected game")
                 return None
 
-            valuation = self._get_or_create_market_valuation(detected_games[0], context)
+            valuation = await self._get_or_create_market_valuation(
+                detected_games[0], context
+            )
             if valuation.failure is not None or valuation.estimate is None:
                 return None
 
@@ -214,7 +207,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             )
             return None
 
-    def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
+    async def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
         """Scan listings, reusing valuations only within this invocation."""
         start_time = time.time()
         context = _ScanExecutionContext()
@@ -239,7 +232,9 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                 )
                 continue
 
-            valuation = self._get_or_create_market_valuation(detected_games[0], context)
+            valuation = await self._get_or_create_market_valuation(
+                detected_games[0], context
+            )
             if valuation.failure is not None:
                 failures.append(
                     FailureInfo(

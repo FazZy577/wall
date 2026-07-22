@@ -1,6 +1,6 @@
 """P1.1 tests for execution-scoped valuation reuse."""
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -61,6 +61,7 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
             "detector",
         )
     }
+    dependencies["collector"] = AsyncMock()
     scanner = DefaultOpportunityScanner(
         game_detector=Mock(),
         price_collector=dependencies["collector"],
@@ -70,7 +71,9 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
         market_estimator=dependencies["estimator"],
         arbitrage_detector=dependencies["detector"],
     )
-    scanner._run_async = Mock(return_value=[comparable("comparable", game())])
+    dependencies["collector"].collect_comparables.return_value = [
+        comparable("comparable", game())
+    ]
     scanner.game_detector.detect_games.side_effect = lambda text: (
         [game(platform=Platform.PS5)]
         if "ps5" in text.title.casefold()
@@ -103,16 +106,18 @@ def cache_scanner() -> tuple[DefaultOpportunityScanner, dict[str, Mock]]:
     return scanner, dependencies
 
 
-def test_same_game_runs_valuation_once(
+@pytest.mark.asyncio
+
+async def test_same_game_runs_valuation_once(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
     candidates = [listing(str(index), game(), 5.0 + index) for index in range(5)]
 
-    result = scanner.scan_multiple(candidates)
+    result = await scanner.scan_multiple(candidates)
 
-    assert scanner._run_async.call_count == 1
-    assert mocks["collector"].collect_comparables.call_count == 1
+    assert scanner.price_collector.collect_comparables.await_count == 1
+    assert mocks["collector"].collect_comparables.await_count == 1
     assert mocks["builder"].build.call_count == 1
     assert mocks["statistics"].calculate.call_count == 2
     assert mocks["outliers"].remove_outliers.call_count == 1
@@ -122,29 +127,35 @@ def test_same_game_runs_valuation_once(
     assert result.valuation_cache_hits == 4
 
 
-def test_different_games_have_different_valuations(
+@pytest.mark.asyncio
+
+async def test_different_games_have_different_valuations(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
-    result = scanner.scan_multiple(
+    result = await scanner.scan_multiple(
         [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2", alias="RDR2"))]
     )
-    assert scanner._run_async.call_count == 2
+    assert scanner.price_collector.collect_comparables.await_count == 2
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
 
 
-def test_same_name_on_different_platforms_is_not_shared(
+@pytest.mark.asyncio
+
+async def test_same_name_on_different_platforms_is_not_shared(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
-    result = scanner.scan_multiple(
+    result = await scanner.scan_multiple(
         [listing("ps4", game()), listing("ps5", game(platform=Platform.PS5))]
     )
-    assert scanner._run_async.call_count == 2
+    assert scanner.price_collector.collect_comparables.await_count == 2
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
 
 
-def test_aliases_and_normalized_canonical_name_share_valuation(
+@pytest.mark.asyncio
+
+async def test_aliases_and_normalized_canonical_name_share_valuation(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
@@ -153,52 +164,60 @@ def test_aliases_and_normalized_canonical_name_share_valuation(
         game("grand theft auto v", alias="GTA5"),
         game("GRAND THEFT AUTO V", alias="Grand Theft Auto V"),
     ]
-    result = scanner.scan_multiple([listing(str(i), value) for i, value in enumerate(games)])
-    assert scanner._run_async.call_count == 1
+    result = await scanner.scan_multiple([listing(str(i), value) for i, value in enumerate(games)])
+    assert scanner.price_collector.collect_comparables.await_count == 1
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
 
 
-def test_candidate_prices_are_detected_individually(
+@pytest.mark.asyncio
+
+async def test_candidate_prices_are_detected_individually(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
     candidates = [listing(str(price), game(), price) for price in (5.0, 10.0, 14.0)]
-    result = scanner.scan_multiple(candidates)
+    result = await scanner.scan_multiple(candidates)
     assert [call.args[0] for call in mocks["detector"].detect.call_args_list] == candidates
     assert [opportunity.listing_price for opportunity in result.opportunities] == [5.0, 10.0, 14.0]
     assert len({id(call.args[1]) for call in mocks["detector"].detect.call_args_list}) == 1
 
 
-def test_separate_batch_scans_do_not_share_cache(
+@pytest.mark.asyncio
+
+async def test_separate_batch_scans_do_not_share_cache(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
     candidates = [listing("one", game()), listing("two", game())]
-    first = scanner.scan_multiple(candidates)
-    second = scanner.scan_multiple(candidates)
-    assert scanner._run_async.call_count == 2
+    first = await scanner.scan_multiple(candidates)
+    second = await scanner.scan_multiple(candidates)
+    assert scanner.price_collector.collect_comparables.await_count == 2
     assert (first.valuation_cache_misses, first.valuation_cache_hits) == (1, 1)
     assert (second.valuation_cache_misses, second.valuation_cache_hits) == (1, 1)
 
 
-def test_separate_single_scans_do_not_share_cache(
+@pytest.mark.asyncio
+
+async def test_separate_single_scans_do_not_share_cache(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
     candidate = listing("one", game())
-    assert scanner.scan_listing(candidate) is not None
-    assert scanner.scan_listing(candidate) is not None
-    assert scanner._run_async.call_count == 2
+    assert await scanner.scan_listing(candidate) is not None
+    assert await scanner.scan_listing(candidate) is not None
+    assert scanner.price_collector.collect_comparables.await_count == 2
 
 
-def test_failed_valuation_is_reused_with_each_listing_id(
+@pytest.mark.asyncio
+
+async def test_failed_valuation_is_reused_with_each_listing_id(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
-    scanner._run_async.side_effect = RuntimeError("collector unavailable")
+    scanner.price_collector.collect_comparables.side_effect = RuntimeError("collector unavailable")
     candidates = [listing(str(index), game()) for index in range(3)]
-    result = scanner.scan_multiple(candidates)
-    assert scanner._run_async.call_count == 1
+    result = await scanner.scan_multiple(candidates)
+    assert scanner.price_collector.collect_comparables.await_count == 1
     assert mocks["builder"].build.call_count == 0
     assert [failure.listing_id for failure in result.failures] == ["0", "1", "2"]
     assert all(failure.stage == PipelineStage.PRICE_COLLECTION for failure in result.failures)
@@ -206,15 +225,17 @@ def test_failed_valuation_is_reused_with_each_listing_id(
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (1, 2)
 
 
-def test_failure_for_one_game_does_not_contaminate_another(
+@pytest.mark.asyncio
+
+async def test_failure_for_one_game_does_not_contaminate_another(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
-    scanner._run_async.side_effect = [
+    scanner.price_collector.collect_comparables.side_effect = [
         RuntimeError("GTA failed"),
         [comparable("comp", game("Red Dead Redemption 2"), 20.0)],
     ]
-    result = scanner.scan_multiple(
+    result = await scanner.scan_multiple(
         [listing("gta", game()), listing("rdr", game("Red Dead Redemption 2"))]
     )
     assert result.failed == 1
@@ -223,15 +244,19 @@ def test_failure_for_one_game_does_not_contaminate_another(
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (2, 0)
 
 
-def test_empty_list_has_zero_cache_metrics(
+@pytest.mark.asyncio
+
+async def test_empty_list_has_zero_cache_metrics(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, _ = cache_scanner
-    result = scanner.scan_multiple([])
+    result = await scanner.scan_multiple([])
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (0, 0)
 
 
-def test_mixed_scenario_has_three_unique_valuations(
+@pytest.mark.asyncio
+
+async def test_mixed_scenario_has_three_unique_valuations(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
@@ -240,9 +265,9 @@ def test_mixed_scenario_has_three_unique_valuations(
         + [listing(f"rdr-{i}", game("Red Dead Redemption 2")) for i in range(2)]
         + [listing(f"gta-ps5-{i}", game(platform=Platform.PS5)) for i in range(2)]
     )
-    result = scanner.scan_multiple(candidates)
-    assert mocks["collector"].collect_comparables.call_count == 3
-    assert scanner._run_async.call_count == 3
+    result = await scanner.scan_multiple(candidates)
+    assert mocks["collector"].collect_comparables.await_count == 3
+    assert scanner.price_collector.collect_comparables.await_count == 3
     assert mocks["estimator"].estimate.call_count == 3
     assert mocks["detector"].detect.call_count == 10
     assert (result.valuation_cache_misses, result.valuation_cache_hits) == (3, 7)

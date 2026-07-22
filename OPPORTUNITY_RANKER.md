@@ -255,7 +255,7 @@ When the ranker is integrated into `OpportunityScanner`:
 ```python
 # Future code (not yet implemented):
 scanner = DefaultOpportunityScanner(...)
-result = scanner.scan_multiple(listings)
+result = await scanner.scan_multiple(listings)
 
 ranker = DefaultOpportunityRanker()
 ranking = ranker.rank(result.opportunities, limit=10)

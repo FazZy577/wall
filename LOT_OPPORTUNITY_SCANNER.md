@@ -9,6 +9,10 @@
 El scanner pertenece a Application: coordina puertos inyectados y entidades
 del dominio, sin importar ni instanciar implementaciones de Infrastructure.
 
+Su API pública es async porque propaga el I/O async de `PriceCollector`. Cada
+juego continúa procesándose secuencialmente con `await`; no se usan tareas,
+`gather` ni concurrencia, y Application no gestiona el event loop.
+
 ## Responsabilidad del scanner
 
 `LotOpportunityScanner` orquesta el pipeline de valoración de un lote ya detectado. Recibe un `CandidateListing` con su lista de `DetectedGame` y procesa cada juego por separado.

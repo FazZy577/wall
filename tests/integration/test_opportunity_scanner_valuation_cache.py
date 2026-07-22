@@ -1,6 +1,8 @@
 """Offline regression test for execution-scoped market valuation reuse."""
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
@@ -70,7 +72,9 @@ class _OfflineCollector:
         return [_comparable(f"comparable-{index}", 30.0) for index in range(20)]
 
 
-def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() -> None:
+@pytest.mark.asyncio
+
+async def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() -> None:
     collector = _OfflineCollector()
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
     detector = Mock(wraps=DefaultArbitrageOpportunityDetector())
@@ -87,7 +91,7 @@ def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() ->
     )
     candidates = [_candidate("candidate-5", 5.0), _candidate("candidate-25", 25.0)]
 
-    result = scanner.scan_multiple(candidates)
+    result = await scanner.scan_multiple(candidates)
 
     assert collector.calls == 1
     assert estimator.estimate.call_count == 1
@@ -101,7 +105,9 @@ def test_real_pipeline_reuses_estimate_but_preserves_per_candidate_formulas() ->
     assert result.opportunities[0].listing.raw_listing["kind"] == "candidate"
 
 
-def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
+@pytest.mark.asyncio
+
+async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
     candidate = CandidateListing(
         listing_id="lot-30",
         title="Lote GTA V + RDR2",
@@ -129,9 +135,9 @@ def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
         market_estimator=DefaultMarketPriceEstimator(),
         arbitrage_detector=DefaultArbitrageOpportunityDetector(),
     )
-    scanner._run_async = Mock(return_value=comparables)
+    scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
 
-    opportunity = scanner.scan_listing(candidate)
+    opportunity = await scanner.scan_listing(candidate)
 
     dataset_input = builder.build.call_args.args[0]
     assert dataset_input == comparables

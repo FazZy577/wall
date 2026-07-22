@@ -97,7 +97,7 @@ class MockPriceCollector(IPriceCollector):
         ]
 
 
-def main() -> None:
+async def main() -> None:
     """Demonstrate opportunity scanner with complete pipeline."""
 
     print("=" * 80)
@@ -220,7 +220,7 @@ def main() -> None:
     print("-" * 80)
     print()
 
-    opportunity = scanner.scan_listing(cheap_listing)
+    opportunity = await scanner.scan_listing(cheap_listing)
 
     if opportunity:
         print()
@@ -242,7 +242,7 @@ def main() -> None:
     print("-" * 80)
     print()
 
-    result = scanner.scan_multiple(listings)
+    result = await scanner.scan_multiple(listings)
 
     print()
     print("=" * 80)
@@ -323,4 +323,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

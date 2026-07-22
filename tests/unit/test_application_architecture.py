@@ -133,8 +133,14 @@ def test_canonical_modules_import_without_cycles() -> None:
     assert all(importlib.import_module(module) for module in modules)
 
 
-def test_only_price_collector_port_is_declared_async() -> None:
+def test_scanner_and_collector_contracts_are_async_end_to_end() -> None:
     assert inspect.iscoroutinefunction(IPriceCollector.collect_comparables)
+    assert inspect.iscoroutinefunction(IOpportunityScanner.scan_listing)
+    assert inspect.iscoroutinefunction(IOpportunityScanner.scan_multiple)
+    assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_listing)
+    assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_multiple)
+    assert inspect.iscoroutinefunction(ILotOpportunityScanner.scan_lot)
+    assert inspect.iscoroutinefunction(DefaultLotOpportunityScanner.scan_lot)
     assert isinstance(AsyncMock(spec=IPriceCollector).collect_comparables, AsyncMock)
 
     synchronous_methods = [
@@ -163,8 +169,11 @@ def test_only_price_collector_port_is_declared_async() -> None:
 
 def test_application_has_no_manual_event_loop_bridge() -> None:
     forbidden = {
+        "asyncio.run",
+        "asyncio.Runner",
         "new_event_loop",
         "get_event_loop",
+        "get_running_loop",
         "set_event_loop",
         "run_until_complete",
         "run_coroutine_threadsafe",
@@ -174,6 +183,9 @@ def test_application_has_no_manual_event_loop_bridge() -> None:
         "iscoroutine",
         "isawaitable",
         "nest_asyncio",
+        "_run_async",
+        "run_sync",
+        "scan_sync",
     }
     occurrences: list[tuple[Path, str]] = []
 

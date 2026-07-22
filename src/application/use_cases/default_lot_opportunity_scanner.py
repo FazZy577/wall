@@ -6,12 +6,10 @@ then calls the analyzer to produce the final LotOpportunity.
 Contains NO business logic — only coordination.
 """
 
-import asyncio
 import logging
 import time
-from collections.abc import Coroutine
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import cast
 
 from application.interfaces.lot_opportunity_scanner import (
     GameValuationFailure,
@@ -20,7 +18,6 @@ from application.interfaces.lot_opportunity_scanner import (
     LotScanResult,
 )
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
@@ -82,11 +79,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         self.latitude = latitude
         self.longitude = longitude
 
-    def _run_async(self, coro: Coroutine[Any, Any, Any]) -> Any:
-        """Run an async coroutine synchronously."""
-        return asyncio.run(coro)
-
-    def scan_lot(self, listing: CandidateListing) -> LotScanResult:
+    async def scan_lot(self, listing: CandidateListing) -> LotScanResult:
         """Scan a candidate listing through the complete lot pipeline.
 
         For each detected game, runs the full valuation pipeline.
@@ -111,7 +104,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 f"{game.canonical_name} ({game.platform})"
             )
 
-            valuation, failure = self._value_game(game)
+            valuation, failure = await self._value_game(game)
 
             if valuation is not None:
                 game_valuations.append(valuation)
@@ -144,7 +137,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             start_time=start_time,
         )
 
-    def _value_game(
+    async def _value_game(
         self, game: DetectedGame
     ) -> tuple[GameValuation | None, GameValuationFailure | None]:
         """Run the full valuation pipeline for a single game.
@@ -171,15 +164,10 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         try:
             # Step 1: Price Collection
             logger.info("Collecting comparables...")
-            comparables = cast(
-                list[ComparableListing],
-                self._run_async(
-                    self.price_collector.collect_comparables(
-                        game=game,
-                        latitude=self.latitude,
-                        longitude=self.longitude,
-                    )
-                ),
+            comparables = await self.price_collector.collect_comparables(
+                game=game,
+                latitude=self.latitude,
+                longitude=self.longitude,
             )
 
             if not comparables:

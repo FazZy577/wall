@@ -42,6 +42,20 @@ La orquestación de escaneos pertenece a Application. Sus casos de uso reciben
 puertos por constructor y no conocen Wallapop, Playwright ni implementaciones
 concretas de Infrastructure.
 
+Los scanners son async de extremo a extremo porque el collector realiza I/O
+async. Application usa `await` directo y nunca inicia ni cierra el event loop;
+esa responsabilidad pertenece al entry point. El procesamiento continúa
+siendo estrictamente secuencial.
+
+```python
+async def main() -> None:
+    result = await scanner.scan_multiple(listings)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ```text
 External wiring / example
         │

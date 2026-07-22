@@ -3,7 +3,7 @@
 import ast
 from pathlib import Path
 from typing import get_type_hints
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -59,7 +59,9 @@ def _candidate(identifier: str = "candidate") -> CandidateListing:
     )
 
 
-def test_candidate_and_comparable_are_nominally_unrelated() -> None:
+@pytest.mark.asyncio
+
+async def test_candidate_and_comparable_are_nominally_unrelated() -> None:
     candidate = _candidate()
     comparable = ComparableListing(
         listing_id="comparable",
@@ -79,17 +81,23 @@ def test_candidate_and_comparable_are_nominally_unrelated() -> None:
     assert not issubclass(ComparableListing, CandidateListing)
 
 
-def test_legacy_comparable_import_reexports_canonical_class() -> None:
+@pytest.mark.asyncio
+
+async def test_legacy_comparable_import_reexports_canonical_class() -> None:
     assert PortComparableListing is ComparableListing
 
 
-def test_detector_port_reexports_canonical_detection_models() -> None:
+@pytest.mark.asyncio
+
+async def test_detector_port_reexports_canonical_detection_models() -> None:
     assert PortDetectedGame is DetectedGame
     assert PortPlatform is Platform
     assert PortDetectionMethod is DetectionMethod
 
 
-def test_comparable_filter_input_is_a_distinct_explicit_payload() -> None:
+@pytest.mark.asyncio
+
+async def test_comparable_filter_input_is_a_distinct_explicit_payload() -> None:
     filter_hints = get_type_hints(IComparableFilter.is_valid_comparable)
 
     assert filter_hints["listing"] is ComparableFilterInput
@@ -99,7 +107,9 @@ def test_comparable_filter_input_is_a_distinct_explicit_payload() -> None:
     assert not issubclass(ComparableFilterInput, ComparableListing)
 
 
-def test_candidate_has_no_single_platform_requirement() -> None:
+@pytest.mark.asyncio
+
+async def test_candidate_has_no_single_platform_requirement() -> None:
     candidate = _candidate()
     detected_games = [_game(Platform.PS4), _game(Platform.PS5)]
 
@@ -107,7 +117,9 @@ def test_candidate_has_no_single_platform_requirement() -> None:
     assert [game.platform for game in detected_games] == [Platform.PS4, Platform.PS5]
 
 
-def test_dataset_builder_rejects_candidate_as_market_observation() -> None:
+@pytest.mark.asyncio
+
+async def test_dataset_builder_rejects_candidate_as_market_observation() -> None:
     with pytest.raises(
         InvalidComparableListingError,
         match="CandidateListing cannot be used as a market comparable",
@@ -115,7 +127,9 @@ def test_dataset_builder_rejects_candidate_as_market_observation() -> None:
         DefaultPriceDatasetBuilder().build([_candidate()])
 
 
-def test_candidate_is_rejected_even_when_mixed_with_valid_comparables() -> None:
+@pytest.mark.asyncio
+
+async def test_candidate_is_rejected_even_when_mixed_with_valid_comparables() -> None:
     comparable = ComparableListing(
         listing_id="comparable",
         title="GTA V PS4",
@@ -130,7 +144,9 @@ def test_candidate_is_rejected_even_when_mixed_with_valid_comparables() -> None:
         DefaultPriceDatasetBuilder().build([comparable, _candidate()])
 
 
-def test_public_type_hints_enforce_listing_boundaries() -> None:
+@pytest.mark.asyncio
+
+async def test_public_type_hints_enforce_listing_boundaries() -> None:
     scanner_single = get_type_hints(IOpportunityScanner.scan_listing)
     scanner_multiple = get_type_hints(IOpportunityScanner.scan_multiple)
     detector = get_type_hints(IArbitrageOpportunityDetector.detect)
@@ -144,7 +160,9 @@ def test_public_type_hints_enforce_listing_boundaries() -> None:
     assert collector["return"] == list[ComparableListing]
 
 
-def test_detection_and_lot_contracts_share_canonical_game_types() -> None:
+@pytest.mark.asyncio
+
+async def test_detection_and_lot_contracts_share_canonical_game_types() -> None:
     candidate_hints = get_type_hints(CandidateListing)
     detector_hints = get_type_hints(IGameDetector.detect_games)
     lot_hints = get_type_hints(ILotOpportunityScanner.scan_lot)
@@ -160,7 +178,9 @@ def test_detection_and_lot_contracts_share_canonical_game_types() -> None:
     assert _game().platform is Platform.PS4
 
 
-def test_canonical_domain_symbols_have_single_class_definition() -> None:
+@pytest.mark.asyncio
+
+async def test_canonical_domain_symbols_have_single_class_definition() -> None:
     source_root = Path(__file__).parents[2] / "src"
     canonical_symbols = {
         "CandidateListing",
@@ -190,7 +210,9 @@ def test_canonical_domain_symbols_have_single_class_definition() -> None:
     }
 
 
-def test_no_generic_listing_class_exists_in_source() -> None:
+@pytest.mark.asyncio
+
+async def test_no_generic_listing_class_exists_in_source() -> None:
     source_root = Path(__file__).parents[2] / "src"
     definitions: list[Path] = []
 
@@ -205,7 +227,9 @@ def test_no_generic_listing_class_exists_in_source() -> None:
     assert definitions == []
 
 
-def test_scanner_detects_games_from_candidate_text_without_candidate_platform() -> None:
+@pytest.mark.asyncio
+
+async def test_scanner_detects_games_from_candidate_text_without_candidate_platform() -> None:
     game_detector = Mock()
     game_detector.detect_games.return_value = [_game()]
     scanner = DefaultOpportunityScanner(
@@ -217,11 +241,11 @@ def test_scanner_detects_games_from_candidate_text_without_candidate_platform() 
         market_estimator=Mock(),
         arbitrage_detector=Mock(),
     )
-    scanner._run_async = Mock(return_value=[])
+    scanner.price_collector.collect_comparables = AsyncMock(return_value=[])
     scanner.dataset_builder.build.return_value = Mock(sample_size=0)
     candidate = _candidate()
 
-    scanner.scan_listing(candidate)
+    await scanner.scan_listing(candidate)
 
     text = game_detector.detect_games.call_args.args[0]
     assert text.title == candidate.title

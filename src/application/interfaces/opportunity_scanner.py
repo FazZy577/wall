@@ -207,7 +207,7 @@ class IOpportunityScanner(ABC):
     """
 
     @abstractmethod
-    def scan_listing(self, listing: CandidateListing) -> ArbitrageOpportunity | None:
+    async def scan_listing(self, listing: CandidateListing) -> ArbitrageOpportunity | None:
         """Scan a single listing through the complete pipeline.
 
         Args:
@@ -219,7 +219,7 @@ class IOpportunityScanner(ABC):
         pass
 
     @abstractmethod
-    def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
+    async def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
         """Scan multiple listings through the complete pipeline.
 
         Continues processing even if individual listings fail.
