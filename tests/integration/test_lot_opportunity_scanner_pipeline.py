@@ -51,8 +51,9 @@ class _Collector:
         "FIFA 24": Decimal("10.0"),
     }
 
-    def __init__(self, candidate_id: str) -> None:
+    def __init__(self, candidate_id: str, currency: str = "EUR") -> None:
         self.candidate_id = candidate_id
+        self.currency = currency
         self.calls: list[DetectedGame] = []
 
     async def collect_comparables(
@@ -72,7 +73,7 @@ class _Collector:
                 title=game.canonical_name,
                 description="",
                 price=Decimal("40.0") if identifier == self.candidate_id else price,
-                currency="EUR",
+                currency=self.currency,
                 detected_game=game,
                 url=f"https://example.test/{identifier}",
                 raw_listing={"kind": "comparable"},
@@ -217,3 +218,67 @@ async def test_lot_pipeline_uses_unique_comparable_identities_per_game() -> None
     assert [valuation.observations_used for valuation in result.game_valuations] == [2, 2]
     assert result.successfully_valued_games == 2
     analyzer.analyze.assert_called_once()
+
+
+def _currency_scanner(
+    candidate: CandidateListing,
+    game: DetectedGame,
+    analyzer: DefaultLotOpportunityAnalyzer,
+) -> DefaultLotOpportunityScanner:
+    return DefaultLotOpportunityScanner(
+        game_detector=_Detector([game]),
+        price_collector=_Collector(candidate.listing_id, candidate.currency),
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_uses_injected_usd_threshold_offline() -> None:
+    game = _game("GTA V")
+    candidate = CandidateListing(
+        "usd-lot", "GTA V lot", "", Decimal("5"), "USD", "url"
+    )
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"EUR": Decimal("10"), "USD": Decimal("8")},
+    )
+    scanner = _currency_scanner(candidate, game, analyzer)
+
+    result = await scanner.scan_lot(candidate)
+
+    assert len(result.game_valuations) == 1
+    assert result.game_valuations[0].currency == "USD"
+    assert result.opportunity is not None
+    assert result.opportunity.currency == "USD"
+    assert result.opportunity.net_profit == Decimal("10")
+    assert result.opportunity.recommendation.value == "buy"
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    game = _game("GTA V")
+    candidate = CandidateListing(
+        "usd-unconfigured", "GTA V lot", "", Decimal("5"), "USD", "url"
+    )
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"EUR": Decimal("10")},
+    )
+    scanner = _currency_scanner(candidate, game, analyzer)
+
+    result = await scanner.scan_lot(candidate)
+
+    assert len(result.game_valuations) == 1
+    assert result.game_valuations[0].currency == "USD"
+    assert result.opportunity is None
+    assert result.failures == []
+    assert (
+        "No minimum lot net profit threshold configured for currency USD"
+        in caplog.text
+    )

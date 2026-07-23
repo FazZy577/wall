@@ -295,6 +295,13 @@ it, empty mappings configure nothing, and missing currencies raise a diagnostic
 configuration error. There is no EUR fallback or FX. Margin, confidence, score,
 ranking, economics, and the lot analyzer remain unchanged.
 
+P1.20 applies the same explicit monetary-unit safety to the separate lot
+analyzer configuration. `min_net_profit_by_currency=None` retains only the
+historical EUR `Decimal("10.0")` default; explicit mappings replace it, empty
+mappings configure no currency, and missing currencies fail diagnostically.
+There is no EUR fallback or FX. Coverage, recommendation order, reasons,
+economics, `LotOpportunity`, and the individual detector remain unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

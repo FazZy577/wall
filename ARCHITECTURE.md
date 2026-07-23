@@ -384,7 +384,14 @@ net-profit configuration is a `Mapping[str, Decimal]` resolved from
 explicit mapping replaces the default and zero remains zero. Missing currencies
 are configuration errors—there is no EUR fallback or FX. Dependency injection
 supplies the detector to Application unchanged. Margin and confidence rules and
-the separate lot analyzer are unaffected.
+the lot analyzer remain separate.
+
+The lot analyzer independently owns its own
+`min_net_profit_by_currency: Mapping[str, Decimal]`. It also resolves against
+`EconomicBreakdown.currency`, defaults only to EUR 10.0 for `None`, and rejects
+unconfigured currencies without EUR fallback or FX. Application injects the
+configured analyzer unchanged; the lot scanner contains no threshold selection.
+Coverage and lot recommendation rules are unaffected.
 
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a

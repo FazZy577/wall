@@ -9,6 +9,7 @@ from decimal import Decimal
 
 import pytest
 
+from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotReasonCode
@@ -34,11 +35,11 @@ from infrastructure.analyzers.default_lot_opportunity_analyzer import (
 # ---------------------------------------------------------------------------
 
 
-def _make_game(name: str) -> DetectedGame:
+def _make_game(name: str, platform: Platform = Platform.PS4) -> DetectedGame:
     return DetectedGame(
         canonical_name=name,
         matched_text=name.lower(),
-        platform=Platform.PS4,
+        platform=platform,
         confidence=1.0,
         detection_method=DetectionMethod.EXACT_MATCH,
     )
@@ -49,11 +50,12 @@ def _make_estimate(
     estimated_price: float,
     confidence_score: float = 0.80,
     sample_size: int = 25,
+    currency: str = "EUR",
 ) -> MarketPriceEstimate:
     amount = Decimal(str(estimated_price))
     return MarketPriceEstimate(
         estimated_price=amount,
-        currency="EUR",
+        currency=currency,
         confidence_score=confidence_score,
         confidence_level=ConfidenceLevel.HIGH,
         strategy=EstimationStrategy.MEDIAN,
@@ -72,10 +74,16 @@ def _make_estimate(
 
 
 def _make_valuation(
-    name: str, estimated_price: float, confidence_score: float = 0.80
+    name: str,
+    estimated_price: float,
+    confidence_score: float = 0.80,
+    currency: str = "EUR",
+    platform: Platform = Platform.PS4,
 ) -> GameValuation:
-    game = _make_game(name)
-    estimate = _make_estimate(game, estimated_price, confidence_score)
+    game = _make_game(name, platform)
+    estimate = _make_estimate(
+        game, estimated_price, confidence_score, currency=currency
+    )
     return GameValuation.from_market_estimate(game, estimate)
 
 
@@ -506,3 +514,188 @@ class TestOpportunityScore:
         # Must NOT be BUY РІР‚вЂќ low confidence
         assert lot.recommendation != Recommendation.BUY
         assert lot.reason == LotReasonCode.LOW_AGGREGATE_CONFIDENCE
+
+
+class TestCurrencySpecificLotProfitThresholds:
+    """Absolute lot-profit thresholds are resolved per breakdown currency."""
+
+    @staticmethod
+    def _analyze(
+        currency: str,
+        net_profit: str,
+        thresholds: dict[str, Decimal] | None = None,
+    ):
+        listing = CandidateListing(
+            f"lot-{currency}", "Lot", "", Decimal("10"), currency, "url"
+        )
+        valuation = _make_valuation(
+            "Game", float(Decimal("10") + Decimal(net_profit)), currency=currency
+        )
+        analyzer = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency=thresholds,
+        )
+        return analyzer.analyze(listing, [valuation], 1)
+
+    def test_default_and_none_configure_only_historical_eur(self) -> None:
+        omitted = DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
+        explicit_none = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency=None
+        )
+
+        assert omitted.min_net_profit_by_currency == {"EUR": Decimal("10.0")}
+        assert explicit_none.min_net_profit_by_currency == {
+            "EUR": Decimal("10.0")
+        }
+
+    @pytest.mark.parametrize(
+        ("profit", "recommendation", "reason"),
+        [
+            ("9", Recommendation.MAYBE, LotReasonCode.FAIR_VALUE_LOT),
+            ("10", Recommendation.BUY, LotReasonCode.UNDERVALUED_LOT),
+            ("11", Recommendation.BUY, LotReasonCode.UNDERVALUED_LOT),
+        ],
+    )
+    def test_default_eur_boundary_is_unchanged(
+        self,
+        profit: str,
+        recommendation: Recommendation,
+        reason: LotReasonCode,
+    ) -> None:
+        lot = self._analyze("EUR", profit)
+        assert lot.currency == "EUR"
+        assert (lot.recommendation, lot.reason) == (recommendation, reason)
+
+    @pytest.mark.parametrize("currency", ["USD", "GBP"])
+    def test_default_rejects_unconfigured_currency(self, currency: str) -> None:
+        with pytest.raises(
+            ValueError,
+            match=(
+                "No minimum lot net profit threshold configured for currency "
+                f"{currency}"
+            ),
+        ):
+            self._analyze(currency, "9")
+
+    def test_each_currency_uses_only_its_threshold(self) -> None:
+        thresholds = {
+            "EUR": Decimal("10"),
+            "USD": Decimal("8"),
+            "GBP": Decimal("12"),
+        }
+        eur = self._analyze("EUR", "9", thresholds)
+        usd = self._analyze("USD", "9", thresholds)
+        gbp = self._analyze("GBP", "9", thresholds)
+
+        assert (eur.recommendation, eur.reason) == (
+            Recommendation.MAYBE,
+            LotReasonCode.FAIR_VALUE_LOT,
+        )
+        assert (usd.recommendation, usd.reason) == (
+            Recommendation.BUY,
+            LotReasonCode.UNDERVALUED_LOT,
+        )
+        assert (gbp.recommendation, gbp.reason) == (
+            Recommendation.MAYBE,
+            LotReasonCode.FAIR_VALUE_LOT,
+        )
+        assert eur.opportunity_score == usd.opportunity_score == gbp.opportunity_score
+
+    def test_empty_mapping_is_not_none_and_zero_is_preserved(self) -> None:
+        empty = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency={}
+        )
+        zero = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={
+                "EUR": Decimal("0"),
+                "USD": Decimal("0"),
+            },
+        )
+
+        assert empty.min_net_profit_by_currency == {}
+        with pytest.raises(ValueError, match="currency EUR"):
+            self._analyze("EUR", "9", {})
+        assert zero.min_net_profit_by_currency == {
+            "EUR": Decimal("0"),
+            "USD": Decimal("0"),
+        }
+        assert self._analyze(
+            "EUR", "10", dict(zero.min_net_profit_by_currency)
+        ).recommendation is Recommendation.BUY
+        assert self._analyze(
+            "USD", "10", dict(zero.min_net_profit_by_currency)
+        ).recommendation is Recommendation.BUY
+        with pytest.raises(ValueError, match="currency GBP"):
+            self._analyze("GBP", "10", dict(zero.min_net_profit_by_currency))
+
+    @pytest.mark.parametrize(
+        "currency", ["", " ", "eur", " EUR", "EUR ", "€", "EURO", None, 123, True]
+    )
+    def test_invalid_currency_keys_are_rejected(self, currency: object) -> None:
+        with pytest.raises((TypeError, ValueError), match="min_net_profit_by_currency key"):
+            DefaultLotOpportunityAnalyzer(
+                ResaleEconomicPolicy.neutral(),
+                min_net_profit_by_currency={currency: Decimal("10")},  # type: ignore[dict-item]
+            )
+
+    @pytest.mark.parametrize(
+        "threshold",
+        [10.0, True, None, Decimal("NaN"), Decimal("Infinity"), object()],
+    )
+    def test_invalid_threshold_values_are_rejected(self, threshold: object) -> None:
+        with pytest.raises((TypeError, ValueError), match="min_net_profit_by_currency"):
+            DefaultLotOpportunityAnalyzer(
+                ResaleEconomicPolicy.neutral(),
+                min_net_profit_by_currency={"EUR": threshold},  # type: ignore[dict-item]
+            )
+
+    def test_negative_threshold_remains_valid(self) -> None:
+        analyzer = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={"EUR": Decimal("-1")},
+        )
+        assert analyzer.min_net_profit_by_currency == {"EUR": Decimal("-1")}
+
+    def test_configuration_is_copied_defensively(self) -> None:
+        config = {"EUR": Decimal("10")}
+        analyzer = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency=config
+        )
+        config["EUR"] = Decimal("999")
+        config["USD"] = Decimal("1")
+
+        assert analyzer.min_net_profit_by_currency == {"EUR": Decimal("10")}
+        with pytest.raises(TypeError):
+            analyzer.min_net_profit_by_currency["EUR"] = Decimal("1")  # type: ignore[index]
+        with pytest.raises(ValueError, match="currency USD"):
+            self._analyze("USD", "9", dict(analyzer.min_net_profit_by_currency))
+
+    def test_currency_mismatch_precedes_threshold_resolution(self) -> None:
+        listing = CandidateListing("lot", "Lot", "", Decimal("10"), "EUR", "url")
+        valuation = _make_valuation("Game", 20.0, currency="USD")
+        analyzer = DefaultLotOpportunityAnalyzer(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency={}
+        )
+
+        with pytest.raises(CurrencyMismatchError, match="Currency mismatch"):
+            analyzer.analyze(listing, [valuation], 1)
+
+    def test_mixed_platforms_share_only_homogeneous_currency_threshold(self) -> None:
+        listing = CandidateListing("lot", "Mixed platforms", "", Decimal("10"), "EUR", "url")
+        valuations = [
+            _make_valuation("Spider-Man", 8.0, currency="EUR", platform=Platform.PS5),
+            _make_valuation("Minecraft", 7.0, currency="EUR", platform=Platform.PS4),
+            _make_valuation("God of War", 6.0, currency="EUR", platform=Platform.PS4),
+        ]
+        analyzer = DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
+
+        lot = analyzer.analyze(listing, valuations, 3)
+
+        assert lot.currency == "EUR"
+        assert [valuation.game.platform for valuation in lot.game_valuations] == [
+            Platform.PS5,
+            Platform.PS4,
+            Platform.PS4,
+        ]
+        assert lot.recommendation is Recommendation.BUY

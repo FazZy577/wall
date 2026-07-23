@@ -199,6 +199,19 @@ comparables matching the lot currency. No compatible comparables produces a
 `GameValuationFailure` naming that currency; other games continue. Builder and
 analyzer provide strict defenses against mixed currencies.
 
+The injected lot analyzer owns an independent
+`min_net_profit_by_currency: Mapping[str, Decimal]` configuration. `None`
+configures only historical EUR 10.0; explicit mappings replace that default,
+`{}` configures nothing, and explicit zero remains zero. The analyzer resolves
+the threshold from `EconomicBreakdown.currency`, without EUR fallback or FX.
+USD/GBP require explicit entries. Mixed platforms remain supported when the lot
+currency is homogeneous. Coverage and recommendation rules are unchanged.
+
+The scanner does not reconstruct or select thresholds. Under its current
+contract, an analyzer exception is logged and produces `opportunity=None`; it
+does not yet create a structured lot-analysis failure. That behavior and the
+currency semantics of absolute `ResaleEconomicPolicy` costs remain pending.
+
 ## P1.14 unique comparables per game dataset
 
 For each detected game, candidate exclusion and lot-currency filtering still

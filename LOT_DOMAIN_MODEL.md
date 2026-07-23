@@ -239,3 +239,19 @@ Every successful `GameValuation` must match the candidate currency. The analyzer
 rejects mixed valuations before aggregation, and `LotOpportunity.currency`
 delegates to its breakdown. Missing compatible comparables remain per-game
 failures; partial-coverage rules are unchanged.
+
+## P1.20 lot-profit thresholds by currency
+
+`DefaultLotOpportunityAnalyzer` resolves its absolute net-profit threshold from
+`EconomicBreakdown.currency`. Omitting `min_net_profit_by_currency` or passing
+`None` configures only `{"EUR": Decimal("10.0")}`. An explicit mapping replaces
+that default, an empty mapping configures no currencies, and zero remains a
+valid explicit value. USD, GBP, and other currencies therefore require an
+explicit threshold. A missing currency is a configuration error; there is no
+EUR fallback or FX conversion.
+
+Currency homogeneity is checked before economic aggregation. Mixed game
+platforms remain valid because threshold selection depends on the homogeneous
+lot currency, not platform. Coverage, confidence, recommendation order and
+reason codes are unchanged. Absolute costs in `ResaleEconomicPolicy` and the
+mutable-list aliasing of `LotOpportunity` remain separate pending decisions.

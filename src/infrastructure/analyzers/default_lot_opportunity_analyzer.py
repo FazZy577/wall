@@ -7,9 +7,12 @@ Contains business rules for lot decisions — but NO market data access.
 """
 
 import logging
+from collections.abc import Mapping
 from decimal import Decimal
+from types import MappingProxyType
 
-from domain.currency import CurrencyMismatchError
+from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
@@ -24,7 +27,6 @@ logger = logging.getLogger(__name__)
 # Decision thresholds (private constants)
 # ---------------------------------------------------------------------------
 
-_MIN_LOT_PROFIT_EUR = Decimal("10.0")
 _MIN_LOT_MARGIN_PERCENTAGE = Decimal("25.0")
 _MIN_AGGREGATE_CONFIDENCE = 0.50
 
@@ -54,8 +56,32 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
     # Public API
     # ------------------------------------------------------------------
 
-    def __init__(self, economic_policy: ResaleEconomicPolicy) -> None:
+    DEFAULT_MIN_NET_PROFIT_BY_CURRENCY: Mapping[str, Decimal] = MappingProxyType(
+        {"EUR": Decimal("10.0")}
+    )
+
+    def __init__(
+        self,
+        economic_policy: ResaleEconomicPolicy,
+        min_net_profit_by_currency: Mapping[str, Decimal] | None = None,
+    ) -> None:
+        configured_thresholds = (
+            self.DEFAULT_MIN_NET_PROFIT_BY_CURRENCY
+            if min_net_profit_by_currency is None
+            else min_net_profit_by_currency
+        )
+        validated_thresholds: dict[str, Decimal] = {}
+        for currency, threshold in configured_thresholds.items():
+            validate_currency_code(currency, "min_net_profit_by_currency key")
+            require_decimal(
+                f"min_net_profit_by_currency[{currency!r}]", threshold
+            )
+            validated_thresholds[currency] = threshold
+
         self.economic_policy = economic_policy
+        self.min_net_profit_by_currency: Mapping[str, Decimal] = MappingProxyType(
+            validated_thresholds
+        )
 
     def analyze(
         self,
@@ -93,6 +119,9 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         net_profit = economic_breakdown.net_profit
         net_profit_margin = economic_breakdown.net_profit_margin_percentage
         aggregate_confidence = self._compute_aggregate_confidence(game_valuations)
+        min_net_profit = self._min_net_profit_for_currency(
+            economic_breakdown.currency
+        )
 
         # Determine recommendation and reason
         valued_count = len(game_valuations)
@@ -103,6 +132,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             net_profit=net_profit,
             net_profit_margin=net_profit_margin,
             aggregate_confidence=aggregate_confidence,
+            min_net_profit=min_net_profit,
         )
 
         # Calculate opportunity score
@@ -152,6 +182,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
         net_profit: Decimal,
         net_profit_margin: Decimal,
         aggregate_confidence: float,
+        min_net_profit: Decimal,
     ) -> tuple[Recommendation, LotReasonCode]:
         """Determine BUY/MAYBE/SKIP using explicit priority rules.
 
@@ -192,7 +223,7 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
         # Rule 8: Clear BUY opportunity
         if (
-            net_profit >= _MIN_LOT_PROFIT_EUR
+            net_profit >= min_net_profit
             and net_profit_margin >= _MIN_LOT_MARGIN_PERCENTAGE
             and aggregate_confidence >= _MIN_AGGREGATE_CONFIDENCE
         ):
@@ -200,6 +231,16 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
 
         # Rule 9: Positive profit but below thresholds
         return Recommendation.MAYBE, LotReasonCode.FAIR_VALUE_LOT
+
+    def _min_net_profit_for_currency(self, currency: str) -> Decimal:
+        """Return the configured lot threshold for the breakdown currency."""
+        try:
+            return self.min_net_profit_by_currency[currency]
+        except KeyError:
+            raise ValueError(
+                "No minimum lot net profit threshold configured for currency "
+                f"{currency}"
+            ) from None
 
     # ------------------------------------------------------------------
     # Opportunity score
