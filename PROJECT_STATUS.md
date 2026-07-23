@@ -271,6 +271,12 @@ P1.15 closes the remaining identity invariant: `CandidateListing`,
 already-trimmed string `listing_id`. Wallapop adapters normalize only the real
 payload `id`; missing or invalid IDs are discarded without synthetic fallback.
 
+P1.16 closes comparable game identity at the collector boundary. A Wallapop
+result is returned only when both its detected canonical name and platform
+equal the requested game. Platforms are never treated as compatible, wildcarded
+or relabelled. Cache identity, candidate exclusion, currency filtering and
+builder deduplication remain unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

@@ -67,6 +67,11 @@ only its own non-empty `listing_id` and runs the local dataset, statistics,
 outlier and estimation stages. This keeps one Wallapop call per game identity
 without preventing another candidate from acting as a comparable.
 
+`PriceCollector` guarantees that every cached comparable matches the requested
+canonical name and platform. Therefore a PS4 cache entry cannot contain PS5
+observations. There is no cross-generation compatibility or platform fallback;
+currency selection remains a later, independent scanner step.
+
 `ArbitrageOpportunity`, recommendation, candidate price, and opportunity score
 are never cached. `ArbitrageOpportunityDetector` continues to run for every
 processable candidate, so candidates from the same game can receive

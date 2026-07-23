@@ -231,7 +231,10 @@ class WallapopPriceCollector(IPriceCollector):
         # Check if target game is detected
         target_detected = None
         for detected_game in detected_games:
-            if detected_game.canonical_name == target_game.canonical_name:
+            if (
+                detected_game.canonical_name == target_game.canonical_name
+                and detected_game.platform == target_game.platform
+            ):
                 target_detected = detected_game
                 break
 

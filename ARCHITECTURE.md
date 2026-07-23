@@ -366,6 +366,12 @@ currency selection, it validates all inputs and stably retains the first
 `ComparableListing` for each `(DetectedGame.platform, listing_id)`. The policy
 is local to a dataset build and never mutates the raw execution-scoped cache.
 
+`WallapopPriceCollector` is the infrastructure boundary for comparable game
+identity. Before returning a `ComparableListing`, it requires exact equality
+of both canonical name and `Platform` with the requested `DetectedGame`.
+Application does not duplicate this filter, and the builder remains concerned
+with validation and publication deduplication rather than platform matching.
+
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a
 number, or removes leading zeroes. Wallapop infrastructure reads the real `id`

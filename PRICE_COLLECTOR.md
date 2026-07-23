@@ -21,6 +21,20 @@ The Price Collector module obtains **comparable listings** for a video game by o
 
 **Scope:** This module does NOT calculate prices or statistics. It only collects and validates listings.
 
+## Complete game identity
+
+A listing belongs to the requested comparable collection only when its detected
+game has both the same canonical name and the same `Platform`. The comparison
+uses the existing canonical values exactly. PS4, PS5, Xbox and `UNKNOWN` are
+not interchangeable, and no platform is relabelled or treated as a wildcard.
+This identity check happens in `WallapopPriceCollector` before a
+`ComparableListing` is returned.
+
+Platform identity and currency compatibility are separate validations. The
+collector guarantees game identity; the scanners subsequently select the
+candidate currency, and `DefaultPriceDatasetBuilder` remains responsible for
+stable first-occurrence deduplication by `(platform, listing_id)`.
+
 `ComparableListing` is exclusively an individual accepted market reference.
 It is not the `CandidateListing` being considered for purchase. The collector
 returns only comparables; candidate listings never enter the comparable filter
@@ -87,7 +101,7 @@ Game → Generate Search Query → WallapopClient → Raw Listings
    - Extract listing data (id, title, description, price, url)
    - Validate required fields (reject if missing)
    - Call `GameDetector.detect_games()` on listing text
-   - Check if target game was detected (reject if not)
+   - Check that canonical name and platform both match the target (reject if not)
    - Call `ComparableFilter.is_valid_comparable()` (reject if invalid)
    - Build `ComparableListing` object
 

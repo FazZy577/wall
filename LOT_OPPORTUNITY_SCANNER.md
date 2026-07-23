@@ -10,6 +10,14 @@ estimation and lot economics. Only final dimensionless ratios used to construct
 **Use-case implementation:**
 `application.use_cases.default_lot_opportunity_scanner`
 
+## Complete comparable game identity
+
+Before each dataset is built, `PriceCollector` guarantees that every result
+has exactly the requested canonical name and platform. A PS5 result cannot
+enter a PS4 dataset, or vice versa. There is no cross-generation compatibility,
+platform wildcard or relabelling. Currency is validated separately, and stable
+deduplication by `(platform, listing_id)` remains the builder's responsibility.
+
 El scanner pertenece a Application: coordina puertos inyectados y entidades
 del dominio, sin importar ni instanciar implementaciones de Infrastructure.
 

@@ -271,6 +271,64 @@ class TestListingProcessing:
 
         assert result is None
 
+    def test_same_canonical_name_on_different_platform_is_rejected(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+    ) -> None:
+        """A canonical-name match must not hide a platform mismatch."""
+        ps5_game = DetectedGame(
+            canonical_name=target_game.canonical_name,
+            matched_text="gta v ps5",
+            platform=Platform.PS5,
+            confidence=1.0,
+            detection_method=DetectionMethod.EXACT_MATCH,
+        )
+        raw_listing = {
+            "id": "ps5-result",
+            "title": "GTA V PS5",
+            "description": "Juego",
+            "price": 20,
+            "currency": "EUR",
+        }
+        mock_game_detector.detect_games.return_value = [ps5_game]
+
+        result = price_collector._process_listing(raw_listing, target_game)
+
+        assert result is None
+        mock_comparable_filter.is_valid_comparable.assert_not_called()
+
+    def test_unknown_platform_is_not_a_wildcard(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+    ) -> None:
+        """UNKNOWN must compare exactly like every other platform."""
+        unknown_game = DetectedGame(
+            canonical_name=target_game.canonical_name,
+            matched_text="gta v",
+            platform=Platform.UNKNOWN,
+            confidence=1.0,
+            detection_method=DetectionMethod.EXACT_MATCH,
+        )
+        raw_listing = {
+            "id": "unknown-platform",
+            "title": "GTA V",
+            "description": "Juego",
+            "price": 20,
+            "currency": "EUR",
+        }
+        mock_game_detector.detect_games.return_value = [unknown_game]
+
+        result = price_collector._process_listing(raw_listing, target_game)
+
+        assert result is None
+        mock_comparable_filter.is_valid_comparable.assert_not_called()
+
     def test_no_games_detected(
         self,
         price_collector: WallapopPriceCollector,
@@ -444,6 +502,60 @@ class TestCollectComparables:
         assert all(isinstance(c, ComparableListing) for c in result)
         assert result[0].price == 15.0
         assert result[1].price == 18.0
+
+    @pytest.mark.asyncio
+    async def test_mixed_results_keep_only_complete_game_identity_in_input_order(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+    ) -> None:
+        """Collection filters name and platform without mutation or deduplication."""
+        ps5 = DetectedGame(
+            target_game.canonical_name,
+            "gta v ps5",
+            Platform.PS5,
+            1.0,
+            DetectionMethod.EXACT_MATCH,
+        )
+        fifa_ps4 = DetectedGame(
+            "FIFA 24",
+            "fifa 24 ps4",
+            Platform.PS4,
+            1.0,
+            DetectionMethod.EXACT_MATCH,
+        )
+        xbox = DetectedGame(
+            target_game.canonical_name,
+            "gta v xbox one",
+            Platform.XBOX_ONE,
+            1.0,
+            DetectionMethod.EXACT_MATCH,
+        )
+        raw_listings = [
+            {"id": "1", "title": "GTA V PS5", "description": "", "price": 21, "currency": "EUR"},
+            {"id": "valid-duplicate", "title": "GTA V PS4", "description": "", "price": 12, "currency": "EUR"},
+            {"id": "3", "title": "FIFA 24 PS4", "description": "", "price": 14, "currency": "EUR"},
+            {"id": "4", "title": "GTA V Xbox One", "description": "", "price": 16, "currency": "EUR"},
+            {"id": "valid-duplicate", "title": "GTA V PS4", "description": "", "price": 18, "currency": "EUR"},
+        ]
+        original = [dict(item) for item in raw_listings]
+        mock_wallapop_client.search_listings.return_value = raw_listings
+        mock_game_detector.detect_games.side_effect = [[ps5], [target_game], [fifa_ps4], [xbox], [target_game]]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        result = await price_collector.collect_comparables(
+            target_game,
+            latitude=40.4168,
+            longitude=-3.7038,
+        )
+
+        assert [item.listing_id for item in result] == ["valid-duplicate"] * 2
+        assert [item.detected_game.platform for item in result] == [Platform.PS4, Platform.PS4]
+        assert raw_listings == original
+        assert mock_comparable_filter.is_valid_comparable.call_count == 2
 
     @pytest.mark.asyncio
     async def test_invalid_external_ids_never_enter_canonical_collection(
