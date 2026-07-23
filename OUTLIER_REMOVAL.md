@@ -534,3 +534,14 @@ Potential enhancements (not implemented):
 **Module Status:** ✅ Complete and Production-Ready
 
 **Next Module:** Market Price Estimator (uses clean dataset to estimate fair price)
+## P1.13: política conservadora cuando IQR es cero
+
+Tukey se aplica sin cambios cuando `IQR > 0`, con fences inclusivos calculados
+como `Q1 - 1.5 * IQR` y `Q3 + 1.5 * IQR`. Cuando `IQR == 0`, el método se
+abstiene: conserva todas las observaciones en su orden original, informa cero
+eliminaciones y utiliza mínimo/máximo observados como bounds efectivos.
+
+Un valor extremo puede conservarse en esta rama. Esto no afirma que sea normal;
+expresa que no existe dispersión intercuartílica utilizable para clasificarlo con
+Tukey. No se usa MAD, z-score, clipping, epsilon, float ni redondeo. Decimal y
+currency se preservan.

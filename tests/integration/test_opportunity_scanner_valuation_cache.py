@@ -160,3 +160,50 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
     assert opportunity.net_profit == -15.0
     assert opportunity.listing.raw_listing == {"kind": "candidate", "price": 30.0}
     assert comparables[0].raw_listing == {"kind": "comparable", "id": "gta-12"}
+
+
+@pytest.mark.asyncio
+async def test_individual_pipeline_keeps_complete_heterogeneous_zero_iqr_dataset() -> None:
+    candidate = _candidate("zero-iqr", 5.0)
+    comparables = [
+        _comparable(f"ten-{index}", 10.0) for index in range(6)
+    ] + [_comparable("extreme", 100.0)]
+    collector = Mock()
+    collector.collect_comparables = AsyncMock(return_value=comparables)
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    outlier_results: list[object] = []
+    outliers = Mock()
+
+    def remove_outliers(dataset: object, statistics: object) -> object:
+        result = DefaultOutlierRemoval().remove_outliers(dataset, statistics)  # type: ignore[arg-type]
+        outlier_results.append(result)
+        return result
+
+    outliers.remove_outliers.side_effect = remove_outliers
+    estimator = Mock(wraps=DefaultMarketPriceEstimator())
+    detector = Mock(
+        wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
+    )
+    scanner = DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=outliers,
+        market_estimator=estimator,
+        arbitrage_detector=detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
+    )
+
+    opportunity = await scanner.scan_listing(candidate)
+
+    result = outlier_results[0]
+    assert result.removed_count == 0
+    assert result.lower_bound == Decimal("10.0")
+    assert result.upper_bound == Decimal("100.0")
+    assert result.clean_dataset.sample_size == 7
+    assert estimator.estimate.call_args.kwargs["dataset"] is result.clean_dataset
+    assert opportunity is not None
+    detector.detect.assert_called_once()
+    assert opportunity.currency == "EUR"

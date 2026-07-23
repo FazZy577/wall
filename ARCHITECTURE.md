@@ -381,3 +381,10 @@ non-canonical codes. Foreign-currency comparables are removed before dataset
 construction, while `PriceDataset` strictly rejects mixed inputs. Statistics,
 outliers, estimates and economic breakdowns preserve the currency. There is no
 Currency enum, Money, EUR fallback, FX conversion, symbol inference or rounding.
+
+## P1.13 conservative zero-IQR policy
+
+The single infrastructure Tukey implementation abstains from removal when the
+interquartile range is exactly `Decimal("0")`. It copies the observation list,
+preserves order, Decimal and currency, and exposes observed min/max as effective
+bounds. No alternative outlier algorithm or fallback is introduced.

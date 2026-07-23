@@ -64,12 +64,12 @@ class DefaultOutlierRemoval(IOutlierRemoval):
                 upper_bound=statistics.max_price,
             )
 
-        # Special case: zero IQR (all prices similar)
+        # Tukey abstains when the interquartile range provides no dispersion.
         if statistics.iqr == Decimal("0"):
             return self._no_removal_result(
                 dataset=dataset,
-                lower_bound=statistics.q1,
-                upper_bound=statistics.q3,
+                lower_bound=statistics.min_price,
+                upper_bound=statistics.max_price,
             )
 
         # Calculate bounds using Tukey's method

@@ -633,3 +633,10 @@ Potential enhancements (not implemented):
 one required canonical currency. Outlier removal and estimation raise
 `CurrencyMismatchError` before comparing incompatible inputs. The estimator does
 not invent EUR, convert currencies, or round values.
+
+## P1.13 zero-IQR input
+
+When the upstream Tukey component receives `IQR == 0`, it retains the complete
+dataset and reports min/max as effective bounds. The estimator consumes that
+complete clean dataset without applying another filter. Its median, confidence
+and estimation algorithms are unchanged.

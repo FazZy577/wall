@@ -122,3 +122,52 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
         for call in builder.build.call_args_list
     )
     assert candidate.raw_listing == {"kind": "candidate"}
+
+
+@pytest.mark.asyncio
+async def test_lot_pipeline_creates_valuation_from_zero_iqr_game() -> None:
+    game = _game("GTA V")
+    candidate = CandidateListing(
+        "zero-iqr-lot", "GTA V", "", Decimal("5"), "EUR", "url"
+    )
+    collector = Mock()
+    collector.collect_comparables = Mock()
+
+    async def collect(**_kwargs: object) -> list[ComparableListing]:
+        prices = [Decimal("10")] * 6 + [Decimal("100")]
+        return [
+            ComparableListing(str(index), "GTA V", "", price, "EUR", game, "url")
+            for index, price in enumerate(prices)
+        ]
+
+    collector.collect_comparables.side_effect = collect
+    outlier_results: list[object] = []
+    outliers = Mock()
+
+    def remove_outliers(dataset: object, statistics: object) -> object:
+        result = DefaultOutlierRemoval().remove_outliers(dataset, statistics)  # type: ignore[arg-type]
+        outlier_results.append(result)
+        return result
+
+    outliers.remove_outliers.side_effect = remove_outliers
+    analyzer = Mock(
+        wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
+    )
+    scanner = DefaultLotOpportunityScanner(
+        game_detector=_Detector([game]),
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=outliers,
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+    result = await scanner.scan_lot(candidate)
+
+    removal = outlier_results[0]
+    assert removal.removed_count == 0
+    assert removal.clean_dataset.sample_size == 7
+    assert len(result.game_valuations) == 1
+    assert result.game_valuations[0].currency == "EUR"
+    analyzer.analyze.assert_called_once()

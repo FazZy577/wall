@@ -260,3 +260,10 @@ normalized without fallback, foreign-currency comparables are filtered before
 datasets, and strict checks reject any remaining mix. Decimal formulas, ranking,
 scores and partial-lot rules are unchanged. No Currency enum, Money, FX conversion,
 exchange rate, rounding, `quantize`, or JSON serialization was introduced.
+
+## P1.13 zero-IQR outlier safety
+
+Tukey now explicitly abstains when IQR is exactly zero: no observations are
+removed and effective bounds are the observed minimum and maximum. Positive-IQR
+behavior is unchanged. No MAD, z-score, clipping, epsilon or fallback strategy
+was added.
