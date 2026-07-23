@@ -277,6 +277,12 @@ equal the requested game. Platforms are never treated as compatible, wildcarded
 or relabelled. Cache identity, candidate exclusion, currency filtering and
 builder deduplication remain unchanged.
 
+P1.17 isolates ordinary `GameDetector` exceptions per candidate in
+`scan_multiple()`. The failed candidate receives a `GAME_DETECTION` failure,
+does not touch the comparable cache or later pipeline, and does not prevent
+subsequent candidates from being valued and ranked. Empty detection remains a
+separate result; `scan_listing()` and the lot scanner keep their prior behavior.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

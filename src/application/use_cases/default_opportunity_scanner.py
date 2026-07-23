@@ -295,9 +295,27 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             listing_start = time.time()
             logger.info(f"Scanning listing {index}/{len(listings)}")
 
-            detected_games = self.game_detector.detect_games(
-                ListingText(title=listing.title, description=listing.description)
-            )
+            try:
+                detected_games = self.game_detector.detect_games(
+                    ListingText(title=listing.title, description=listing.description)
+                )
+            except Exception as error:
+                exception_type = type(error).__name__
+                exception_message = str(error)
+                details = (
+                    f"{exception_type}: {exception_message}"
+                    if exception_message
+                    else exception_type
+                )
+                failures.append(
+                    FailureInfo(
+                        listing_id=listing.listing_id,
+                        stage=PipelineStage.GAME_DETECTION,
+                        reason=f"Game detection failed: {details}",
+                        error_message=exception_message or None,
+                    )
+                )
+                continue
             if not detected_games:
                 failures.append(
                     FailureInfo(

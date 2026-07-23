@@ -929,3 +929,222 @@ async def test_scan_multiple_propagates_ranking_errors(
         await scanner.scan_multiple([])
 
     ranker.rank.assert_called_once_with([], scanner.ranking_strategy)
+
+
+def _detection_candidate(identifier: str) -> CandidateListing:
+    return CandidateListing(
+        listing_id=identifier,
+        title=f"GTA V PS4 {identifier}",
+        description="",
+        price=Decimal("10"),
+        currency="EUR",
+        url=f"https://example.test/{identifier}",
+    )
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure_index", [0, 1, 2])
+async def test_scan_multiple_isolates_detector_exception_at_any_batch_position(
+    scanner: DefaultOpportunityScanner,
+    sample_game: DetectedGame,
+    sample_comparable: ComparableListing,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+    mock_game_detector: Mock,
+    failure_index: int,
+) -> None:
+    candidates = [_detection_candidate(identifier) for identifier in ("A", "B", "C")]
+    detections: list[object] = [[sample_game], [sample_game], [sample_game]]
+    detections[failure_index] = RuntimeError("detector failure")
+    mock_game_detector.detect_games.side_effect = detections
+    _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    scanner.opportunity_ranker = ranker
+
+    result = await scanner.scan_multiple(candidates)
+
+    assert result.successful == 2
+    assert result.failed == 1
+    assert result.failures[0].listing_id == candidates[failure_index].listing_id
+    assert result.failures[0].stage is PipelineStage.GAME_DETECTION
+    assert result.failures[0].reason == (
+        "Game detection failed: RuntimeError: detector failure"
+    )
+    assert result.failures[0].error_message == "detector failure"
+    assert mock_price_collector.collect_comparables.await_count == 1
+    assert mock_dataset_builder.build.call_count == 2
+    assert mock_market_estimator.estimate.call_count == 2
+    assert mock_arbitrage_detector.detect.call_count == 2
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+    ranker.rank.assert_called_once()
+    assert len(ranker.rank.call_args.args[0]) == 2
+
+
+@pytest.mark.asyncio
+async def test_scan_multiple_keeps_empty_and_exceptional_detection_distinct(
+    scanner: DefaultOpportunityScanner,
+    sample_game: DetectedGame,
+    sample_comparable: ComparableListing,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    mock_game_detector.detect_games.side_effect = [[], RuntimeError("boom"), [sample_game]]
+    _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+
+    result = await scanner.scan_multiple(
+        [_detection_candidate(identifier) for identifier in ("A", "B", "C")]
+    )
+
+    assert [failure.listing_id for failure in result.failures] == ["A", "B"]
+    assert result.failures[0].reason == "No game detected in listing"
+    assert result.failures[1].reason == "Game detection failed: RuntimeError: boom"
+    assert all(failure.stage is PipelineStage.GAME_DETECTION for failure in result.failures)
+    assert mock_price_collector.collect_comparables.await_count == 1
+    assert result.successful == 1
+
+
+@pytest.mark.asyncio
+async def test_scan_multiple_all_detector_exceptions_leave_pipeline_and_cache_empty(
+    scanner: DefaultOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    mock_game_detector.detect_games.side_effect = [
+        RuntimeError("first"),
+        ValueError("second"),
+        RuntimeError(),
+    ]
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    scanner.opportunity_ranker = ranker
+
+    result = await scanner.scan_multiple(
+        [_detection_candidate(identifier) for identifier in ("A", "B", "C")]
+    )
+
+    assert result.successful == 0
+    assert [failure.listing_id for failure in result.failures] == ["A", "B", "C"]
+    assert result.failures[2].reason == "Game detection failed: RuntimeError"
+    assert mock_price_collector.collect_comparables.await_count == 0
+    mock_dataset_builder.build.assert_not_called()
+    mock_market_estimator.estimate.assert_not_called()
+    mock_arbitrage_detector.detect.assert_not_called()
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (0, 0)
+    ranker.rank.assert_called_once_with([], scanner.ranking_strategy)
+
+
+@pytest.mark.asyncio
+async def test_detector_exception_does_not_create_cache_key_between_two_games(
+    scanner: DefaultOpportunityScanner,
+    sample_game: DetectedGame,
+    sample_comparable: ComparableListing,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    fifa = DetectedGame(
+        canonical_name="FIFA 24",
+        matched_text="fifa 24",
+        platform=Platform.PS5,
+        confidence=1.0,
+        detection_method=DetectionMethod.EXACT_MATCH,
+    )
+    fifa_comparable = ComparableListing(
+        listing_id="fifa-comparable",
+        title="FIFA 24 PS5",
+        description="",
+        price=Decimal("25"),
+        currency="EUR",
+        detected_game=fifa,
+        url="",
+    )
+    mock_game_detector.detect_games.side_effect = [
+        [sample_game],
+        RuntimeError("boom"),
+        [fifa],
+    ]
+    _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+    mock_price_collector.collect_comparables.side_effect = [
+        [sample_comparable],
+        [fifa_comparable],
+    ]
+
+    result = await scanner.scan_multiple(
+        [_detection_candidate(identifier) for identifier in ("A", "B", "C")]
+    )
+
+    assert result.successful == 2
+    assert [failure.listing_id for failure in result.failures] == ["B"]
+    assert mock_price_collector.collect_comparables.await_count == 2
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 0)
+    assert mock_dataset_builder.build.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_scan_listing_keeps_return_none_contract_for_detector_exception(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+) -> None:
+    mock_game_detector.detect_games.side_effect = RuntimeError("detector failure")
+
+    result = await scanner.scan_listing(sample_listing)
+
+    assert result is None
+    mock_price_collector.collect_comparables.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("critical_error", [KeyboardInterrupt(), SystemExit()])
+async def test_scan_multiple_does_not_capture_base_exceptions(
+    scanner: DefaultOpportunityScanner,
+    mock_game_detector: Mock,
+    critical_error: BaseException,
+) -> None:
+    mock_game_detector.detect_games.side_effect = critical_error
+
+    with pytest.raises(type(critical_error)):
+        await scanner.scan_multiple([_detection_candidate("A")])

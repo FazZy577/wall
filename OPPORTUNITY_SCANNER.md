@@ -87,6 +87,22 @@ After P1.1, 100 candidates covering five unique canonical-name/platform
 identities require five network collections; candidate-specific local
 valuation can still run 100 times.
 
+## Batch game-detection isolation
+
+`scan_multiple()` invokes the synchronous `GameDetector` separately for each
+candidate. If that invocation raises an ordinary `Exception`, the scanner
+records a `GAME_DETECTION` `FailureInfo` containing the exception type and safe
+message, skips every later stage for that candidate, and continues sequentially
+with the next candidate. No comparable-cache lookup or insertion occurs for
+the failed detection. An empty detection remains a distinct
+`No game detected in listing` failure.
+
+After the loop, the canonical ranker receives only successfully created
+opportunities, including an empty list when every candidate fails. Ranking
+exceptions retain their existing propagation behavior. `scan_listing()` also
+retains its existing independent contract: its broad scan guard logs an
+ordinary detector exception and returns `None`. The lot scanner is unchanged.
+
 ## Critical Design Principle
 
 ⚠️ **This module does NOT contain:**

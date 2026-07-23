@@ -372,6 +372,12 @@ of both canonical name and `Platform` with the requested `DetectedGame`.
 Application does not duplicate this filter, and the builder remains concerned
 with validation and publication deduplication rather than platform matching.
 
+The batch opportunity use case isolates synchronous game-detection exceptions
+at the per-candidate iteration boundary. Such a failure becomes an application
+`FailureInfo` and cannot touch collection, cache, valuation or ranking inputs
+for that candidate. This application concern is not duplicated in Domain,
+Infrastructure or the lot-scanning use case.
+
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a
 number, or removes leading zeroes. Wallapop infrastructure reads the real `id`
