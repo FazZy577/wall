@@ -87,6 +87,13 @@ successfully completed empty search is cached as `comparables=[]` and produces
 the existing no-comparables result. Item-level collector errors remain
 best-effort and do not abort other raw listings.
 
+For the Playwright source, a successful empty page specifically means the full
+shape `data.section.items=[]`. Missing or incorrectly typed nested fields, an
+invalid pagination token, or a malformed later page propagate as
+`WallapopSearchResponseError`. The cache stores that technical failure rather
+than an empty or partial collection; later candidates reuse it with their own
+`listing_id`.
+
 `PriceCollector` guarantees that every cached comparable matches the requested
 canonical name and platform. Therefore a PS4 cache entry cannot contain PS5
 observations. There is no cross-generation compatibility or platform fallback;

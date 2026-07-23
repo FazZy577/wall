@@ -56,7 +56,7 @@ class WallapopSearchHTTPError(WallapopPlaywrightError):
 
 
 class WallapopSearchResponseError(WallapopPlaywrightError):
-    """Raised when a captured Wallapop response cannot be decoded."""
+    """Raised when a captured response cannot be decoded or is malformed."""
 
 
 class WallapopPlaywrightClient(IMarketplaceSearch):
@@ -312,26 +312,68 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
 
     @staticmethod
     def _extract_page(payload: dict[str, Any]) -> tuple[list[dict[str, Any]], str | None]:
-        data = payload.get("data")
+        """Extract one page using the gateway's defensive nested schema."""
+        if "data" not in payload:
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data' is missing"
+            )
+        data = payload["data"]
         if not isinstance(data, dict):
-            return [], None
-        section = data.get("section")
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data' is not an object"
+            )
+
+        if "section" not in data:
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data.section' is missing"
+            )
+        section = data["section"]
         if not isinstance(section, dict):
-            return [], None
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data.section' is not an object"
+            )
 
-        raw_items = section.get("items")
-        items: list[dict[str, Any]] = []
-        if isinstance(raw_items, list):
-            items = [item for item in raw_items if isinstance(item, dict)]
+        if "items" not in section:
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data.section.items' is missing"
+            )
+        raw_items = section["items"]
+        if not isinstance(raw_items, list):
+            raise WallapopSearchResponseError(
+                "Wallapop response field 'data.section.items' is not an array"
+            )
+        items = [item for item in raw_items if isinstance(item, dict)]
 
-        next_page: Any = None
-        meta = payload.get("meta")
-        if isinstance(meta, dict):
-            next_page = meta.get("next_page")
-        if not next_page:
-            next_page = section.get("next_page")
+        section_next_page = WallapopPlaywrightClient._validate_next_page(
+            section,
+            "data.section.next_page",
+        )
+        meta_next_page: str | None = None
+        if "meta" in payload:
+            meta = payload["meta"]
+            if not isinstance(meta, dict):
+                raise WallapopSearchResponseError(
+                    "Wallapop response field 'meta' is not an object"
+                )
+            meta_next_page = WallapopPlaywrightClient._validate_next_page(
+                meta,
+                "meta.next_page",
+            )
 
-        return items, next_page if isinstance(next_page, str) and next_page else None
+        return items, meta_next_page or section_next_page
+
+    @staticmethod
+    def _validate_next_page(container: dict[str, Any], field_path: str) -> str | None:
+        if "next_page" not in container:
+            return None
+        next_page = container["next_page"]
+        if next_page is None or next_page == "":
+            return None
+        if not isinstance(next_page, str):
+            raise WallapopSearchResponseError(
+                f"Wallapop response field '{field_path}' has invalid type"
+            )
+        return next_page
 
     @staticmethod
     def _normalize_item(item: dict[str, Any]) -> dict[str, Any] | None:

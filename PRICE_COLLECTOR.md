@@ -305,10 +305,12 @@ Failed to process listing 123456: invalid price format
 Whole-search failures are not logged at ERROR by the collector because they
 propagate to the consuming scanner. Item-level warnings remain local.
 
-The Playwright gateway may still interpret missing or incorrectly typed
-`data/section/items` structures as an empty page. Handling that separate
-payload-boundary behavior is outside P1.24B. Likewise, the defensive warning
-path for a non-mapping raw item remains unchanged.
+The Playwright gateway accepts an empty search only as a present
+`data.section.items=[]`. Missing or incorrectly typed `data`, `section`, or
+`items` fields raise `WallapopSearchResponseError`, including on later pages.
+`WallapopPriceCollector` propagates that technical failure unchanged, while a
+valid empty list still returns `[]`. The defensive warning path for a
+non-mapping raw item remains unchanged.
 
 ## Testing
 

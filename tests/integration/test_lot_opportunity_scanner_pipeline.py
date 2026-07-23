@@ -28,6 +28,9 @@ from infrastructure.dataset_builders.default_price_dataset_builder import (
 from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
+from infrastructure.marketplaces.wallapop.playwright_client import (
+    WallapopPlaywrightClient,
+)
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
 
@@ -227,6 +230,60 @@ async def test_lot_scanner_distinguishes_empty_from_propagated_source_failure(
     ]
     assert collector_errors == []
     assert len(scanner_errors) == 1
+    assert source.search_listings.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_isolates_nested_payload_error_by_game() -> None:
+    candidate = CandidateListing(
+        "nested-lot", "GTA V + RDR2", "", Decimal("5"), "EUR", "url"
+    )
+    games = [_game("GTA V"), _game("RDR2")]
+    source = Mock()
+
+    async def search_listings(**kwargs: object) -> list[dict[str, object]]:
+        if "GTA V" in str(kwargs["keywords"]):
+            items, _ = WallapopPlaywrightClient._extract_page({})
+            return items
+        return [
+            {
+                "id": f"rdr-{index}",
+                "title": "RDR2 PS4",
+                "description": "Game",
+                "price": "20",
+                "currency": "EUR",
+            }
+            for index in range(20)
+        ]
+
+    source.search_listings = AsyncMock(side_effect=search_listings)
+    collector = WallapopPriceCollector(source, _RawDetector(), _AcceptComparable())
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"EUR": Decimal("0")},
+    )
+    scanner = DefaultLotOpportunityScanner(
+        game_detector=_Detector(games),
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+    result = await scanner.scan_lot(candidate)
+
+    assert len(result.game_valuations) == 1
+    assert result.game_valuations[0].game.canonical_name == "RDR2"
+    assert len(result.failures) == 1
+    assert result.failures[0].stage is LotPipelineStage.PRICE_COLLECTION
+    assert result.failures[0].reason == "Error during price_collection"
+    assert result.failures[0].error_message == (
+        "Wallapop response field 'data' is missing"
+    )
+    assert result.opportunity is not None
+    assert result.analysis_failure is None
     assert source.search_listings.await_count == 2
 
 

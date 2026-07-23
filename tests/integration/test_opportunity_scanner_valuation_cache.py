@@ -25,6 +25,9 @@ from infrastructure.detectors.default_arbitrage_opportunity_detector import (
 from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
+from infrastructure.marketplaces.wallapop.playwright_client import (
+    WallapopPlaywrightClient,
+)
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
 from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
 from infrastructure.statistics.default_price_statistics import DefaultPriceStatistics
@@ -163,6 +166,35 @@ async def test_wallapop_empty_and_source_failure_are_distinct_and_cached() -> No
         for failure in error_result.failures
     )
     assert await failing_scanner.scan_listing(candidates[0]) is None
+
+
+@pytest.mark.asyncio
+async def test_nested_payload_error_is_structured_and_cached_as_failure() -> None:
+    candidates = [_candidate("first", 5.0), _candidate("second", 6.0)]
+    source = Mock()
+
+    async def malformed_search(**kwargs: object) -> list[dict[str, object]]:
+        del kwargs
+        items, _ = WallapopPlaywrightClient._extract_page({})
+        return items
+
+    source.search_listings = AsyncMock(side_effect=malformed_search)
+    scanner, builder, ranker = _wallapop_scanner(source)
+
+    result = await scanner.scan_multiple(candidates)
+
+    assert source.search_listings.await_count == 1
+    assert builder.build.call_count == 0
+    ranker.rank.assert_called_once()
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+    assert [failure.listing_id for failure in result.failures] == ["first", "second"]
+    assert all(
+        failure.stage is PipelineStage.PRICE_COLLECTION
+        and failure.reason == "Error during price_collection"
+        and failure.error_message
+        == "Wallapop response field 'data' is missing"
+        for failure in result.failures
+    )
 
 
 @pytest.mark.asyncio

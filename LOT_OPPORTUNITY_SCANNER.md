@@ -90,6 +90,12 @@ técnica propagada por `WallapopPriceCollector` produce un fallo distinto en la
 misma etapa con el mensaje original; los juegos posteriores continúan. Los
 errores aislados por raw listing mantienen su warning best-effort.
 
+En el gateway Playwright solo `data.section.items=[]` representa una página
+vacía válida. Una estructura nested ausente o incorrecta, también en una página
+posterior, se propaga como `WallapopSearchResponseError` y se representa como
+`GameValuationFailure` de `PRICE_COLLECTION`. No se conservan parciales y no se
+usa `analysis_failure`, reservado al analyzer agregado.
+
 ## Tratamiento de fallos parciales
 
 Un lote puede contener juegos que no se puedan valorar por falta de comparables, dataset vacío, errores estadísticos, errores de estimación o errores inesperados del pipeline.

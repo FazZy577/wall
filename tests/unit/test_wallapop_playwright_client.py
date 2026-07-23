@@ -227,15 +227,192 @@ class TestWallapopPlaywrightClient:
         assert error.value.status_code == 503
 
     @pytest.mark.asyncio
-    async def test_absent_items_returns_empty_list(self) -> None:
+    async def test_absent_items_raises_response_error(self) -> None:
         response = make_response(payload={"data": {"section": {}}, "meta": {}})
         harness = PlaywrightHarness([[response]])
+        client = harness.build_client()
+
+        async with client:
+            with pytest.raises(
+                WallapopSearchResponseError,
+                match="Wallapop response field 'data.section.items' is missing",
+            ):
+                await client.search_listings("gta 5 ps4", 40.4, -3.7, 5)
+
+    @pytest.mark.parametrize(
+        ("payload", "message"),
+        [
+            ({}, "Wallapop response field 'data' is missing"),
+            ({"data": None}, "Wallapop response field 'data' is not an object"),
+            ({"data": []}, "Wallapop response field 'data' is not an object"),
+            ({"data": ""}, "Wallapop response field 'data' is not an object"),
+            ({"data": 0}, "Wallapop response field 'data' is not an object"),
+            ({"data": True}, "Wallapop response field 'data' is not an object"),
+            (
+                {"data": {}},
+                "Wallapop response field 'data.section' is missing",
+            ),
+        ],
+    )
+    def test_extract_page_rejects_missing_or_invalid_data(
+        self,
+        payload: dict[str, Any],
+        message: str,
+    ) -> None:
+        with pytest.raises(WallapopSearchResponseError, match=message):
+            WallapopPlaywrightClient._extract_page(payload)
+
+    @pytest.mark.parametrize(
+        ("section", "message"),
+        [
+            (None, "Wallapop response field 'data.section' is not an object"),
+            ([], "Wallapop response field 'data.section' is not an object"),
+            ("", "Wallapop response field 'data.section' is not an object"),
+            (0, "Wallapop response field 'data.section' is not an object"),
+            (True, "Wallapop response field 'data.section' is not an object"),
+            ({}, "Wallapop response field 'data.section.items' is missing"),
+        ],
+    )
+    def test_extract_page_rejects_missing_or_invalid_section_contents(
+        self,
+        section: Any,
+        message: str,
+    ) -> None:
+        with pytest.raises(WallapopSearchResponseError, match=message):
+            WallapopPlaywrightClient._extract_page({"data": {"section": section}})
+
+    @pytest.mark.parametrize("raw_items", [None, {}, "", 0, True, (make_listing(1),)])
+    def test_extract_page_rejects_non_list_items(self, raw_items: Any) -> None:
+        payload = {"data": {"section": {"items": raw_items}}}
+
+        with pytest.raises(
+            WallapopSearchResponseError,
+            match="Wallapop response field 'data.section.items' is not an array",
+        ):
+            WallapopPlaywrightClient._extract_page(payload)
+
+    def test_extract_page_accepts_empty_items(self) -> None:
+        assert WallapopPlaywrightClient._extract_page(make_payload([])) == ([], None)
+
+    def test_extract_page_preserves_mapping_order_and_skips_other_elements(
+        self,
+    ) -> None:
+        first = make_listing(1)
+        second = make_listing(2)
+        payload = {
+            "data": {
+                "section": {
+                    "items": [first, None, "text", 1, True, second],
+                }
+            }
+        }
+
+        assert WallapopPlaywrightClient._extract_page(payload) == (
+            [first, second],
+            None,
+        )
+
+    @pytest.mark.parametrize("meta", [None, [], "", 0, True])
+    def test_extract_page_rejects_non_mapping_meta(self, meta: Any) -> None:
+        payload = {"data": {"section": {"items": []}}, "meta": meta}
+
+        with pytest.raises(
+            WallapopSearchResponseError,
+            match="Wallapop response field 'meta' is not an object",
+        ):
+            WallapopPlaywrightClient._extract_page(payload)
+
+    @pytest.mark.parametrize("invalid_token", [True, 1, 1.5, [], {}])
+    @pytest.mark.parametrize(
+        ("location", "field_path"),
+        [
+            ("meta", "meta.next_page"),
+            ("section", "data.section.next_page"),
+        ],
+    )
+    def test_extract_page_rejects_invalid_next_page_types(
+        self,
+        invalid_token: Any,
+        location: str,
+        field_path: str,
+    ) -> None:
+        section: dict[str, Any] = {"items": []}
+        payload: dict[str, Any] = {"data": {"section": section}}
+        if location == "meta":
+            payload["meta"] = {"next_page": invalid_token}
+        else:
+            section["next_page"] = invalid_token
+
+        with pytest.raises(
+            WallapopSearchResponseError,
+            match=f"Wallapop response field '{field_path}' has invalid type",
+        ):
+            WallapopPlaywrightClient._extract_page(payload)
+
+    @pytest.mark.parametrize("meta_token", [None, ""])
+    def test_extract_page_falls_back_to_section_token(
+        self,
+        meta_token: str | None,
+    ) -> None:
+        payload = {
+            "data": {
+                "section": {"items": [], "next_page": "section-token"},
+            },
+            "meta": {"next_page": meta_token},
+        }
+
+        assert WallapopPlaywrightClient._extract_page(payload) == (
+            [],
+            "section-token",
+        )
+
+    def test_extract_page_prefers_meta_token_but_validates_section_token(self) -> None:
+        valid = {
+            "data": {
+                "section": {"items": [], "next_page": "section-token"},
+            },
+            "meta": {"next_page": "meta-token"},
+        }
+        invalid = {
+            "data": {"section": {"items": [], "next_page": True}},
+            "meta": {"next_page": "meta-token"},
+        }
+
+        assert WallapopPlaywrightClient._extract_page(valid) == ([], "meta-token")
+        with pytest.raises(
+            WallapopSearchResponseError,
+            match=(
+                "Wallapop response field 'data.section.next_page' has invalid type"
+            ),
+        ):
+            WallapopPlaywrightClient._extract_page(invalid)
+
+    def test_extract_page_accepts_optional_empty_or_absent_pagination(self) -> None:
+        no_meta = {"data": {"section": {"items": []}}}
+        empty_meta = {"data": {"section": {"items": []}}, "meta": {}}
+        section_token = {
+            "data": {
+                "section": {"items": [], "next_page": "section-token"},
+            }
+        }
+
+        assert WallapopPlaywrightClient._extract_page(no_meta) == ([], None)
+        assert WallapopPlaywrightClient._extract_page(empty_meta) == ([], None)
+        assert WallapopPlaywrightClient._extract_page(section_token) == (
+            [],
+            "section-token",
+        )
+
+    @pytest.mark.asyncio
+    async def test_valid_empty_first_page_returns_empty_list(self) -> None:
+        harness = PlaywrightHarness([[make_response(payload=make_payload([]))]])
         client = harness.build_client()
 
         async with client:
             result = await client.search_listings("gta 5 ps4", 40.4, -3.7, 5)
 
         assert result == []
+        harness.page.evaluate.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_max_results_truncates_normalized_items(self) -> None:
@@ -291,6 +468,102 @@ class TestWallapopPlaywrightClient:
         harness.page.evaluate.assert_awaited_once_with(
             "window.scrollTo(0, document.body.scrollHeight)"
         )
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {},
+            {"data": {}},
+            {"data": {"section": {}}},
+            {"data": {"section": {"items": None}}},
+            {
+                "data": {"section": {"items": []}},
+                "meta": {"next_page": True},
+            },
+        ],
+    )
+    async def test_malformed_first_page_fails_without_requesting_another_page(
+        self,
+        payload: dict[str, Any],
+    ) -> None:
+        harness = PlaywrightHarness([[make_response(payload=payload)]])
+        client = harness.build_client(max_pages=2)
+
+        with pytest.raises(WallapopSearchResponseError):
+            async with client:
+                await client.search_listings("gta 5 ps4", 40.4, -3.7, 5)
+
+        harness.page.evaluate.assert_not_awaited()
+        assert not client.is_open
+
+    @pytest.mark.asyncio
+    async def test_valid_empty_second_page_returns_previous_items(self) -> None:
+        first = make_response(
+            payload=make_payload(
+                [make_listing(1), make_listing(2)],
+                next_page="opaque-token",
+            )
+        )
+        second = make_response(payload=make_payload([]))
+        harness = PlaywrightHarness([[first], [second]])
+        client = harness.build_client(max_pages=2)
+
+        async with client:
+            result = await client.search_listings("gta 5 ps4", 40.4, -3.7, 10)
+
+        assert [item["id"] for item in result] == ["listing-1", "listing-2"]
+        harness.page.evaluate.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "malformed_payload",
+        [
+            {},
+            {"data": {}},
+            {"data": {"section": {}}},
+            {"data": {"section": {"items": {}}}},
+        ],
+    )
+    async def test_malformed_second_page_discards_partial_results(
+        self,
+        malformed_payload: dict[str, Any],
+    ) -> None:
+        first = make_response(
+            payload=make_payload(
+                [make_listing(1), make_listing(2)],
+                next_page="opaque-token",
+            )
+        )
+        second = make_response(payload=malformed_payload)
+        harness = PlaywrightHarness([[first], [second]])
+        client = harness.build_client(max_pages=2)
+
+        with pytest.raises(WallapopSearchResponseError):
+            async with client:
+                await client.search_listings("gta 5 ps4", 40.4, -3.7, 10)
+
+        harness.page.evaluate.assert_awaited_once()
+        assert not client.is_open
+
+    @pytest.mark.asyncio
+    async def test_max_results_avoids_unneeded_malformed_second_page(self) -> None:
+        first = make_response(
+            payload=make_payload(
+                [make_listing(1), make_listing(2)],
+                next_page="opaque-token",
+            )
+        )
+        unrequested = make_response(payload={})
+        harness = PlaywrightHarness([[first], [unrequested]])
+        client = harness.build_client(max_pages=2)
+
+        async with client:
+            result = await client.search_listings("gta 5 ps4", 40.4, -3.7, 2)
+
+        assert [item["id"] for item in result] == ["listing-1", "listing-2"]
+        harness.page.evaluate.assert_not_awaited()
+        unrequested.json.assert_not_awaited()
 
     @pytest.mark.asyncio
     async def test_context_manager_closes_after_search_exception(self) -> None:

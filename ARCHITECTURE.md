@@ -376,6 +376,14 @@ ordinary failures processing one raw listing remain warning-and-continue.
 Thus an empty collection means a completed search with no valid comparables;
 it is not the representation of a source failure.
 
+At the Playwright gateway boundary, the defensive contract requires the full
+`data.section.items` shape. Only a present empty list represents an empty page.
+Missing containers, wrong types, invalid pagination token types, or a malformed
+later page raise `WallapopSearchResponseError`. The collector propagates it,
+scanners structure it as a price-collection failure, and no partial collection
+enters the cache. This is an internal contract based on observed payloads, not
+an official schema guarantee; it adds neither retry nor fallback.
+
 The batch opportunity use case isolates synchronous game-detection exceptions
 at the per-candidate iteration boundary. Such a failure becomes an application
 `FailureInfo` and cannot touch collection, cache, valuation or ranking inputs

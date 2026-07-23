@@ -328,6 +328,14 @@ propagating the original technical exception. Real empty searches still return
 execution-scoped cache now distinguish empty market data from collection
 failure without a new result model, exception type, retry or fallback.
 
+P1.25B defines the Playwright gateway's defensive nested-payload contract. The
+canonical empty page is a present `data.section.items=[]`; missing or incorrectly
+typed `data`, `section`, `items`, `meta`, or `next_page` fields raise the existing
+`WallapopSearchResponseError`. Malformed later pages fail the whole search, so
+partial comparables are not returned or cached. Individual non-object items
+remain isolated. This contract is based on the observed repository shape and
+was implemented without live calls, retry, fallback, or scanner changes.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

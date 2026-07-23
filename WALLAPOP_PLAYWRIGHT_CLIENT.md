@@ -47,6 +47,20 @@ las cuyo host es `api.wallapop.com` y cuya ruta es exactamente
 `/api/v3/search/section`. La estructura observada es
 `data.section.items`; el cursor opaco está en `meta.next_page`.
 
+El adapter adopta defensivamente ese shape como contrato interno obligatorio:
+`data` y `section` deben ser objetos, e `items` debe existir y ser una lista.
+`items=[]` es el único vacío canónico. La ausencia o un tipo incorrecto en
+`data`, `data.section` o `data.section.items` produce
+`WallapopSearchResponseError`; no se interpreta como cero mercado. Esta es una
+decisión contractual basada en el shape observado, no una garantía oficial de
+Wallapop.
+
+`meta` es opcional, pero si aparece debe ser un objeto. `next_page` admite
+ausencia, `null`, string vacío o string no vacío, y el token de `meta` mantiene
+precedencia sobre el de `section`. Otro tipo es malformado. Una página posterior
+malformada hace fallar toda la búsqueda: no se devuelven resultados parciales.
+Los elementos individuales no objeto de una lista válida se descartan en orden.
+
 La paginación no decodifica el cursor ni presupone un parámetro HTTP. Cuando
 existe `meta.next_page`, el cliente desplaza la página y deja que la aplicación
 de Wallapop solicite la continuación real. `max_pages` limita el número de
