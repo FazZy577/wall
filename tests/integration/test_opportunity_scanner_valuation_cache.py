@@ -9,6 +9,7 @@ from application.use_cases.default_opportunity_scanner import DefaultOpportunity
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -73,6 +74,42 @@ class _OfflineCollector:
         del game, latitude, longitude, max_results
         self.calls += 1
         return [_comparable(f"comparable-{index}", 30.0) for index in range(20)]
+
+
+@pytest.mark.asyncio
+async def test_scanner_uses_injected_detector_with_explicit_zero_threshold() -> None:
+    collector = Mock()
+    collector.collect_comparables = AsyncMock(
+        return_value=[_comparable(f"comparable-{index}", 18.0) for index in range(20)]
+    )
+    configured_detector = Mock(
+        wraps=DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+        )
+    )
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    scanner = DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        arbitrage_detector=configured_detector,
+        opportunity_ranker=ranker,
+    )
+
+    result = await scanner.scan_multiple([_candidate("configured-zero", 12.0)])
+
+    assert len(result.opportunities) == 1
+    assert result.opportunities[0].recommendation is Recommendation.BUY
+    assert result.opportunities[0].net_profit == Decimal("6.0")
+    configured_detector.detect.assert_called_once()
+    ranker.rank.assert_called_once()
+    collector.collect_comparables.assert_awaited_once()
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 0)
 
 
 @pytest.mark.asyncio

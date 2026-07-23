@@ -283,6 +283,11 @@ does not touch the comparable cache or later pipeline, and does not prevent
 subsequent candidates from being valued and ranked. Empty detection remains a
 separate result; `scan_listing()` and the lot scanner keep their prior behavior.
 
+P1.18 distinguishes an omitted individual-detector threshold (`None`) from an
+explicit numeric zero. Defaults remain 10 EUR net profit, 25 percent net profit
+margin and 0.50 confidence. Rule order, comparison operators, reason codes,
+score weights, economics, ranking and lot analysis are unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

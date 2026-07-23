@@ -617,6 +617,189 @@ class TestFieldPropagation:
 class TestCustomThresholds:
     """Test custom threshold configuration."""
 
+    def test_omitted_and_none_thresholds_use_unchanged_defaults(self) -> None:
+        omitted = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
+        explicit_none = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_eur=None,
+            min_net_profit_margin_percent=None,
+            min_confidence_score=None,
+        )
+
+        for detector in (omitted, explicit_none):
+            assert detector.min_net_profit_eur == Decimal("10.0")
+            assert detector.min_net_profit_margin_percent == Decimal("25.0")
+            assert detector.min_confidence_score == 0.5
+
+    def test_all_explicit_zero_thresholds_are_preserved(self) -> None:
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_eur=Decimal("0"),
+            min_net_profit_margin_percent=Decimal("0"),
+            min_confidence_score=0.0,
+        )
+
+        assert detector.min_net_profit_eur == Decimal("0")
+        assert detector.min_net_profit_margin_percent == Decimal("0")
+        assert detector.min_confidence_score == 0.0
+
+    @pytest.mark.parametrize(
+        ("configured", "expected"),
+        [
+            (
+                {"min_net_profit_eur": Decimal("0")},
+                (Decimal("0"), Decimal("25.0"), 0.5),
+            ),
+            (
+                {"min_net_profit_margin_percent": Decimal("0")},
+                (Decimal("10.0"), Decimal("0"), 0.5),
+            ),
+            (
+                {"min_confidence_score": 0.0},
+                (Decimal("10.0"), Decimal("25.0"), 0.0),
+            ),
+        ],
+    )
+    def test_one_zero_does_not_change_other_thresholds(
+        self,
+        configured: dict[str, object],
+        expected: tuple[Decimal, Decimal, float],
+    ) -> None:
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            **configured,  # type: ignore[arg-type]
+        )
+
+        assert (
+            detector.min_net_profit_eur,
+            detector.min_net_profit_margin_percent,
+            detector.min_confidence_score,
+        ) == expected
+
+    def test_positive_custom_thresholds_are_preserved_exactly(self) -> None:
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_eur=Decimal("1.0"),
+            min_net_profit_margin_percent=Decimal("2.0"),
+            min_confidence_score=0.25,
+        )
+
+        assert detector.min_net_profit_eur == Decimal("1.0")
+        assert detector.min_net_profit_margin_percent == Decimal("2.0")
+        assert detector.min_confidence_score == 0.25
+
+    def test_none_and_zero_have_distinct_semantics(self) -> None:
+        none_detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=None
+        )
+        zero_detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+        )
+
+        assert none_detector.min_net_profit_eur == Decimal("10.0")
+        assert zero_detector.min_net_profit_eur == Decimal("0")
+
+    def test_zero_profit_threshold_changes_only_decision(
+        self,
+        sample_listing: CandidateListing,
+        sample_game: DetectedGame,
+    ) -> None:
+        estimate = create_market_estimate(
+            sample_game, 18.0, 0.8, ConfidenceLevel.HIGH
+        )
+        default_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral()
+        ).detect(sample_listing, estimate)
+        zero_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+        ).detect(sample_listing, estimate)
+
+        assert (default_result.recommendation, default_result.reason) == (
+            Recommendation.MAYBE,
+            ReasonCode.LOW_EXPECTED_PROFIT,
+        )
+        assert (zero_result.recommendation, zero_result.reason) == (
+            Recommendation.BUY,
+            ReasonCode.UNDERVALUED,
+        )
+        assert zero_result.opportunity_score == default_result.opportunity_score
+
+    def test_zero_margin_threshold_changes_only_decision(
+        self,
+        sample_game: DetectedGame,
+    ) -> None:
+        listing = CandidateListing(
+            "margin-zero", "GTA V PS4", "", Decimal("34"), "EUR", ""
+        )
+        estimate = create_market_estimate(
+            sample_game, 44.0, 0.8, ConfidenceLevel.HIGH
+        )
+        default_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral()
+        ).detect(listing, estimate)
+        zero_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_margin_percent=Decimal("0"),
+        ).detect(listing, estimate)
+
+        assert (default_result.recommendation, default_result.reason) == (
+            Recommendation.MAYBE,
+            ReasonCode.FAIR_PRICE,
+        )
+        assert (zero_result.recommendation, zero_result.reason) == (
+            Recommendation.BUY,
+            ReasonCode.UNDERVALUED,
+        )
+        assert zero_result.opportunity_score == default_result.opportunity_score
+
+    def test_zero_confidence_threshold_accepts_exact_zero_boundary(
+        self,
+        sample_listing: CandidateListing,
+        sample_game: DetectedGame,
+    ) -> None:
+        estimate = create_market_estimate(
+            sample_game, 25.0, 0.0, ConfidenceLevel.VERY_LOW
+        )
+        default_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral()
+        ).detect(sample_listing, estimate)
+        zero_result = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_confidence_score=0.0
+        ).detect(sample_listing, estimate)
+
+        assert (default_result.recommendation, default_result.reason) == (
+            Recommendation.SKIP,
+            ReasonCode.LOW_CONFIDENCE,
+        )
+        assert (zero_result.recommendation, zero_result.reason) == (
+            Recommendation.BUY,
+            ReasonCode.UNDERVALUED,
+        )
+        assert zero_result.opportunity_score == default_result.opportunity_score
+
+    def test_zero_profit_still_obeys_prior_overpriced_rule(
+        self,
+        sample_game: DetectedGame,
+    ) -> None:
+        listing = CandidateListing(
+            "zero-profit", "GTA V PS4", "", Decimal("20"), "EUR", ""
+        )
+        estimate = create_market_estimate(
+            sample_game, 20.0, 0.8, ConfidenceLevel.HIGH
+        )
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_eur=Decimal("0"),
+            min_net_profit_margin_percent=Decimal("0"),
+            min_confidence_score=0.0,
+        )
+
+        result = detector.detect(listing, estimate)
+
+        assert result.net_profit == Decimal("0")
+        assert result.recommendation is Recommendation.SKIP
+        assert result.reason is ReasonCode.OVERPRICED
+
     def test_custom_min_profit(
         self,
         sample_listing: CandidateListing,

@@ -378,6 +378,11 @@ at the per-candidate iteration boundary. Such a failure becomes an application
 for that candidate. This application concern is not duplicated in Domain,
 Infrastructure or the lot-scanning use case.
 
+The individual arbitrage detector owns its three optional decision thresholds.
+Dependency injection supplies the configured detector to Application unchanged;
+omission or `None` selects the existing defaults, while explicit zero is a real
+configuration value. The lot analyzer has separate rules and is unaffected.
+
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a
 number, or removes leading zeroes. Wallapop infrastructure reads the real `id`

@@ -53,11 +53,21 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
                 "min_net_profit_margin_percent", min_net_profit_margin_percent
             )
         self.economic_policy = economic_policy
-        self.min_net_profit_eur = min_net_profit_eur or self.MIN_NET_PROFIT_EUR
-        self.min_net_profit_margin_percent = (
-            min_net_profit_margin_percent or self.MIN_NET_PROFIT_MARGIN_PERCENT
+        self.min_net_profit_eur = (
+            self.MIN_NET_PROFIT_EUR
+            if min_net_profit_eur is None
+            else min_net_profit_eur
         )
-        self.min_confidence_score = min_confidence_score or self.MIN_CONFIDENCE_SCORE
+        self.min_net_profit_margin_percent = (
+            self.MIN_NET_PROFIT_MARGIN_PERCENT
+            if min_net_profit_margin_percent is None
+            else min_net_profit_margin_percent
+        )
+        self.min_confidence_score = (
+            self.MIN_CONFIDENCE_SCORE
+            if min_confidence_score is None
+            else min_confidence_score
+        )
 
     def detect(
         self,

@@ -60,6 +60,13 @@ The detector uses three key thresholds to determine whether a listing is worth p
 | **Minimum Margin** | 25% | Relative profit margin required |
 | **Minimum Confidence** | 0.50 | Confidence in market price estimate |
 
+Omitting a threshold or passing `None` selects the unchanged default shown
+above. Passing an explicit numeric zero preserves zero; zero does not mean
+"use the default" and is not normalized to a positive value. The existing
+comparison operators and rule order are unchanged, so a zero configuration can
+legitimately change `Recommendation` and its existing reason code. It does not
+change the `opportunity_score` formula or weights.
+
 ## Recommendation Types
 
 ### BUY - Clear Opportunity

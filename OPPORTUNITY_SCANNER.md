@@ -50,6 +50,12 @@ CandidateListing (lot priced at 40 EUR)
 
 The candidate is never a market observation and cannot enter the price dataset.
 
+The scanner uses the injected `IArbitrageOpportunityDetector` instance as-is;
+it does not reconstruct detector configuration. Optional detector thresholds
+use their documented defaults only when omitted or set to `None`. Explicit
+numeric zero remains zero and can therefore affect the recommendation without
+changing market valuation, economics, score formula or ranking.
+
 ## Execution-scoped comparable reuse (P1.1/P1.6)
 
 Previously, `scan_multiple()` ran the complete market valuation pipeline once per
