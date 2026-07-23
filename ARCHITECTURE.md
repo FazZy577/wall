@@ -365,6 +365,14 @@ publication uniqueness. After application-level candidate exclusion and
 currency selection, it validates all inputs and stably retains the first
 `ComparableListing` for each `(DetectedGame.platform, listing_id)`. The policy
 is local to a dataset build and never mutates the raw execution-scoped cache.
+
+Publication identifiers are opaque strings validated by the shared Domain
+function `validate_listing_id`. Domain never strips, changes case, parses a
+number, or removes leading zeroes. Wallapop infrastructure reads the real `id`
+field from the API payload, trims surrounding whitespace for strings, converts
+confirmed integer payload IDs to strings, and rejects missing, empty, boolean,
+float, or otherwise unsupported values. No URL or content-derived fallback is
+used.
 There is no automatic router between these use cases. Physical quantities
 such as "2 copies of GTA V" are not modeled; canonical duplicates represent
 one valuation identity.

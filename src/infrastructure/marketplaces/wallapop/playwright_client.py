@@ -21,6 +21,9 @@ from playwright.async_api import (
 )
 
 from domain.interfaces.marketplace_search import IMarketplaceSearch
+from infrastructure.marketplaces.wallapop.listing_id import (
+    normalize_wallapop_listing_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -256,11 +259,12 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
 
                 for item in page_items:
                     normalized = self._normalize_item(item)
-                    listing_id = str(normalized.get("id", ""))
-                    if listing_id and listing_id in seen_ids:
+                    if normalized is None:
                         continue
-                    if listing_id:
-                        seen_ids.add(listing_id)
+                    listing_id = normalized["id"]
+                    if listing_id in seen_ids:
+                        continue
+                    seen_ids.add(listing_id)
                     listings.append(normalized)
                     if len(listings) >= max_results:
                         return listings[:max_results]
@@ -330,8 +334,12 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
         return items, next_page if isinstance(next_page, str) and next_page else None
 
     @staticmethod
-    def _normalize_item(item: dict[str, Any]) -> dict[str, Any]:
+    def _normalize_item(item: dict[str, Any]) -> dict[str, Any] | None:
         normalized: dict[str, Any] = dict(item)
+        listing_id = normalize_wallapop_listing_id(item.get("id"))
+        if listing_id is None:
+            return None
+        normalized["id"] = listing_id
         price = item.get("price")
         if isinstance(price, dict):
             normalized["price"] = price.get("amount")

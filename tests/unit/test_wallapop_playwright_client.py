@@ -251,6 +251,26 @@ class TestWallapopPlaywrightClient:
         assert result[0]["currency"] == "EUR"
 
     @pytest.mark.asyncio
+    async def test_normalizes_real_string_and_integer_ids_and_discards_invalid_ids(
+        self,
+    ) -> None:
+        items = [
+            {**make_listing(1), "id": " 00123 "},
+            {**make_listing(2), "id": 42},
+            {**make_listing(3), "id": ""},
+            {**make_listing(4), "id": None},
+            {**make_listing(5), "id": True},
+            {**make_listing(6), "id": 12.5},
+        ]
+        harness = PlaywrightHarness([[make_response(payload=make_payload(items))]])
+        client = harness.build_client()
+
+        async with client:
+            result = await client.search_listings("gta 5 ps4", 40.4, -3.7, 10)
+
+        assert [item["id"] for item in result] == ["00123", "42"]
+
+    @pytest.mark.asyncio
     async def test_multiple_pages_are_loaded_through_the_page(self) -> None:
         first = make_response(
             payload=make_payload([make_listing(1), make_listing(2)], next_page="opaque-token")

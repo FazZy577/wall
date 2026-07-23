@@ -11,6 +11,7 @@ from decimal import Decimal
 from domain._decimal import require_decimal
 from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.detected_game import DetectedGame
+from domain.listing_id import validate_listing_id
 
 
 class InvalidComparableListingError(TypeError):
@@ -40,6 +41,7 @@ class PriceObservation:
     raw_listing: dict[str, str | Decimal]
 
     def __post_init__(self) -> None:
+        validate_listing_id(self.listing_id)
         require_decimal("price", self.price)
         validate_currency_code(self.currency)
 

@@ -524,3 +524,9 @@ dataset. Deduplication is local to each build: the shared raw collection is not
 mutated, another candidate performs its own exclusion, and no state crosses
 games or scans. `sample_size`, statistics, outliers, confidence and estimation
 therefore use unique publication identities rather than repeated snapshots.
+
+All cached `ComparableListing` objects already carry a validated external
+`listing_id`. Wallapop normalization happens before Domain construction;
+missing or unsupported IDs are discarded rather than replaced with URL,
+title, seller, price, UUID, or another synthetic fallback. Candidate exclusion
+uses exact string equality and therefore preserves case and leading zeroes.

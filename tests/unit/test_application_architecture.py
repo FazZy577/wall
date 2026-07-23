@@ -59,6 +59,40 @@ def test_comparable_deduplication_has_one_infrastructure_boundary() -> None:
     assert other_policy_locations == []
 
 
+def test_listing_id_validation_stays_in_domain_and_external_normalization_at_edge() -> None:
+    candidate_source = (
+        SRC_ROOT / "domain/entities/candidate_listing.py"
+    ).read_text(encoding="utf-8")
+    comparable_source = (
+        SRC_ROOT / "domain/entities/comparable_listing.py"
+    ).read_text(encoding="utf-8")
+    observation_source = (
+        SRC_ROOT / "domain/interfaces/price_dataset_builder.py"
+    ).read_text(encoding="utf-8")
+    validator_source = (SRC_ROOT / "domain/listing_id.py").read_text(encoding="utf-8")
+    builder_source = (
+        SRC_ROOT
+        / "infrastructure/dataset_builders/default_price_dataset_builder.py"
+    ).read_text(encoding="utf-8")
+    application_source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (SRC_ROOT / "application").rglob("*.py")
+    )
+
+    assert "validate_listing_id(self.listing_id)" in candidate_source
+    assert "validate_listing_id(self.listing_id)" in comparable_source
+    assert "validate_listing_id(self.listing_id)" in observation_source
+    assert ".strip()" not in builder_source
+    assert "listing_id.strip" not in application_source
+    assert "casefold" not in validator_source
+    assert "lstrip" not in validator_source
+    assert not any(
+        isinstance(node, ast.ClassDef) and node.name == "ListingId"
+        for path in (SRC_ROOT / "domain").rglob("*.py")
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
+    )
+
+
 def test_economic_policy_is_canonical_and_required_by_economic_components() -> None:
     detector_parameter = inspect.signature(
         DefaultArbitrageOpportunityDetector

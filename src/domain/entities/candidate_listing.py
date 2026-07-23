@@ -11,6 +11,7 @@ from typing import Any
 
 from domain._decimal import require_decimal
 from domain.currency import validate_currency_code
+from domain.listing_id import validate_listing_id
 
 
 @dataclass
@@ -45,8 +46,7 @@ class CandidateListing:
 
     def __post_init__(self) -> None:
         """Validate fields after initialization."""
-        if not self.listing_id:
-            raise ValueError("listing_id must not be empty")
+        validate_listing_id(self.listing_id)
         if not self.title:
             raise ValueError("title must not be empty")
         require_decimal("price", self.price, non_negative=True)

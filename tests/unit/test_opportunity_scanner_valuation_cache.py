@@ -370,19 +370,26 @@ async def test_each_candidate_excludes_only_itself_from_cached_comparables(
 
 
 @pytest.mark.asyncio
-async def test_absent_candidate_and_empty_comparable_ids_are_preserved(
+async def test_candidate_exclusion_preserves_leading_zeros_and_case(
     cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
 ) -> None:
     scanner, mocks = cache_scanner
     detected_game = game()
     market = [
-        comparable("", detected_game, 10.0),
-        comparable("A", detected_game, 12.0),
-        comparable("B", detected_game, 14.0),
-        comparable("C", detected_game, 16.0),
+        comparable("00123", detected_game, 10.0),
+        comparable("123", detected_game, 12.0),
+        comparable("ABC", detected_game, 14.0),
+        comparable("abc", detected_game, 16.0),
     ]
     mocks["collector"].collect_comparables.return_value = market
 
-    await scanner.scan_listing(listing("E", detected_game))
+    await scanner.scan_multiple(
+        [listing("00123", detected_game), listing("ABC", detected_game)]
+    )
 
-    assert mocks["builder"].build.call_args.args[0] == market
+    assert [
+        item.listing_id for item in mocks["builder"].build.call_args_list[0].args[0]
+    ] == ["123", "ABC", "abc"]
+    assert [
+        item.listing_id for item in mocks["builder"].build.call_args_list[1].args[0]
+    ] == ["00123", "123", "abc"]

@@ -266,6 +266,11 @@ P1.14 makes dataset sample size reflect unique marketplace publications.
 `(platform, listing_id)` after strict validation. Candidate exclusion, currency
 filtering, raw comparable caching, statistics and business rules are unchanged.
 
+P1.15 closes the remaining identity invariant: `CandidateListing`,
+`ComparableListing`, and `PriceObservation` require the same non-empty,
+already-trimmed string `listing_id`. Wallapop adapters normalize only the real
+payload `id`; missing or invalid IDs are discarded without synthetic fallback.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

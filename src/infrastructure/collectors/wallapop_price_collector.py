@@ -15,6 +15,9 @@ from domain.interfaces.comparable_filter import ComparableFilterInput, IComparab
 from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from domain.interfaces.price_collector import IPriceCollector
+from infrastructure.marketplaces.wallapop.listing_id import (
+    normalize_wallapop_listing_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +201,7 @@ class WallapopPriceCollector(IPriceCollector):
             ComparableListing if valid comparable, None otherwise
         """
         # Extract listing data
-        listing_id = str(raw_listing.get("id", ""))
+        listing_id = normalize_wallapop_listing_id(raw_listing.get("id"))
         title = raw_listing.get("title", "")
         description = raw_listing.get("description", "")
         price = raw_listing.get("price")
@@ -206,7 +209,7 @@ class WallapopPriceCollector(IPriceCollector):
         web_slug = raw_listing.get("web_slug", "")
 
         # Validate required fields
-        if not listing_id or not title or price is None:
+        if listing_id is None or not title or price is None:
             return None
 
         # Normalize external numeric data exactly once at the infrastructure edge.

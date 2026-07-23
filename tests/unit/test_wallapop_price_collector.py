@@ -196,6 +196,51 @@ class TestListingProcessing:
         assert result.url == "https://es.wallapop.com/item/gta-v-ps4-123456"
         assert result.raw_listing is raw_listing
 
+    @pytest.mark.parametrize(
+        ("raw_id", "expected"),
+        [("ABC-001", "ABC-001"), (" 00123 ", "00123"), (123456, "123456")],
+    )
+    def test_normalizes_supported_external_listing_ids(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        raw_id: object,
+        expected: str,
+    ) -> None:
+        raw_listing = {
+            "id": raw_id,
+            "title": "GTA V PS4",
+            "description": "Juego",
+            "price": 15,
+            "currency": "EUR",
+        }
+        mock_game_detector.detect_games.return_value = [target_game]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        result = price_collector._process_listing(raw_listing, target_game)
+
+        assert result is not None
+        assert result.listing_id == expected
+
+    @pytest.mark.parametrize("raw_id", [None, "", "   ", True, False, 123.0])
+    def test_rejects_missing_or_unsupported_external_listing_ids(
+        self,
+        price_collector: WallapopPriceCollector,
+        target_game: DetectedGame,
+        raw_id: object,
+    ) -> None:
+        raw_listing = {
+            "id": raw_id,
+            "title": "GTA V PS4",
+            "description": "Juego",
+            "price": 15,
+            "currency": "EUR",
+        }
+
+        assert price_collector._process_listing(raw_listing, target_game) is None
+
     def test_game_not_detected(
         self,
         price_collector: WallapopPriceCollector,
@@ -399,6 +444,42 @@ class TestCollectComparables:
         assert all(isinstance(c, ComparableListing) for c in result)
         assert result[0].price == 15.0
         assert result[1].price == 18.0
+
+    @pytest.mark.asyncio
+    async def test_invalid_external_ids_never_enter_canonical_collection(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+    ) -> None:
+        mock_wallapop_client.search_listings.return_value = [
+            {
+                "id": None,
+                "title": "Invalid",
+                "description": "",
+                "price": 10,
+                "currency": "EUR",
+            },
+            {
+                "id": " valid-id ",
+                "title": "GTA V PS4",
+                "description": "",
+                "price": 15,
+                "currency": "EUR",
+            },
+        ]
+        mock_game_detector.detect_games.return_value = [target_game]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        result = await price_collector.collect_comparables(
+            game=target_game,
+            latitude=40.4168,
+            longitude=-3.7038,
+        )
+
+        assert [item.listing_id for item in result] == ["valid-id"]
 
     @pytest.mark.asyncio
     async def test_empty_search_results(

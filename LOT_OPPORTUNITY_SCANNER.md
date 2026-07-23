@@ -200,3 +200,8 @@ discards later valid duplicates without mutating collector output. Each game
 gets an independent seen set, so there is no global deduplication between game
 valuations. Coverage and `GameValuation.sample_size` use the resulting unique
 market observations.
+
+Each comparable entering the lot pipeline has a non-empty canonical
+`listing_id`. Results without a real Wallapop ID are discarded at the adapter
+boundary, so they cannot create a misleading `GameValuation`; other canonical
+comparables and games continue under the existing partial-failure rules.

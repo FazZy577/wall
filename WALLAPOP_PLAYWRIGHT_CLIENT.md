@@ -1,5 +1,13 @@
 # Wallapop Playwright Client
 
+## Listing IDs
+
+The client captures the official `id` field from the Wallapop search-section
+API response. It trims external whitespace on string IDs and converts integer
+IDs confirmed by the legacy payload contract. Items with absent, empty,
+boolean, float, or unsupported IDs are omitted. The full URL and `web_slug`
+are not identity fallbacks, and case or leading zeroes are never normalized.
+
 ## Motivo
 
 El cliente HTTP histórico usa `/api/v3/general/search`. Ese endpoint está

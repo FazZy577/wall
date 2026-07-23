@@ -1,5 +1,14 @@
 # Price Collector Module
 
+## Canonical listing identity
+
+Wallapop comparables obtain `listing_id` exclusively from the payload's real
+`id` field. Strings are trimmed at this infrastructure boundary and confirmed
+integer IDs are converted with `str`; missing, empty, boolean, float, or other
+unsupported values are discarded. The collector never substitutes URL,
+`web_slug`, title, seller, price, position, or a generated identifier. The
+resulting `ComparableListing` preserves capitalization and leading zeroes.
+
 ## Overview
 
 The Price Collector module obtains **comparable listings** for a video game by orchestrating three existing components:

@@ -7,6 +7,7 @@ from typing import Any
 from domain._decimal import require_decimal
 from domain.currency import validate_currency_code
 from domain.entities.detected_game import DetectedGame
+from domain.listing_id import validate_listing_id
 
 
 @dataclass
@@ -23,5 +24,6 @@ class ComparableListing:
     raw_listing: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        validate_listing_id(self.listing_id)
         require_decimal("price", self.price)
         validate_currency_code(self.currency)

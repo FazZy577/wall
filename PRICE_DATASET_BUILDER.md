@@ -116,6 +116,11 @@ copy has a different price or title. Different listing IDs remain distinct,
 and the same listing ID on different platforms remains distinct. The input
 collection and any execution-scoped raw comparable cache are not mutated.
 
+`listing_id` is an opaque, mandatory string validated by Domain before the
+builder runs. It cannot be empty, whitespace-only, surrounded by whitespace,
+or supplied as another Python type. Capitalization and leading zeroes are
+significant, so `00123` differs from `123` and `ABC` differs from `abc`.
+
 ## Responsibilities
 
 ### What This Module DOES
