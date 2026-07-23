@@ -359,6 +359,12 @@ Both application scanners create `ListingText` from a candidate and invoke the
 domain `IGameDetector`. The individual use case accepts exactly one detected
 game; the lot use case accepts and stably deduplicates multiple detected games.
 Neither use case treats the candidate itself as a market comparable.
+
+`DefaultPriceDatasetBuilder` is the single production boundary for comparable
+publication uniqueness. After application-level candidate exclusion and
+currency selection, it validates all inputs and stably retains the first
+`ComparableListing` for each `(DetectedGame.platform, listing_id)`. The policy
+is local to a dataset build and never mutates the raw execution-scoped cache.
 There is no automatic router between these use cases. Physical quantities
 such as "2 copies of GTA V" are not modeled; canonical duplicates represent
 one valuation identity.

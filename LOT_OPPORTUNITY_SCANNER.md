@@ -190,3 +190,13 @@ For each game, the scanner excludes the candidate ID and then selects only raw
 comparables matching the lot currency. No compatible comparables produces a
 `GameValuationFailure` naming that currency; other games continue. Builder and
 analyzer provide strict defenses against mixed currencies.
+
+## P1.14 unique comparables per game dataset
+
+For each detected game, candidate exclusion and lot-currency filtering still
+occur before dataset construction. The shared `DefaultPriceDatasetBuilder`
+then preserves the first occurrence of each `(platform, listing_id)` and
+discards later valid duplicates without mutating collector output. Each game
+gets an independent seen set, so there is no global deduplication between game
+valuations. Coverage and `GameValuation.sample_size` use the resulting unique
+market observations.

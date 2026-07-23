@@ -32,6 +32,33 @@ from infrastructure.detectors.default_arbitrage_opportunity_detector import (
 SRC_ROOT = Path(__file__).parents[2] / "src"
 
 
+def test_comparable_deduplication_has_one_infrastructure_boundary() -> None:
+    """Comparable identity policy belongs only to the dataset builder."""
+    builder_path = (
+        SRC_ROOT / "infrastructure" / "dataset_builders" / "default_price_dataset_builder.py"
+    )
+    builder_source = builder_path.read_text(encoding="utf-8")
+
+    assert "seen_identities" in builder_source
+    assert "listing.detected_game.platform" in builder_source
+    assert "listing.listing_id" in builder_source
+
+    other_policy_locations = []
+    policy_free_roots = (
+        SRC_ROOT / "application",
+        SRC_ROOT / "infrastructure" / "statistics",
+        SRC_ROOT / "infrastructure" / "estimators",
+        SRC_ROOT / "infrastructure" / "outliers",
+    )
+    for root in policy_free_roots:
+        if not root.exists():
+            continue
+        for source_file in root.rglob("*.py"):
+            if "seen_identities" in source_file.read_text(encoding="utf-8"):
+                other_policy_locations.append(source_file)
+    assert other_policy_locations == []
+
+
 def test_economic_policy_is_canonical_and_required_by_economic_components() -> None:
     detector_parameter = inspect.signature(
         DefaultArbitrageOpportunityDetector

@@ -55,13 +55,17 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             logger.warning("No comparable listings provided")
             return self._build_empty_dataset(currency)
 
-        if any(isinstance(listing, CandidateListing) for listing in comparable_listings):
-            raise InvalidComparableListingError(
-                "CandidateListing cannot be used as a market comparable"
-            )
-
-        # Cast to ComparableListing for type safety
-        listings = [listing for listing in comparable_listings if isinstance(listing, ComparableListing)]
+        listings: list[ComparableListing] = []
+        for listing in comparable_listings:
+            if isinstance(listing, CandidateListing):
+                raise InvalidComparableListingError(
+                    "CandidateListing cannot be used as a market comparable"
+                )
+            if not isinstance(listing, ComparableListing):
+                raise InvalidComparableListingError(
+                    "Only ComparableListing can be used as a market comparable"
+                )
+            listings.append(listing)
 
         if not listings:
             logger.warning("No valid ComparableListing objects provided")
@@ -75,12 +79,18 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
         target_game = listings[0].detected_game
 
         observations: list[PriceObservation] = []
+        seen_identities: set[tuple[Platform, str]] = set()
         discarded = 0
 
         for listing in listings:
             try:
                 observation = self._extract_observation(listing)
                 if observation:
+                    identity = (listing.detected_game.platform, listing.listing_id)
+                    if identity in seen_identities:
+                        discarded += 1
+                        continue
+                    seen_identities.add(identity)
                     observations.append(observation)
                 else:
                     discarded += 1

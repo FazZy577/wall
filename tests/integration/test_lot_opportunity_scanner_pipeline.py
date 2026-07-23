@@ -95,9 +95,7 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
     )
     collector = _Collector(candidate.listing_id)
     builder = Mock(wraps=DefaultPriceDatasetBuilder())
-    analyzer = Mock(
-        wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
-    )
+    analyzer = Mock(wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral()))
     scanner = DefaultLotOpportunityScanner(
         game_detector=_Detector(games),
         price_collector=collector,
@@ -127,9 +125,7 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
 @pytest.mark.asyncio
 async def test_lot_pipeline_creates_valuation_from_zero_iqr_game() -> None:
     game = _game("GTA V")
-    candidate = CandidateListing(
-        "zero-iqr-lot", "GTA V", "", Decimal("5"), "EUR", "url"
-    )
+    candidate = CandidateListing("zero-iqr-lot", "GTA V", "", Decimal("5"), "EUR", "url")
     collector = Mock()
     collector.collect_comparables = Mock()
 
@@ -150,9 +146,7 @@ async def test_lot_pipeline_creates_valuation_from_zero_iqr_game() -> None:
         return result
 
     outliers.remove_outliers.side_effect = remove_outliers
-    analyzer = Mock(
-        wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
-    )
+    analyzer = Mock(wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral()))
     scanner = DefaultLotOpportunityScanner(
         game_detector=_Detector([game]),
         price_collector=collector,
@@ -170,4 +164,56 @@ async def test_lot_pipeline_creates_valuation_from_zero_iqr_game() -> None:
     assert removal.clean_dataset.sample_size == 7
     assert len(result.game_valuations) == 1
     assert result.game_valuations[0].currency == "EUR"
+    analyzer.analyze.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_lot_pipeline_uses_unique_comparable_identities_per_game() -> None:
+    gta = _game("GTA V")
+    rdr2 = _game("RDR2")
+    candidate = CandidateListing("deduplicated-lot", "GTA V + RDR2", "", Decimal("5"), "EUR", "url")
+    collector = Mock()
+
+    async def collect(
+        game: DetectedGame,
+        **_kwargs: object,
+    ) -> list[ComparableListing]:
+        if game.canonical_name == "GTA V":
+            return [
+                ComparableListing("G1", "GTA V", "", Decimal("10"), "EUR", game, "url"),
+                ComparableListing("G1", "GTA V", "", Decimal("99"), "EUR", game, "url"),
+                ComparableListing("G2", "GTA V", "", Decimal("20"), "EUR", game, "url"),
+            ]
+        return [
+            ComparableListing("R1", "RDR2", "", Decimal("30"), "EUR", game, "url"),
+            ComparableListing("R2", "RDR2", "", Decimal("40"), "EUR", game, "url"),
+        ]
+
+    collector.collect_comparables.side_effect = collect
+    real_builder = DefaultPriceDatasetBuilder()
+    dataset_ids: list[list[str]] = []
+    builder = Mock()
+
+    def build(comparables: list[object], currency: str) -> object:
+        dataset = real_builder.build(comparables, currency)
+        dataset_ids.append([item.listing_id for item in dataset.observations])
+        return dataset
+
+    builder.build.side_effect = build
+    analyzer = Mock(wraps=DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral()))
+    scanner = DefaultLotOpportunityScanner(
+        game_detector=_Detector([gta, rdr2]),
+        price_collector=collector,
+        dataset_builder=builder,
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+    result = await scanner.scan_lot(candidate)
+
+    assert dataset_ids == [["G1", "G2"], ["R1", "R2"]]
+    assert [valuation.observations_used for valuation in result.game_valuations] == [2, 2]
+    assert result.successfully_valued_games == 2
     analyzer.analyze.assert_called_once()

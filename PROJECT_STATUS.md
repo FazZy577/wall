@@ -261,6 +261,11 @@ datasets, and strict checks reject any remaining mix. Decimal formulas, ranking,
 scores and partial-lot rules are unchanged. No Currency enum, Money, FX conversion,
 exchange rate, rounding, `quantize`, or JSON serialization was introduced.
 
+P1.14 makes dataset sample size reflect unique marketplace publications.
+`DefaultPriceDatasetBuilder` now retains the first valid occurrence of each
+`(platform, listing_id)` after strict validation. Candidate exclusion, currency
+filtering, raw comparable caching, statistics and business rules are unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

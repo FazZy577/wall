@@ -513,3 +513,14 @@ cached per game identity. After candidate-ID exclusion, each candidate selects
 only comparables with its own currency before the builder. EUR and USD candidates
 may reuse one network response but never one dataset. No compatible comparables
 produces `No comparable listings available in currency <CODE>`.
+
+## P1.14 unique market observations
+
+After the scanner excludes the current candidate and selects comparables in
+the candidate currency, `DefaultPriceDatasetBuilder` validates every item and
+keeps the first occurrence of each `(platform, listing_id)`. Thus one
+publication contributes at most one `PriceObservation` to a candidate's
+dataset. Deduplication is local to each build: the shared raw collection is not
+mutated, another candidate performs its own exclusion, and no state crosses
+games or scans. `sample_size`, statistics, outliers, confidence and estimation
+therefore use unique publication identities rather than repeated snapshots.

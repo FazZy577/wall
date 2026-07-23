@@ -11,13 +11,17 @@ from unittest.mock import Mock
 import pytest
 
 from domain.currency import CurrencyMismatchError
+from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
     Platform,
 )
-from domain.interfaces.price_dataset_builder import PriceDataset
+from domain.interfaces.price_dataset_builder import (
+    InvalidComparableListingError,
+    PriceDataset,
+)
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
@@ -561,3 +565,119 @@ class TestNoStatisticalCalculations:
         # Prices should be exactly as provided
         assert result.observations[0].price == Decimal("15.99")
         assert result.observations[1].price == Decimal("20.50")
+
+
+class TestCanonicalComparableDeduplication:
+    """A marketplace publication contributes at most one observation."""
+
+    def test_exact_duplicates_keep_first_and_do_not_mutate_input(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        first = create_comparable_listing("a", "A", Decimal("10"), game=target_game)
+        repeated = create_comparable_listing("a", "A", Decimal("10"), game=target_game)
+        second = create_comparable_listing("b", "B", Decimal("20"), game=target_game)
+        listings = [first, repeated, second]
+
+        result = dataset_builder.build(listings, "EUR")
+
+        assert [(item.listing_id, item.price) for item in result.observations] == [
+            ("a", Decimal("10")),
+            ("b", Decimal("20")),
+        ]
+        assert result.sample_size == 2
+        assert listings == [first, repeated, second]
+
+    def test_first_occurrence_wins_when_duplicate_prices_disagree(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        first = create_comparable_listing("a", "First", Decimal("10"), game=target_game)
+        repeated = create_comparable_listing("a", "Later", Decimal("99"), game=target_game)
+
+        result = dataset_builder.build([first, repeated], "EUR")
+
+        assert result.sample_size == 1
+        assert result.observations[0].price == Decimal("10")
+        assert result.observations[0].title == "First"
+
+    def test_same_listing_id_on_different_platforms_is_distinct(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        ps5_game = DetectedGame(
+            canonical_name=target_game.canonical_name,
+            matched_text="gta v",
+            platform=Platform.PS5,
+            confidence=1.0,
+            detection_method=DetectionMethod.EXACT_MATCH,
+        )
+        ps4 = create_comparable_listing("123", "GTA V", Decimal("10"), game=target_game)
+        ps5 = create_comparable_listing("123", "GTA V", Decimal("20"), game=ps5_game)
+
+        result = dataset_builder.build([ps4, ps5], "EUR")
+
+        assert [(item.platform, item.price) for item in result.observations] == [
+            (Platform.PS4, Decimal("10")),
+            (Platform.PS5, Decimal("20")),
+        ]
+
+    def test_similar_listings_with_different_ids_are_distinct(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        first = create_comparable_listing("a", "Same title", Decimal("10"), game=target_game)
+        second = create_comparable_listing("b", "Same title", Decimal("10"), game=target_game)
+
+        result = dataset_builder.build([first, second], "EUR")
+
+        assert [item.listing_id for item in result.observations] == ["a", "b"]
+
+    def test_currency_validation_precedes_duplicate_elimination(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        eur = create_comparable_listing("a", "A", Decimal("10"), "EUR", target_game)
+        usd = create_comparable_listing("a", "A", Decimal("10"), "USD", target_game)
+
+        with pytest.raises(CurrencyMismatchError, match="expected EUR, got USD"):
+            dataset_builder.build([eur, usd], "EUR")
+
+    def test_wrong_domain_type_is_not_hidden_after_valid_comparable(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        comparable = create_comparable_listing("a", "A", Decimal("10"), game=target_game)
+        candidate = CandidateListing(
+            listing_id="a",
+            title="A candidate",
+            description="",
+            price=Decimal("10"),
+            currency="EUR",
+            url="https://example.com/candidate/a",
+        )
+
+        with pytest.raises(
+            InvalidComparableListingError,
+            match="CandidateListing cannot be used as a market comparable",
+        ):
+            dataset_builder.build([comparable, candidate], "EUR")
+
+    def test_deduplication_state_is_local_to_each_build(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+    ) -> None:
+        comparable = create_comparable_listing("a", "A", Decimal("10"), game=target_game)
+
+        first = dataset_builder.build([comparable, comparable], "EUR")
+        second = dataset_builder.build([comparable], "EUR")
+
+        assert first.sample_size == 1
+        assert second.sample_size == 1

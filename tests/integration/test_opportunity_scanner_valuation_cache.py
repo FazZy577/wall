@@ -76,13 +76,10 @@ class _OfflineCollector:
 
 
 @pytest.mark.asyncio
-
 async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formulas() -> None:
     collector = _OfflineCollector()
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
-    detector = Mock(
-        wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
-    )
+    detector = Mock(wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral()))
     game_detector = Mock()
     game_detector.detect_games.return_value = [_game()]
     scanner = DefaultOpportunityScanner(
@@ -112,7 +109,6 @@ async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formu
 
 
 @pytest.mark.asyncio
-
 async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
     candidate = CandidateListing(
         listing_id="lot-30",
@@ -139,9 +135,7 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
         statistics=DefaultPriceStatistics(),
         outlier_removal=DefaultOutlierRemoval(),
         market_estimator=DefaultMarketPriceEstimator(),
-        arbitrage_detector=DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral()
-        ),
+        arbitrage_detector=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral()),
         opportunity_ranker=DefaultOpportunityRanker(),
     )
     scanner.price_collector.collect_comparables = AsyncMock(return_value=comparables)
@@ -165,9 +159,9 @@ async def test_candidate_lot_price_never_enters_comparable_dataset() -> None:
 @pytest.mark.asyncio
 async def test_individual_pipeline_keeps_complete_heterogeneous_zero_iqr_dataset() -> None:
     candidate = _candidate("zero-iqr", 5.0)
-    comparables = [
-        _comparable(f"ten-{index}", 10.0) for index in range(6)
-    ] + [_comparable("extreme", 100.0)]
+    comparables = [_comparable(f"ten-{index}", 10.0) for index in range(6)] + [
+        _comparable("extreme", 100.0)
+    ]
     collector = Mock()
     collector.collect_comparables = AsyncMock(return_value=comparables)
     game_detector = Mock()
@@ -182,9 +176,7 @@ async def test_individual_pipeline_keeps_complete_heterogeneous_zero_iqr_dataset
 
     outliers.remove_outliers.side_effect = remove_outliers
     estimator = Mock(wraps=DefaultMarketPriceEstimator())
-    detector = Mock(
-        wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
-    )
+    detector = Mock(wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral()))
     scanner = DefaultOpportunityScanner(
         game_detector=game_detector,
         price_collector=collector,
@@ -207,3 +199,94 @@ async def test_individual_pipeline_keeps_complete_heterogeneous_zero_iqr_dataset
     assert opportunity is not None
     detector.detect.assert_called_once()
     assert opportunity.currency == "EUR"
+
+
+@pytest.mark.asyncio
+async def test_shared_raw_collection_is_deduplicated_per_candidate_without_mutation() -> None:
+    raw_comparables = [
+        _comparable("A", 10.0),
+        _comparable("A", 99.0),
+        _comparable("B", 20.0),
+        _comparable("C", 30.0),
+        _comparable("C", 88.0),
+    ]
+    collector = Mock()
+    collector.collect_comparables = AsyncMock(return_value=raw_comparables)
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    real_builder = DefaultPriceDatasetBuilder()
+    built_datasets: list[object] = []
+    builder = Mock()
+
+    def build(comparables: list[object], currency: str) -> object:
+        dataset = real_builder.build(comparables, currency)
+        built_datasets.append(dataset)
+        return dataset
+
+    builder.build.side_effect = build
+    estimator = Mock(wraps=DefaultMarketPriceEstimator())
+    detector = Mock(wraps=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral()))
+    scanner = DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=builder,
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=estimator,
+        arbitrage_detector=detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
+    )
+    candidates = [_candidate(f"candidate-{index}", 5.0) for index in range(5)]
+
+    result = await scanner.scan_multiple(candidates)
+
+    assert collector.collect_comparables.await_count == 1
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 4)
+    assert builder.build.call_count == 5
+    assert estimator.estimate.call_count == 5
+    assert detector.detect.call_count == 5
+    assert [dataset.sample_size for dataset in built_datasets] == [3] * 5
+    assert [item.listing_id for item in raw_comparables] == ["A", "A", "B", "C", "C"]
+    assert [item.price for item in raw_comparables] == [10.0, 99.0, 20.0, 30.0, 88.0]
+
+
+@pytest.mark.asyncio
+async def test_candidate_exclusion_is_specific_before_local_deduplication() -> None:
+    raw_comparables = [
+        _comparable("A", 10.0),
+        _comparable("A", 11.0),
+        _comparable("B", 20.0),
+        _comparable("B", 21.0),
+        _comparable("C", 30.0),
+    ]
+    collector = Mock()
+    collector.collect_comparables = AsyncMock(return_value=raw_comparables)
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    real_builder = DefaultPriceDatasetBuilder()
+    dataset_ids: list[list[str]] = []
+    builder = Mock()
+
+    def build(comparables: list[object], currency: str) -> object:
+        dataset = real_builder.build(comparables, currency)
+        dataset_ids.append([item.listing_id for item in dataset.observations])
+        return dataset
+
+    builder.build.side_effect = build
+    scanner = DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=builder,
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        arbitrage_detector=DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral()),
+        opportunity_ranker=DefaultOpportunityRanker(),
+    )
+
+    result = await scanner.scan_multiple([_candidate("A", 5.0), _candidate("B", 5.0)])
+
+    assert dataset_ids == [["B", "C"], ["A", "C"]]
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+    assert collector.collect_comparables.await_count == 1
+    assert [item.listing_id for item in raw_comparables] == ["A", "A", "B", "B", "C"]

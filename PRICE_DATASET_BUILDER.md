@@ -53,6 +53,8 @@ Infrastructure Layer (Implementations):
 - **No Statistical Logic:** Purely transformation, no calculations
 - **Error Resilience:** Continues processing on individual failures
 - **Validation Only:** Rejects invalid data but doesn't modify valid data
+- **Canonical uniqueness:** Each `(platform, listing_id)` contributes at most
+  one observation; the first valid occurrence wins and input order is preserved
 - **Type-Safe:** Full type hints compatible with `mypy --strict`
 - **Logging:** Transparent reporting of transformation results
 
@@ -106,6 +108,13 @@ ComparableListing (many)
         ↓
 PriceDataset
 ```
+
+After type, currency, and price validation, valid comparables are deduplicated
+locally for that build by `(DetectedGame.platform, listing_id)`. A repeated
+snapshot is not reconciled: the first occurrence is retained even if a later
+copy has a different price or title. Different listing IDs remain distinct,
+and the same listing ID on different platforms remains distinct. The input
+collection and any execution-scoped raw comparable cache are not mutated.
 
 ## Responsibilities
 
@@ -478,9 +487,9 @@ This module integrates with:
    - Each dataset is for one game only
    - Cannot mix multiple games
 
-3. **No Duplicate Detection:**
-   - Does not detect duplicate listings
-   - Same listing from multiple sources counted separately
+3. **Snapshot identity:**
+   - Uniqueness is local to one dataset, not global across games or scans
+   - Identity is platform plus listing ID; title, price and seller are irrelevant
 
 4. **No Temporal Grouping:**
    - All observations treated equally
@@ -504,10 +513,9 @@ Potential enhancements (not implemented):
    - Normalize all prices to EUR or user's preferred currency
    - Use exchange rates from API
 
-2. **Duplicate Detection:**
-   - Detect same listing from multiple sources
-   - Remove exact duplicates by listing_id
-   - Flag near-duplicates by title similarity
+2. **Snapshot reconciliation:**
+   - Contradictory snapshots are intentionally not merged or compared
+   - The deterministic current policy retains the first occurrence
 
 3. **Temporal Weighting:**
    - Add `listing_date` field

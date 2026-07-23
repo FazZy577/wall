@@ -16,6 +16,11 @@ The Market Price Estimator is the **pricing brain** of the system. It estimates 
 
 A **market price estimate** is a single price value that best represents the current market for a game, calculated from multiple comparable listings.
 
+`sample_size` counts unique market publications produced by the dataset
+builder. Repeated snapshots with the same `(platform, listing_id)` do not gain
+additional statistical weight; the estimator performs no further
+deduplication.
+
 Example:
 - 20 listings: EUR 14.00, EUR 15.00, EUR 15.50, ..., EUR 17.00
 - **Market Price Estimate:** EUR 15.50 (median)
