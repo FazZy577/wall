@@ -104,7 +104,7 @@ def main() -> None:
     builder = DefaultPriceDatasetBuilder(source="wallapop")
 
     # Build dataset
-    dataset = builder.build(comparable_listings)
+    dataset = builder.build(comparable_listings, "EUR")
 
     print()
     print("-" * 80)

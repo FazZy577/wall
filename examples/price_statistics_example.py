@@ -57,6 +57,7 @@ def main() -> None:
         game=target_game,
         created_at=datetime.now(timezone.utc),
         sample_size=len(observations),
+        currency="EUR",
     )
 
     print(f"Target Game: {target_game.canonical_name} ({target_game.platform})")

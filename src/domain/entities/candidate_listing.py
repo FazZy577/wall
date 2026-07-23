@@ -10,6 +10,7 @@ from decimal import Decimal
 from typing import Any
 
 from domain._decimal import require_decimal
+from domain.currency import validate_currency_code
 
 
 @dataclass
@@ -51,5 +52,4 @@ class CandidateListing:
         require_decimal("price", self.price, non_negative=True)
         if self.price < Decimal("0"):
             raise ValueError(f"price must be >= 0, got {self.price}")
-        if not self.currency:
-            raise ValueError("currency must not be empty")
+        validate_currency_code(self.currency)

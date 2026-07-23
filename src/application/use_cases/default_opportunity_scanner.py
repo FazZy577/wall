@@ -163,6 +163,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
         game: DetectedGame,
         context: _ScanExecutionContext,
         candidate_listing_id: str,
+        candidate_currency: str,
     ) -> _ValuationResult:
         """Build a candidate-specific valuation from cached comparables."""
         collection = await self._get_or_collect_comparables(game, context)
@@ -184,7 +185,25 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                 )
             ]
 
-            dataset = self.dataset_builder.build(cast(list[object], comparables))
+            comparables = [
+                comparable
+                for comparable in comparables
+                if comparable.currency == candidate_currency
+            ]
+            if not comparables:
+                return _ValuationResult(
+                    failure=_ValuationFailure(
+                        stage=PipelineStage.PRICE_COLLECTION,
+                        reason=(
+                            "No comparable listings available in currency "
+                            f"{candidate_currency}"
+                        ),
+                    )
+                )
+
+            dataset = self.dataset_builder.build(
+                cast(list[object], comparables), candidate_currency
+            )
             if dataset.sample_size == 0:
                 result = _ValuationResult(
                     failure=_ValuationFailure(
@@ -245,7 +264,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             (detected_game,) = detected_games
 
             valuation = await self._get_or_create_market_valuation(
-                detected_game, context, listing.listing_id
+                detected_game, context, listing.listing_id, listing.currency
             )
             if valuation.failure is not None or valuation.estimate is None:
                 return None
@@ -300,7 +319,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             (detected_game,) = detected_games
 
             valuation = await self._get_or_create_market_valuation(
-                detected_game, context, listing.listing_id
+                detected_game, context, listing.listing_id, listing.currency
             )
             if valuation.failure is not None:
                 failures.append(

@@ -63,6 +63,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
         game=game,
         created_at=datetime.now(timezone.utc),
         sample_size=len(observations),
+        currency="EUR",
     )
 
 
@@ -90,6 +91,7 @@ def create_statistics(
         percentile_25=Decimal(str(q1)),
         percentile_75=Decimal(str(q3)),
         percentile_90=Decimal(str(max_price)),
+        currency="EUR",
     )
 
 

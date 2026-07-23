@@ -9,6 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.detected_game import DetectedGame
 
 
@@ -40,6 +41,7 @@ class PriceObservation:
 
     def __post_init__(self) -> None:
         require_decimal("price", self.price)
+        validate_currency_code(self.currency)
 
 
 @dataclass
@@ -59,6 +61,15 @@ class PriceDataset:
     game: DetectedGame
     created_at: datetime
     sample_size: int
+    currency: str
+
+    def __post_init__(self) -> None:
+        validate_currency_code(self.currency)
+        for observation in self.observations:
+            if observation.currency != self.currency:
+                raise CurrencyMismatchError(
+                    self.currency, observation.currency, "PriceDataset"
+                )
 
 
 class IPriceDatasetBuilder(ABC):
@@ -69,7 +80,11 @@ class IPriceDatasetBuilder(ABC):
     """
 
     @abstractmethod
-    def build(self, comparable_listings: list[object]) -> PriceDataset:
+    def build(
+        self,
+        comparable_listings: list[object],
+        currency: str,
+    ) -> PriceDataset:
         """Build a price dataset from comparable listings.
 
         Args:

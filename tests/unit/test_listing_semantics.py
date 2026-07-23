@@ -126,7 +126,7 @@ async def test_dataset_builder_rejects_candidate_as_market_observation() -> None
         InvalidComparableListingError,
         match="CandidateListing cannot be used as a market comparable",
     ):
-        DefaultPriceDatasetBuilder().build([_candidate()])
+        DefaultPriceDatasetBuilder().build([_candidate()], "EUR")
 
 
 @pytest.mark.asyncio
@@ -143,7 +143,7 @@ async def test_candidate_is_rejected_even_when_mixed_with_valid_comparables() ->
     )
 
     with pytest.raises(InvalidComparableListingError):
-        DefaultPriceDatasetBuilder().build([comparable, _candidate()])
+        DefaultPriceDatasetBuilder().build([comparable, _candidate()], "EUR")
 
 
 @pytest.mark.asyncio

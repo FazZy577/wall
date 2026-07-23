@@ -10,6 +10,7 @@ from decimal import Decimal
 from enum import StrEnum
 
 from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.resale_economics import EconomicBreakdown
@@ -72,6 +73,12 @@ class ArbitrageOpportunity:
     def __post_init__(self) -> None:
         require_decimal("market_price", self.market_price)
         require_decimal("listing_price", self.listing_price, non_negative=True)
+        if self.listing.currency != self.economic_breakdown.currency:
+            raise CurrencyMismatchError(
+                self.listing.currency,
+                self.economic_breakdown.currency,
+                "ArbitrageOpportunity",
+            )
 
     @property
     def reference_market_value(self) -> Decimal:
@@ -105,6 +112,10 @@ class ArbitrageOpportunity:
     def break_even_sale_revenue(self) -> Decimal:
         return self.economic_breakdown.break_even_sale_revenue
 
+    @property
+    def currency(self) -> str:
+        return self.economic_breakdown.currency
+
     def explain(self) -> str:
         """Generate human-readable explanation of the opportunity.
 
@@ -121,16 +132,17 @@ class ArbitrageOpportunity:
         lines.append("")
         lines.append("PRICING")
         lines.append("-" * 60)
-        lines.append(f"Listing Price: EUR {self.listing_price:.2f}")
-        lines.append(f"Estimated Market Price: EUR {self.market_price:.2f}")
+        lines.append(f"Listing Price: {self.currency} {self.listing_price:.2f}")
+        lines.append(f"Estimated Market Price: {self.currency} {self.market_price:.2f}")
         lines.append(
-            f"Expected Sale Revenue: EUR {self.economic_breakdown.expected_sale_revenue:.2f}"
+            f"Expected Sale Revenue: {self.currency} "
+            f"{self.economic_breakdown.expected_sale_revenue:.2f}"
         )
         lines.append(
-            f"Selling Costs and Buffer: EUR "
+            f"Selling Costs and Buffer: {self.currency} "
             f"{self.economic_breakdown.selling_fees + self.economic_breakdown.fixed_selling_costs + self.economic_breakdown.safety_buffer:.2f}"
         )
-        lines.append(f"Net Profit: EUR {self.net_profit:.2f}")
+        lines.append(f"Net Profit: {self.currency} {self.net_profit:.2f}")
         lines.append("")
         lines.append("PROFITABILITY METRICS")
         lines.append("-" * 60)
@@ -140,7 +152,10 @@ class ArbitrageOpportunity:
             "Acquisition Discount to Reference Market: "
             f"{self.acquisition_discount_to_reference_market_percentage:.1f}%"
         )
-        lines.append(f"Break-even Sale Revenue: EUR {self.break_even_sale_revenue:.2f}")
+        lines.append(
+            f"Break-even Sale Revenue: {self.currency} "
+            f"{self.break_even_sale_revenue:.2f}"
+        )
         lines.append("")
         lines.append("CONFIDENCE")
         lines.append("-" * 60)

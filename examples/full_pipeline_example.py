@@ -116,7 +116,7 @@ def main() -> None:
     print("-" * 80)
 
     dataset_builder = DefaultPriceDatasetBuilder(source="wallapop")
-    dataset = dataset_builder.build(comparable_listings)
+    dataset = dataset_builder.build(comparable_listings, "EUR")
 
     print(f"Dataset created:")
     print(f"  Sample size: {dataset.sample_size} observations")

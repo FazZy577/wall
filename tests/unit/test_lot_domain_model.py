@@ -77,6 +77,7 @@ def _economic_breakdown(
     return ResaleEconomicPolicy.neutral().calculate(
         [valuation.estimated_market_value for valuation in valuations],
         candidate.price,
+        candidate.currency,
     )
 
 
@@ -679,7 +680,8 @@ class TestDatasetContamination:
         # Capture what is passed to dataset_builder.build()
         captured_listings: list = []
 
-        def capture_build(listings: list[object]) -> Mock:
+        def capture_build(listings: list[object], currency: str) -> Mock:
+            assert currency == "EUR"
             captured_listings.extend(listings)
             m = Mock()
             m.sample_size = 5
@@ -764,7 +766,8 @@ class TestDatasetContamination:
 
         captured_listings: list = []
 
-        def capture_build(listings: list[object]) -> Mock:
+        def capture_build(listings: list[object], currency: str) -> Mock:
+            assert currency == "EUR"
             captured_listings.extend(listings)
             m = Mock()
             m.sample_size = len(listings)

@@ -68,7 +68,7 @@ def test_decimal_statistics_outliers_and_estimate_preserve_types() -> None:
             [Decimal("0.10"), Decimal("0.20"), Decimal("0.30")]
         )
     ]
-    dataset = PriceDataset(observations, game(), Mock(), 3)
+    dataset = PriceDataset(observations, game(), Mock(), 3, "EUR")
     statistics = DefaultPriceStatistics().calculate(dataset)
     outliers = DefaultOutlierRemoval().remove_outliers(dataset, statistics)
     estimate = DefaultMarketPriceEstimator().estimate(dataset, statistics, 0)
@@ -87,6 +87,7 @@ def test_real_cent_statistics_remain_decimal() -> None:
         game(),
         Mock(),
         3,
+        "EUR",
     )
     result = DefaultPriceStatistics().calculate(dataset)
     assert result.mean_price == sum(values, Decimal("0")) / Decimal("3")
@@ -95,7 +96,7 @@ def test_real_cent_statistics_remain_decimal() -> None:
 
 def test_asdict_keeps_nested_decimal_values() -> None:
     breakdown = ResaleEconomicPolicy.neutral().calculate(
-        [Decimal("20")], Decimal("10")
+        [Decimal("20")], Decimal("10"), "EUR"
     )
     serialized = asdict(breakdown)
     assert isinstance(serialized["net_profit"], Decimal)

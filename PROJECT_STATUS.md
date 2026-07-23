@@ -252,3 +252,11 @@ stable key `BUY > MAYBE > SKIP` followed by descending score. All opportunities
 are retained; fallback strategies, filtering, limits, and hidden tie-breakers
 were removed. `RankingResult` only summarizes an already ordered list. Lot
 ranking remains unchanged.
+
+## P1.12 single-currency pipeline
+
+Monetary stages require one canonical `str` currency code. Wallapop codes are
+normalized without fallback, foreign-currency comparables are filtered before
+datasets, and strict checks reject any remaining mix. Decimal formulas, ranking,
+scores and partial-lot rules are unchanged. No Currency enum, Money, FX conversion,
+exchange rate, rounding, `quantize`, or JSON serialization was introduced.

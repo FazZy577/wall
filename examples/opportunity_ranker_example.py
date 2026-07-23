@@ -85,6 +85,7 @@ def _make_opportunity(
         net_profit=Decimal(str(net_profit)),
         break_even_sale_revenue=Decimal(str(total_acquisition_cost)),
         item_count=1,
+        currency="EUR",
     )
     return ArbitrageOpportunity(
         listing=listing,

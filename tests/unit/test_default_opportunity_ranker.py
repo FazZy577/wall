@@ -66,6 +66,7 @@ def _make_opportunity(
         net_profit=profit_amount,
         break_even_sale_revenue=total_cost,
         item_count=1,
+        currency="EUR",
     )
     return ArbitrageOpportunity(
         listing=listing,

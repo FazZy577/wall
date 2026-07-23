@@ -122,7 +122,9 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 f"{game.canonical_name} ({game.platform})"
             )
 
-            valuation, failure = await self._value_game(game, listing.listing_id)
+            valuation, failure = await self._value_game(
+                game, listing.listing_id, listing.currency
+            )
 
             if valuation is not None:
                 game_valuations.append(valuation)
@@ -172,7 +174,10 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         return unique
 
     async def _value_game(
-        self, game: DetectedGame, candidate_listing_id: str
+        self,
+        game: DetectedGame,
+        candidate_listing_id: str,
+        candidate_currency: str,
     ) -> tuple[GameValuation | None, GameValuationFailure | None]:
         """Run the full valuation pipeline for a single game.
 
@@ -213,17 +218,28 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 )
             ]
 
+            comparables = [
+                comparable
+                for comparable in comparables
+                if comparable.currency == candidate_currency
+            ]
+
             if not comparables:
                 return None, GameValuationFailure(
                     game=game,
                     stage=LotPipelineStage.PRICE_COLLECTION,
-                    reason="No comparable listings found",
+                    reason=(
+                        "No comparable listings available in currency "
+                        f"{candidate_currency}"
+                    ),
                     listing_id=candidate_listing_id,
                 )
 
             # Step 2: Dataset Building (comparables ONLY)
             current_stage = LotPipelineStage.DATASET_BUILDING
-            dataset = self.dataset_builder.build(cast(list[object], comparables))
+            dataset = self.dataset_builder.build(
+                cast(list[object], comparables), candidate_currency
+            )
 
             if dataset.sample_size == 0:
                 return None, GameValuationFailure(
@@ -259,7 +275,9 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 observations_removed=outlier_result.removed_count,
             )
             logger.info(
-                f"Market price estimated: EUR {market_estimate.estimated_price:.2f}"
+                "Market price estimated: %s %.2f",
+                market_estimate.currency,
+                market_estimate.estimated_price,
             )
 
             # Step 7: GameValuation

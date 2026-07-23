@@ -21,7 +21,7 @@ def policy(**overrides: Decimal) -> ResaleEconomicPolicy:
 
 
 def test_required_individual_economic_breakdown() -> None:
-    breakdown = policy().calculate([Decimal("20")], Decimal("10"))
+    breakdown = policy().calculate([Decimal("20")], Decimal("10"), "EUR")
     assert breakdown.expected_sale_revenue == Decimal("17")
     assert breakdown.selling_fees == Decimal("1.70")
     assert breakdown.fixed_selling_costs == Decimal("1")
@@ -35,7 +35,7 @@ def test_required_individual_economic_breakdown() -> None:
 def test_binary_artifact_case_is_exact() -> None:
     breakdown = ResaleEconomicPolicy(
         Decimal("0.10"), Decimal("0"), Decimal("0"), Decimal("0"), Decimal("0")
-    ).calculate([Decimal("0.30")], Decimal("0.10"))
+    ).calculate([Decimal("0.30")], Decimal("0.10"), "EUR")
     assert breakdown.expected_sale_revenue == Decimal("0.20")
     assert breakdown.net_profit == Decimal("0.10")
 
@@ -44,7 +44,7 @@ def test_required_lot_example() -> None:
     breakdown = ResaleEconomicPolicy(
         Decimal("3"), Decimal("0"), Decimal("0"), Decimal("0"), Decimal("0")
     ).calculate(
-        [Decimal("15"), Decimal("20"), Decimal("10")], Decimal("40")
+        [Decimal("15"), Decimal("20"), Decimal("10")], Decimal("40"), "EUR"
     )
     assert breakdown.expected_item_sale_prices == (
         Decimal("12"), Decimal("17"), Decimal("7")
@@ -60,12 +60,14 @@ def test_quick_sale_discount_is_capped_at_zero() -> None:
         fixed_selling_cost_per_item=Decimal("0"),
         acquisition_overhead=Decimal("0"),
         safety_buffer_rate=Decimal("0"),
-    ).calculate([Decimal("2")], Decimal("0"))
+    ).calculate([Decimal("2")], Decimal("0"), "EUR")
     assert breakdown.expected_item_sale_prices == (Decimal("0"),)
 
 
 def test_breakdown_invariants_and_asdict_preserve_decimal() -> None:
-    breakdown = policy().calculate([Decimal("20"), Decimal("2")], Decimal("10"))
+    breakdown = policy().calculate(
+        [Decimal("20"), Decimal("2")], Decimal("10"), "EUR"
+    )
     assert breakdown.reference_market_value - breakdown.expected_sale_revenue == breakdown.quick_sale_discount_total
     assert breakdown.expected_sale_revenue - breakdown.selling_fees - breakdown.fixed_selling_costs - breakdown.safety_buffer == breakdown.net_expected_proceeds
     assert breakdown.net_expected_proceeds - breakdown.total_acquisition_cost == breakdown.net_profit
@@ -87,7 +89,7 @@ def test_policy_rejects_float() -> None:
 
 def test_calculation_rejects_float_inputs() -> None:
     with pytest.raises(TypeError, match="must be Decimal"):
-        policy().calculate([Decimal("20")], 10.0)  # type: ignore[arg-type]
+        policy().calculate([Decimal("20")], 10.0, "EUR")  # type: ignore[arg-type]
 
 
 def test_combined_rates_must_leave_positive_revenue() -> None:
@@ -98,7 +100,7 @@ def test_combined_rates_must_leave_positive_revenue() -> None:
 def test_policy_and_breakdown_are_immutable_and_context_is_untouched() -> None:
     precision = getcontext().prec
     economic_policy = policy()
-    breakdown = economic_policy.calculate([Decimal("20")], Decimal("10"))
+    breakdown = economic_policy.calculate([Decimal("20")], Decimal("10"), "EUR")
     assert getcontext().prec == precision
     with pytest.raises(FrozenInstanceError):
         economic_policy.selling_fee_rate = Decimal("0")  # type: ignore[misc]

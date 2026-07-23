@@ -85,7 +85,7 @@ class FakePriceCollector(IPriceCollector):
 class FakePriceDatasetBuilder(IPriceDatasetBuilder):
     """Builds one observation per comparable listing."""
 
-    def build(self, comparable_listings: list[object]) -> PriceDataset:
+    def build(self, comparable_listings: list[object], currency: str) -> PriceDataset:
         comparables = [listing for listing in comparable_listings if isinstance(listing, ComparableListing)]
         observations = [
             PriceObservation(
@@ -104,6 +104,7 @@ class FakePriceDatasetBuilder(IPriceDatasetBuilder):
             game=comparables[0].detected_game,
             created_at=datetime.now(UTC),
             sample_size=len(observations),
+            currency=currency,
         )
 
 
@@ -127,6 +128,7 @@ class FakePriceStatistics(IPriceStatistics):
             percentile_25=Decimal(str(price)),
             percentile_75=Decimal(str(price)),
             percentile_90=Decimal(str(price)),
+            currency=dataset.currency,
         )
 
 

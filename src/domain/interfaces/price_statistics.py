@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from domain._decimal import require_decimal
+from domain.currency import validate_currency_code
 from domain.interfaces.price_dataset_builder import PriceDataset
 
 
@@ -56,6 +57,7 @@ class PriceStatisticsResult:
     percentile_25: Decimal
     percentile_75: Decimal
     percentile_90: Decimal
+    currency: str
 
     def __post_init__(self) -> None:
         for name in (
@@ -64,6 +66,7 @@ class PriceStatisticsResult:
             "percentile_10", "percentile_25", "percentile_75", "percentile_90",
         ):
             require_decimal(name, getattr(self, name))
+        validate_currency_code(self.currency)
 
 
 class IPriceStatistics(ABC):

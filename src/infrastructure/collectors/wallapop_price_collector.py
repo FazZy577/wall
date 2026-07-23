@@ -8,6 +8,7 @@ import logging
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from domain.currency import validate_currency_code
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
@@ -89,7 +90,12 @@ class WallapopPriceCollector(IPriceCollector):
                 comparable = self._process_listing(raw_listing, game)
                 if comparable:
                     comparables.append(comparable)
-                    logger.debug(f"Valid comparable: {comparable.title} - EUR {comparable.price}")
+                    logger.debug(
+                        "Valid comparable: %s - %s %s",
+                        comparable.title,
+                        comparable.currency,
+                        comparable.price,
+                    )
 
                     # Stop if we reached max_results
                     if max_results and len(comparables) >= max_results:
@@ -196,7 +202,7 @@ class WallapopPriceCollector(IPriceCollector):
         title = raw_listing.get("title", "")
         description = raw_listing.get("description", "")
         price = raw_listing.get("price")
-        currency = raw_listing.get("currency", "EUR")
+        raw_currency = raw_listing.get("currency")
         web_slug = raw_listing.get("web_slug", "")
 
         # Validate required fields
@@ -208,6 +214,10 @@ class WallapopPriceCollector(IPriceCollector):
             price_decimal = Decimal(str(price))
             if not price_decimal.is_finite():
                 return None
+            if not isinstance(raw_currency, str):
+                return None
+            currency = raw_currency.strip().upper()
+            validate_currency_code(currency)
         except (InvalidOperation, ValueError, TypeError):
             return None
 

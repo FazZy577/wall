@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
@@ -72,6 +73,13 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         Returns:
             Arbitrage opportunity with recommendation and profitability metrics
         """
+        if listing.currency != market_estimate.currency:
+            raise CurrencyMismatchError(
+                listing.currency,
+                market_estimate.currency,
+                "ArbitrageOpportunityDetector",
+            )
+
         # Extract prices
         listing_price = listing.price
         market_price = market_estimate.estimated_price
@@ -79,6 +87,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         economic_breakdown = self.economic_policy.calculate(
             reference_item_prices=[market_price],
             acquisition_price=listing_price,
+            currency=listing.currency,
         )
         # Extract confidence
         confidence_score = market_estimate.confidence_score

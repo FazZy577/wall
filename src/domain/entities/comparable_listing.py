@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any
 
 from domain._decimal import require_decimal
+from domain.currency import validate_currency_code
 from domain.entities.detected_game import DetectedGame
 
 
@@ -23,3 +24,4 @@ class ComparableListing:
 
     def __post_init__(self) -> None:
         require_decimal("price", self.price)
+        validate_currency_code(self.currency)

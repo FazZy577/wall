@@ -10,6 +10,7 @@ from decimal import Decimal
 from enum import StrEnum
 
 from domain._decimal import require_decimal
+from domain.currency import validate_currency_code
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.price_dataset_builder import PriceDataset
 from domain.interfaces.price_statistics import PriceStatisticsResult
@@ -91,6 +92,7 @@ class MarketPriceEstimate:
             "standard_deviation", "iqr",
         ):
             require_decimal(name, getattr(self, name))
+        validate_currency_code(self.currency)
 
     def explain(self) -> str:
         """Generate human-readable explanation of the estimation.

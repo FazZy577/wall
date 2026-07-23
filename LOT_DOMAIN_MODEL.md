@@ -232,3 +232,10 @@ the `GameDetector` result inside the appropriate application use case.
 value remains available, while profit, margin, and ROI use net proceeds,
 expected sale revenue, and total acquisition cost respectively. Net proceeds
 and profit may be negative.
+
+## P1.12 currency invariant
+
+Every successful `GameValuation` must match the candidate currency. The analyzer
+rejects mixed valuations before aggregation, and `LotOpportunity.currency`
+delegates to its breakdown. Missing compatible comparables remain per-game
+failures; partial-coverage rules are unchanged.

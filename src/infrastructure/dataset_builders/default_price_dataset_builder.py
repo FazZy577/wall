@@ -8,6 +8,7 @@ import logging
 from datetime import UTC, datetime
 from decimal import Decimal
 
+from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
@@ -28,9 +29,6 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
     Does NOT perform any statistical calculations or filtering.
     """
 
-    # Known valid currencies
-    VALID_CURRENCIES = {"EUR", "USD", "GBP"}
-
     def __init__(self, source: str = "wallapop") -> None:
         """Initialize dataset builder.
 
@@ -39,7 +37,7 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
         """
         self.source = source
 
-    def build(self, comparable_listings: list[object]) -> PriceDataset:
+    def build(self, comparable_listings: list[object], currency: str) -> PriceDataset:
         """Build a price dataset from comparable listings.
 
         Args:
@@ -48,13 +46,14 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
         Returns:
             PriceDataset with valid observations
         """
+        validate_currency_code(currency)
         logger.info("Building dataset...")
         logger.info(f"Comparable listings: {len(comparable_listings)}")
 
         if not comparable_listings:
             # Empty dataset
             logger.warning("No comparable listings provided")
-            return self._build_empty_dataset()
+            return self._build_empty_dataset(currency)
 
         if any(isinstance(listing, CandidateListing) for listing in comparable_listings):
             raise InvalidComparableListingError(
@@ -66,7 +65,11 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
 
         if not listings:
             logger.warning("No valid ComparableListing objects provided")
-            return self._build_empty_dataset()
+            return self._build_empty_dataset(currency)
+
+        for listing in listings:
+            if listing.currency != currency:
+                raise CurrencyMismatchError(currency, listing.currency, "PriceDataset")
 
         # Extract game from first listing (all should have same game)
         target_game = listings[0].detected_game
@@ -97,9 +100,10 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             game=target_game,
             created_at=datetime.now(UTC),
             sample_size=len(observations),
+            currency=currency,
         )
 
-    def _build_empty_dataset(self) -> PriceDataset:
+    def _build_empty_dataset(self, currency: str) -> PriceDataset:
         """Build an empty dataset for error cases.
 
         Returns:
@@ -119,6 +123,7 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             game=placeholder_game,
             created_at=datetime.now(UTC),
             sample_size=0,
+            currency=currency,
         )
 
     def _extract_observation(
@@ -148,12 +153,6 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             logger.debug(f"Listing {listing.listing_id}: invalid price {listing.price}")
             return None
 
-        # Validate currency
-        currency = listing.currency.upper()
-        if currency not in self.VALID_CURRENCIES:
-            logger.debug(f"Listing {listing.listing_id}: unknown currency {currency}")
-            return None
-
         # Build raw listing dict for reference
         raw_listing: dict[str, str | Decimal] = {
             "listing_id": listing.listing_id,
@@ -166,7 +165,7 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
 
         return PriceObservation(
             price=listing.price,
-            currency=currency,
+            currency=listing.currency,
             listing_id=listing.listing_id,
             title=listing.title,
             platform=listing.detected_game.platform,

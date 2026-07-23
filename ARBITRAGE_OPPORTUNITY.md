@@ -570,3 +570,10 @@ Decision thresholds, rule order, and score weights are unchanged, but their
 economic inputs are net, so recommendations may legitimately become more
 conservative. Values are explicit configuration, remain `float`, and no
 currency conversion is performed.
+
+## P1.12 currency invariant
+
+Candidate, estimate and `EconomicBreakdown` must use the same canonical currency.
+The detector raises `CurrencyMismatchError` before calculation when they differ.
+`ArbitrageOpportunity.currency` delegates to its breakdown; no conversion or
+duplicate stored currency is introduced.

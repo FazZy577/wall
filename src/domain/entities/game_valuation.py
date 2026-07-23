@@ -41,6 +41,10 @@ class GameValuation:
     def __post_init__(self) -> None:
         require_decimal("estimated_market_value", self.estimated_market_value)
 
+    @property
+    def currency(self) -> str:
+        return self.market_price_estimate.currency
+
     @classmethod
     def from_market_estimate(
         cls,

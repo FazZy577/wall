@@ -23,7 +23,12 @@ def game(
     return DetectedGame(name, alias, platform, 1.0, DetectionMethod.ALIAS_MATCH)
 
 
-def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -> CandidateListing:
+def listing(
+    identifier: str,
+    detected_game: DetectedGame,
+    price: float = 10.0,
+    currency: str = "EUR",
+) -> CandidateListing:
     return CandidateListing(
         listing_id=identifier,
         title=(
@@ -32,20 +37,23 @@ def listing(identifier: str, detected_game: DetectedGame, price: float = 10.0) -
         ),
         description="",
         price=Decimal(str(price)),
-        currency="EUR",
+        currency=currency,
         url=f"https://example.test/{identifier}",
     )
 
 
 def comparable(
-    identifier: str, detected_game: DetectedGame, price: float = 20.0
+    identifier: str,
+    detected_game: DetectedGame,
+    price: float = 20.0,
+    currency: str = "EUR",
 ) -> ComparableListing:
     return ComparableListing(
         listing_id=identifier,
         title=f"{detected_game.matched_text} {detected_game.platform.value}",
         description="",
         price=Decimal(str(price)),
-        currency="EUR",
+        currency=currency,
         detected_game=detected_game,
         url=f"https://example.test/{identifier}",
     )
@@ -136,8 +144,48 @@ async def test_same_game_collects_once_and_values_each_candidate(
     assert mocks["detector"].detect.call_count == 5
     assert result.comparable_cache_misses == 1
     assert result.comparable_cache_hits == 4
-    assert result.comparable_cache_misses == 1
-    assert result.comparable_cache_hits == 4
+
+
+@pytest.mark.asyncio
+async def test_same_collection_is_partitioned_by_candidate_currency(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    detected = game()
+    eur = [comparable("eur-1", detected, 10, "EUR"), comparable("eur-2", detected, 12, "EUR")]
+    usd = [comparable("usd-1", detected, 20, "USD"), comparable("usd-2", detected, 22, "USD")]
+    mocks["collector"].collect_comparables.return_value = [*eur, *usd]
+
+    result = await scanner.scan_multiple(
+        [listing("candidate-eur", detected, currency="EUR"), listing("candidate-usd", detected, currency="USD")]
+    )
+
+    assert mocks["collector"].collect_comparables.await_count == 1
+    assert mocks["builder"].build.call_args_list[0].args == (eur, "EUR")
+    assert mocks["builder"].build.call_args_list[1].args == (usd, "USD")
+    assert mocks["builder"].build.call_count == 2
+    assert mocks["estimator"].estimate.call_count == 2
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+
+
+@pytest.mark.asyncio
+async def test_no_compatible_currency_fails_before_dataset(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    mocks["collector"].collect_comparables.return_value = [
+        comparable("usd", game(), 20, "USD")
+    ]
+
+    result = await scanner.scan_multiple([listing("eur", game(), currency="EUR")])
+
+    assert result.failed == 1
+    assert result.failures[0].stage == PipelineStage.PRICE_COLLECTION
+    assert result.failures[0].reason == (
+        "No comparable listings available in currency EUR"
+    )
+    mocks["builder"].build.assert_not_called()
+    mocks["detector"].detect.assert_not_called()
 
 
 @pytest.mark.asyncio

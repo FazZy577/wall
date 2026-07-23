@@ -335,9 +335,9 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
         price = item.get("price")
         if isinstance(price, dict):
             normalized["price"] = price.get("amount")
-            normalized["currency"] = price.get("currency", "EUR")
+            normalized["currency"] = price.get("currency")
         else:
-            normalized["currency"] = item.get("currency", "EUR")
+            normalized["currency"] = item.get("currency")
         return normalized
 
     async def _save_debug_payload(

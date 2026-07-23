@@ -491,6 +491,7 @@ class TestScanMultiple:
         self,
         scanner: DefaultOpportunityScanner,
         sample_game: DetectedGame,
+        sample_comparable: ComparableListing,
         mock_dataset_builder: Mock,
         mock_statistics: Mock,
         mock_outlier_removal: Mock,
@@ -532,7 +533,7 @@ class TestScanMultiple:
             call_count[0] += 1
             if call_count[0] == 2:
                 raise RuntimeError("Price collection failed")
-            return []
+            return [sample_comparable]
 
         scanner.price_collector.collect_comparables.side_effect = collector_side_effect
 
@@ -623,10 +624,11 @@ class TestPipelineStageTracking:
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
+        sample_comparable: ComparableListing,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should track DATASET_BUILDING stage for empty datasets."""
-        scanner.price_collector.collect_comparables.return_value = []
+        scanner.price_collector.collect_comparables.return_value = [sample_comparable]
         mock_dataset = Mock()
         mock_dataset.sample_size = 0
         mock_dataset_builder.build.return_value = mock_dataset
@@ -645,11 +647,12 @@ class TestPipelineStageTracking:
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
+        sample_comparable: ComparableListing,
         mock_statistics: Mock,
         mock_dataset_builder: Mock,
     ) -> None:
         """Should track STATISTICS stage when statistics calculation fails."""
-        scanner.price_collector.collect_comparables.return_value = []
+        scanner.price_collector.collect_comparables.return_value = [sample_comparable]
         mock_dataset = Mock()
         mock_dataset.sample_size = 5
         mock_dataset_builder.build.return_value = mock_dataset
@@ -668,13 +671,14 @@ class TestPipelineStageTracking:
         self,
         scanner: DefaultOpportunityScanner,
         sample_listing: CandidateListing,
+        sample_comparable: ComparableListing,
         mock_dataset_builder: Mock,
         mock_statistics: Mock,
         mock_outlier_removal: Mock,
         mock_market_estimator: Mock,
     ) -> None:
         """Should track MARKET_ESTIMATION stage when estimator fails."""
-        scanner.price_collector.collect_comparables.return_value = []
+        scanner.price_collector.collect_comparables.return_value = [sample_comparable]
         mock_dataset = Mock()
         mock_dataset.sample_size = 5
         mock_dataset_builder.build.return_value = mock_dataset
@@ -831,7 +835,7 @@ async def test_candidate_ids_are_excluded_from_market_comparables(
 
     await scanner.scan_multiple([sample_listing])
 
-    mock_dataset_builder.build.assert_called_once_with([sample_comparable])
+    mock_dataset_builder.build.assert_called_once_with([sample_comparable], "EUR")
 
 
 @pytest.mark.asyncio

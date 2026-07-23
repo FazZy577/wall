@@ -10,6 +10,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from domain.currency import CurrencyMismatchError
 from domain.entities.comparable_listing import ComparableListing
 from domain.interfaces.game_detector import (
     DetectedGame,
@@ -73,7 +74,7 @@ class TestEmptyDataset:
 
     def test_empty_list(self, dataset_builder: DefaultPriceDatasetBuilder) -> None:
         """Should return empty dataset when no listings provided."""
-        result = dataset_builder.build([])
+        result = dataset_builder.build([], "EUR")
 
         assert isinstance(result, PriceDataset)
         assert result.sample_size == 0
@@ -93,7 +94,7 @@ class TestNormalDataset:
         """Should build dataset from single listing."""
         listing = create_comparable_listing("123", "GTA V PS4", 15.0, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.sample_size == 1
         assert len(result.observations) == 1
@@ -119,7 +120,7 @@ class TestNormalDataset:
             create_comparable_listing("3", "GTA V", 12.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         assert result.sample_size == 3
         assert len(result.observations) == 3
@@ -136,7 +137,7 @@ class TestNormalDataset:
         """Should preserve all relevant data in observations."""
         listing = create_comparable_listing("999", "Test Title", 25.5, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         obs = result.observations[0]
         assert obs.price == 25.5
@@ -169,7 +170,7 @@ class TestInvalidPrices:
         )
         listing.price = None  # type: ignore[assignment]
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.sample_size == 0
         assert len(result.observations) == 0
@@ -182,7 +183,7 @@ class TestInvalidPrices:
         """Should discard listing with zero price."""
         listing = create_comparable_listing("1", "GTA V", 0.0, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.sample_size == 0
         assert len(result.observations) == 0
@@ -195,7 +196,7 @@ class TestInvalidPrices:
         """Should discard listing with negative price."""
         listing = create_comparable_listing("1", "GTA V", -10.0, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.sample_size == 0
         assert len(result.observations) == 0
@@ -213,7 +214,7 @@ class TestInvalidPrices:
             create_comparable_listing("4", "Invalid", -5.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         assert result.sample_size == 2
         assert len(result.observations) == 2
@@ -232,7 +233,7 @@ class TestCurrencyHandling:
         """Should accept EUR currency."""
         listing = create_comparable_listing("1", "GTA V", Decimal("15.0"), "EUR", game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.sample_size == 1
         assert result.observations[0].currency == "EUR"
@@ -245,7 +246,7 @@ class TestCurrencyHandling:
         """Should accept USD currency."""
         listing = create_comparable_listing("1", "GTA V", 15.0, "USD", game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "USD")
 
         assert result.sample_size == 1
         assert result.observations[0].currency == "USD"
@@ -258,7 +259,7 @@ class TestCurrencyHandling:
         """Should accept GBP currency."""
         listing = create_comparable_listing("1", "GTA V", 15.0, "GBP", game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "GBP")
 
         assert result.sample_size == 1
         assert result.observations[0].currency == "GBP"
@@ -268,44 +269,32 @@ class TestCurrencyHandling:
         dataset_builder: DefaultPriceDatasetBuilder,
         target_game: DetectedGame,
     ) -> None:
-        """Should normalize lowercase currency to uppercase."""
-        listing = create_comparable_listing("1", "GTA V", 15.0, "eur", game=target_game)
-
-        result = dataset_builder.build([listing])
-
-        assert result.sample_size == 1
-        assert result.observations[0].currency == "EUR"
+        """Domain rejects non-canonical lowercase currency."""
+        with pytest.raises(ValueError, match="currency"):
+            create_comparable_listing("1", "GTA V", 15.0, "eur", game=target_game)
 
     def test_invalid_currency(
         self,
         dataset_builder: DefaultPriceDatasetBuilder,
         target_game: DetectedGame,
     ) -> None:
-        """Should discard listing with invalid currency."""
-        listing = create_comparable_listing("1", "GTA V", 15.0, "XYZ", game=target_game)
-
-        result = dataset_builder.build([listing])
-
-        assert result.sample_size == 0
-        assert len(result.observations) == 0
+        """Domain rejects malformed currency."""
+        with pytest.raises(ValueError, match="currency"):
+            create_comparable_listing("1", "GTA V", 15.0, "€", game=target_game)
 
     def test_mixed_currencies(
         self,
         dataset_builder: DefaultPriceDatasetBuilder,
         target_game: DetectedGame,
     ) -> None:
-        """Should keep valid currencies and discard invalid ones."""
+        """Should reject mixed currencies explicitly."""
         listings = [
             create_comparable_listing("1", "Valid EUR", Decimal("15.0"), "EUR", game=target_game),
-            create_comparable_listing("2", "Invalid XYZ", 20.0, "XYZ", game=target_game),
             create_comparable_listing("3", "Valid USD", 18.0, "USD", game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
-
-        assert result.sample_size == 2
-        assert result.observations[0].currency == "EUR"
-        assert result.observations[1].currency == "USD"
+        with pytest.raises(CurrencyMismatchError, match="expected EUR, got USD"):
+            dataset_builder.build(listings, "EUR")
 
 
 class TestIndividualErrors:
@@ -323,12 +312,13 @@ class TestIndividualErrors:
         # Create corrupted listing (mock will raise exception)
         corrupted_listing = Mock(spec=ComparableListing)
         corrupted_listing.listing_id = "999"
+        corrupted_listing.currency = "EUR"
         corrupted_listing.price = property(Mock(side_effect=Exception("Corrupted")))
 
         # Create another valid listing
         valid_listing_2 = create_comparable_listing("2", "Valid 2", 18.0, game=target_game)
 
-        result = dataset_builder.build([valid_listing, corrupted_listing, valid_listing_2])
+        result = dataset_builder.build([valid_listing, corrupted_listing, valid_listing_2], "EUR")
 
         # Should have processed both valid listings
         assert result.sample_size == 2
@@ -344,14 +334,16 @@ class TestIndividualErrors:
         corrupted_1 = Mock(spec=ComparableListing)
         corrupted_1.listing_id = "1"
         corrupted_1.detected_game = target_game
+        corrupted_1.currency = "EUR"
         corrupted_1.price = property(Mock(side_effect=Exception("Error")))
 
         corrupted_2 = Mock(spec=ComparableListing)
         corrupted_2.listing_id = "2"
         corrupted_2.detected_game = target_game
+        corrupted_2.currency = "EUR"
         corrupted_2.price = property(Mock(side_effect=Exception("Error")))
 
-        result = dataset_builder.build([corrupted_1, corrupted_2])
+        result = dataset_builder.build([corrupted_1, corrupted_2], "EUR")
 
         assert result.sample_size == 0
         assert len(result.observations) == 0
@@ -372,7 +364,7 @@ class TestSampleSize:
             create_comparable_listing("3", "L3", 12.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         assert result.sample_size == len(result.observations)
         assert result.sample_size == 3
@@ -389,7 +381,7 @@ class TestSampleSize:
             create_comparable_listing("3", "Valid", 18.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         assert result.sample_size == 2
 
@@ -406,7 +398,7 @@ class TestDatasetMetadata:
         listing = create_comparable_listing("1", "GTA V", 15.0, game=target_game)
 
         before = datetime.now(timezone.utc)
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
         after = datetime.now(timezone.utc)
 
         assert before <= result.created_at <= after
@@ -420,7 +412,7 @@ class TestDatasetMetadata:
         """Should store reference to target game."""
         listing = create_comparable_listing("1", "GTA V", 15.0, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         assert result.game == target_game
         assert result.game.canonical_name == "Grand Theft Auto V"
@@ -438,7 +430,7 @@ class TestRawListingData:
         """Should include all listing fields in raw_listing."""
         listing = create_comparable_listing("123", "Test Title", 25.0, game=target_game)
 
-        result = dataset_builder.build([listing])
+        result = dataset_builder.build([listing], "EUR")
 
         raw = result.observations[0].raw_listing
         assert raw["listing_id"] == "123"
@@ -460,7 +452,7 @@ class TestSourceField:
         builder = DefaultPriceDatasetBuilder(source="wallapop")
         listing = create_comparable_listing("1", "GTA V", 15.0, game=target_game)
 
-        result = builder.build([listing])
+        result = builder.build([listing], "EUR")
 
         assert result.observations[0].source == "wallapop"
 
@@ -472,7 +464,7 @@ class TestSourceField:
         builder = DefaultPriceDatasetBuilder(source="vinted")
         listing = create_comparable_listing("1", "GTA V", 15.0, game=target_game)
 
-        result = builder.build([listing])
+        result = builder.build([listing], "EUR")
 
         assert result.observations[0].source == "vinted"
 
@@ -492,7 +484,7 @@ class TestNoStatisticalCalculations:
             create_comparable_listing("3", "L3", 30.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         # Dataset should not have mean field
         assert not hasattr(result, "mean")
@@ -510,7 +502,7 @@ class TestNoStatisticalCalculations:
             create_comparable_listing("3", "L3", 30.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         # Dataset should not have median field
         assert not hasattr(result, "median")
@@ -527,7 +519,7 @@ class TestNoStatisticalCalculations:
             create_comparable_listing("3", "L3", 20.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         # Observations should be in original order
         prices = [obs.price for obs in result.observations]
@@ -546,7 +538,7 @@ class TestNoStatisticalCalculations:
             create_comparable_listing("4", "L4", 17.0, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         # All valid observations should be included (even outlier)
         assert result.sample_size == 4
@@ -564,7 +556,7 @@ class TestNoStatisticalCalculations:
             create_comparable_listing("2", "L2", 20.50, game=target_game),
         ]
 
-        result = dataset_builder.build(listings)
+        result = dataset_builder.build(listings, "EUR")
 
         # Prices should be exactly as provided
         assert result.observations[0].price == Decimal("15.99")

@@ -7,6 +7,7 @@ Interquartile Range (IQR) method.
 from datetime import UTC, datetime
 from decimal import Decimal
 
+from domain.currency import CurrencyMismatchError
 from domain.interfaces.outlier_removal import (
     IOutlierRemoval,
     OutlierMethod,
@@ -50,6 +51,11 @@ class DefaultOutlierRemoval(IOutlierRemoval):
         Returns:
             Result containing clean dataset and removal details
         """
+        if dataset.currency != statistics.currency:
+            raise CurrencyMismatchError(
+                dataset.currency, statistics.currency, "OutlierRemoval"
+            )
+
         # Special case: dataset too small (< 4 observations)
         if dataset.sample_size < 4:
             return self._no_removal_result(
@@ -103,6 +109,7 @@ class DefaultOutlierRemoval(IOutlierRemoval):
             game=dataset.game,
             created_at=datetime.now(UTC),
             sample_size=len(kept_observations),
+            currency=dataset.currency,
         )
 
         return OutlierRemovalResult(
@@ -137,6 +144,7 @@ class DefaultOutlierRemoval(IOutlierRemoval):
             game=dataset.game,
             created_at=datetime.now(UTC),
             sample_size=dataset.sample_size,
+            currency=dataset.currency,
         )
 
         return OutlierRemovalResult(

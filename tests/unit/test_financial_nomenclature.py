@@ -52,7 +52,7 @@ def _candidate() -> CandidateListing:
 
 def _breakdown() -> EconomicBreakdown:
     return ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05")).calculate(
-        [Decimal("20.0")], Decimal("10.0")
+        [Decimal("20.0")], Decimal("10.0"), "EUR"
     )
 
 
@@ -153,7 +153,7 @@ def test_detector_constructor_rejects_old_threshold_keywords(old_name: str) -> N
 
 
 def test_zero_denominator_behavior_is_preserved() -> None:
-    zero = ResaleEconomicPolicy.neutral().calculate([], Decimal("0.0"))
+    zero = ResaleEconomicPolicy.neutral().calculate([], Decimal("0.0"), "EUR")
 
     assert zero.net_profit_margin_percentage == 0.0
     assert zero.net_roi_percentage == 0.0

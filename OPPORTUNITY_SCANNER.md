@@ -505,3 +505,11 @@ Before building each market dataset, only a comparable whose non-empty
 `listing_id` equals the current candidate's ID is removed. Other candidates in
 the batch remain valid comparables. The unfiltered collection is cached only
 for the current execution; the valuation is candidate-specific.
+
+## P1.12 currency-safe cache reuse
+
+Wallapop collection has no currency parameter, so one raw collection remains
+cached per game identity. After candidate-ID exclusion, each candidate selects
+only comparables with its own currency before the builder. EUR and USD candidates
+may reuse one network response but never one dataset. No compatible comparables
+produces `No comparable listings available in currency <CODE>`.

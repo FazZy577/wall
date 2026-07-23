@@ -372,3 +372,12 @@ financial properties to it; they do not persist parallel profit, margin, ROI,
 discount, or break-even copies. Infrastructure detectors and analyzers require
 the policy through constructor injection. Application
 scanners neither construct nor configure it.
+
+## P1.12 single-currency boundary
+
+Every monetary pipeline carries one canonical three-letter uppercase ASCII
+currency code as `str`. Infrastructure normalizes external codes; Domain rejects
+non-canonical codes. Foreign-currency comparables are removed before dataset
+construction, while `PriceDataset` strictly rejects mixed inputs. Statistics,
+outliers, estimates and economic breakdowns preserve the currency. There is no
+Currency enum, Money, EUR fallback, FX conversion, symbol inference or rounding.

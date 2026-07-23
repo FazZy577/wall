@@ -626,3 +626,10 @@ Potential enhancements (not implemented):
 **Module Status:** ✅ Complete and Production-Ready
 
 **Next Module:** Arbitrage Opportunity Detector (uses market price estimate to identify profitable listings)
+
+## P1.12 currency propagation
+
+`PriceDataset`, statistics, outlier results and `MarketPriceEstimate` preserve
+one required canonical currency. Outlier removal and estimation raise
+`CurrencyMismatchError` before comparing incompatible inputs. The estimator does
+not invent EUR, convert currencies, or round values.

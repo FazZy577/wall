@@ -86,6 +86,7 @@ class DefaultPriceStatistics(IPriceStatistics):
             percentile_25=percentile_25,
             percentile_75=percentile_75,
             percentile_90=percentile_90,
+            currency=dataset.currency,
         )
 
     def _percentile(

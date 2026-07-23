@@ -183,3 +183,10 @@ once per lot; quick-sale discount and fixed selling cost apply once per valued
 item. Unvalued games add neither invented revenue nor selling cost, while still
 affecting the existing coverage rules. `LotOpportunity.economic_breakdown`
 preserves the complete calculation.
+
+## P1.12 comparable currencies
+
+For each game, the scanner excludes the candidate ID and then selects only raw
+comparables matching the lot currency. No compatible comparables produces a
+`GameValuationFailure` naming that currency; other games continue. Builder and
+analyzer provide strict defenses against mixed currencies.

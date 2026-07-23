@@ -5,6 +5,7 @@ from dataclasses import dataclass, fields
 from decimal import Decimal
 
 from domain._decimal import require_decimal
+from domain.currency import validate_currency_code
 
 ZERO = Decimal("0")
 ONE = Decimal("1")
@@ -29,13 +30,19 @@ class EconomicBreakdown:
     net_profit: Decimal
     break_even_sale_revenue: Decimal
     item_count: int
+    currency: str
 
     def __post_init__(self) -> None:
         for field in fields(self):
-            if field.name not in {"expected_item_sale_prices", "item_count"}:
+            if field.name not in {
+                "expected_item_sale_prices",
+                "item_count",
+                "currency",
+            }:
                 require_decimal(field.name, getattr(self, field.name))
         for price in self.expected_item_sale_prices:
             require_decimal("expected_item_sale_prices", price, non_negative=True)
+        validate_currency_code(self.currency)
 
     @property
     def net_profit_margin_percentage(self) -> Decimal:
@@ -95,9 +102,11 @@ class ResaleEconomicPolicy:
         self,
         reference_item_prices: Sequence[Decimal],
         acquisition_price: Decimal,
+        currency: str,
     ) -> EconomicBreakdown:
         """Calculate an auditable economic breakdown without rounding."""
         require_decimal("acquisition_price", acquisition_price, non_negative=True)
+        validate_currency_code(currency)
         prices = tuple(reference_item_prices)
         for price in prices:
             require_decimal("reference item prices", price, non_negative=True)
@@ -138,4 +147,5 @@ class ResaleEconomicPolicy:
             net_profit,
             break_even_sale_revenue,
             len(prices),
+            currency,
         )

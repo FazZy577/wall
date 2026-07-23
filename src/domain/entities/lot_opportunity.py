@@ -9,6 +9,7 @@ from decimal import Decimal
 from enum import StrEnum
 
 from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.resale_economics import EconomicBreakdown
@@ -62,6 +63,19 @@ class LotOpportunity:
 
     def __post_init__(self) -> None:
         require_decimal("lot_price", self.lot_price, non_negative=True)
+        if self.listing.currency != self.economic_breakdown.currency:
+            raise CurrencyMismatchError(
+                self.listing.currency,
+                self.economic_breakdown.currency,
+                "LotOpportunity",
+            )
+        for valuation in self.game_valuations:
+            if valuation.currency != self.listing.currency:
+                raise CurrencyMismatchError(
+                    self.listing.currency,
+                    valuation.currency,
+                    "LotOpportunity",
+                )
 
     @property
     def reference_market_value(self) -> Decimal:
@@ -94,6 +108,10 @@ class LotOpportunity:
     @property
     def break_even_sale_revenue(self) -> Decimal:
         return self.economic_breakdown.break_even_sale_revenue
+
+    @property
+    def currency(self) -> str:
+        return self.economic_breakdown.currency
 
     @classmethod
     def from_valuations(

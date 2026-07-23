@@ -62,6 +62,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
         game=game,
         created_at=datetime.now(timezone.utc),
         sample_size=len(observations),
+        currency="EUR",
     )
 
 
@@ -79,6 +80,7 @@ class TestEmptyDataset:
             game=sample_game,
             created_at=datetime.now(timezone.utc),
             sample_size=0,
+            currency="EUR",
         )
 
         with pytest.raises(EmptyDatasetError) as exc_info:
@@ -97,6 +99,7 @@ class TestEmptyDataset:
             game=sample_game,
             created_at=datetime.now(timezone.utc),
             sample_size=0,
+            currency="EUR",
         )
 
         with pytest.raises(EmptyDatasetError):

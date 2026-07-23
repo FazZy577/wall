@@ -9,6 +9,7 @@ Contains business rules for lot decisions — but NO market data access.
 import logging
 from decimal import Decimal
 
+from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
@@ -73,12 +74,21 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             LotOpportunity with recommendation, reason, and score
     """
 
+        for valuation in game_valuations:
+            if valuation.currency != listing.currency:
+                raise CurrencyMismatchError(
+                    listing.currency,
+                    valuation.currency,
+                    "LotOpportunityAnalyzer",
+                )
+
         # Compute aggregate metrics
         economic_breakdown = self.economic_policy.calculate(
             reference_item_prices=[
                 valuation.estimated_market_value for valuation in game_valuations
             ],
             acquisition_price=listing.price,
+            currency=listing.currency,
         )
         net_profit = economic_breakdown.net_profit
         net_profit_margin = economic_breakdown.net_profit_margin_percentage

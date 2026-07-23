@@ -100,14 +100,18 @@ class TestNewFields:
             sample_game, 20.0, 0.8, ConfidenceLevel.HIGH
         )
         configured_policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05"))
-        breakdown = configured_policy.calculate([Decimal("20.0")], Decimal("10.0"))
+        breakdown = configured_policy.calculate(
+            [Decimal("20.0")], Decimal("10.0"), "EUR"
+        )
         policy = Mock(spec=ResaleEconomicPolicy)
         policy.calculate.return_value = breakdown
 
         result = DefaultArbitrageOpportunityDetector(policy).detect(listing, estimate)
 
         policy.calculate.assert_called_once_with(
-            reference_item_prices=[20.0], acquisition_price=Decimal("10.0")
+            reference_item_prices=[Decimal("20.0")],
+            acquisition_price=Decimal("10.0"),
+            currency="EUR",
         )
         assert result.economic_breakdown is breakdown
         assert result.economic_breakdown.net_profit == Decimal("1.45")

@@ -9,6 +9,7 @@ from decimal import Decimal
 from enum import StrEnum
 
 from domain._decimal import require_decimal
+from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.interfaces.price_dataset_builder import (
     PriceDataset,
     PriceObservation,
@@ -49,6 +50,13 @@ class OutlierObservation:
 
     def __post_init__(self) -> None:
         require_decimal("price", self.price)
+        validate_currency_code(self.currency)
+        if self.original_observation.currency != self.currency:
+            raise CurrencyMismatchError(
+                self.currency,
+                self.original_observation.currency,
+                "OutlierObservation",
+            )
 
 
 @dataclass
@@ -76,6 +84,10 @@ class OutlierRemovalResult:
     def __post_init__(self) -> None:
         require_decimal("lower_bound", self.lower_bound)
         require_decimal("upper_bound", self.upper_bound)
+
+    @property
+    def currency(self) -> str:
+        return self.clean_dataset.currency
 
 
 class IOutlierRemoval(ABC):

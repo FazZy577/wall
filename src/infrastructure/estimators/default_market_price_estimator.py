@@ -7,6 +7,7 @@ Calculates confidence score based on sample size and price dispersion.
 from datetime import UTC, datetime
 from decimal import Decimal
 
+from domain.currency import CurrencyMismatchError
 from domain.interfaces.market_price_estimator import (
     ConfidenceLevel,
     EstimationStrategy,
@@ -71,6 +72,11 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
         Raises:
             EmptyDatasetError: If dataset has no observations
         """
+        if dataset.currency != statistics.currency:
+            raise CurrencyMismatchError(
+                dataset.currency, statistics.currency, "MarketPriceEstimator"
+            )
+
         # Validate dataset
         if dataset.sample_size == 0:
             msg = "Cannot estimate price from empty dataset"
@@ -78,9 +84,6 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
 
         # Get estimated price (median)
         estimated_price = statistics.median_price
-
-        # Get currency from first observation (all observations have same currency)
-        currency = dataset.observations[0].currency
 
         # Calculate confidence score
         confidence_score = self._calculate_confidence_score(
@@ -117,7 +120,7 @@ class DefaultMarketPriceEstimator(IMarketPriceEstimator):
         # Build result
         return MarketPriceEstimate(
             estimated_price=estimated_price,
-            currency=currency,
+            currency=dataset.currency,
             confidence_score=confidence_score,
             confidence_level=confidence_level,
             strategy=self.strategy,

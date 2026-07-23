@@ -223,6 +223,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
         game=game,
         created_at=datetime.now(timezone.utc),
         sample_size=len(observations),
+        currency="EUR",
     )
 
 

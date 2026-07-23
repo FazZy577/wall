@@ -779,7 +779,60 @@ async def test_lot_candidate_is_excluded_from_market_comparables(
 
     await scanner.scan_lot(candidate)
 
-    mock_dataset_builder.build.assert_called_once_with([gta_1, gta_2])
+    mock_dataset_builder.build.assert_called_once_with([gta_1, gta_2], "EUR")
+
+
+@pytest.mark.asyncio
+async def test_lot_game_with_only_foreign_currency_comparables_fails_partially(
+    scanner: DefaultLotOpportunityScanner,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    candidate = CandidateListing(
+        "mixed-lot",
+        "Lote PS4 GTA V RDR2 Spider-Man",
+        "",
+        Decimal("35"),
+        "EUR",
+        "url",
+    )
+    _setup_pipeline_mocks(
+        scanner,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_lot_analyzer,
+        comparable_prices=[12, 15, 18],
+    )
+
+    async def collect(*, game: DetectedGame, **_kwargs: object) -> list[ComparableListing]:
+        currency = "USD" if game.canonical_name == "RDR2" else "EUR"
+        return [
+            ComparableListing(
+                f"{game.canonical_name}-1",
+                game.canonical_name,
+                "",
+                Decimal("20"),
+                currency,
+                game,
+                "url",
+            )
+        ]
+
+    mock_price_collector.collect_comparables.side_effect = collect
+    result = await scanner.scan_lot(candidate)
+
+    assert result.total_detected_games == 3
+    assert result.successfully_valued_games == 2
+    assert result.failed_games == 1
+    assert result.failures[0].game.canonical_name == "RDR2"
+    assert "currency EUR" in result.failures[0].reason
 
 
 def test_lot_game_identity_normalizes_aliases_but_separates_platforms() -> None:

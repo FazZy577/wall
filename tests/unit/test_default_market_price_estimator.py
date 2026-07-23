@@ -66,6 +66,7 @@ def create_dataset(prices: list[float], game: DetectedGame) -> PriceDataset:
         game=game,
         created_at=datetime.now(UTC),
         sample_size=len(observations),
+        currency="EUR",
     )
 
 
@@ -98,6 +99,7 @@ def create_statistics(
         percentile_25=Decimal(str(q1)),
         percentile_75=Decimal(str(q3)),
         percentile_90=Decimal(str(max_price)),
+        currency="EUR",
     )
 
 
@@ -397,7 +399,9 @@ class TestFieldPropagation:
         # Manually set currency to verify it's propagated
         dataset.observations[0].currency = "USD"
         dataset.observations[1].currency = "USD"
+        dataset.currency = "USD"
         statistics = create_statistics(2, 15.0, 16.0, 15.5, 15.5, 0.5, 0.5)
+        statistics.currency = "USD"
 
         result = estimator.estimate(dataset, statistics, observations_removed=0)
 
