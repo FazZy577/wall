@@ -393,6 +393,13 @@ unconfigured currencies without EUR fallback or FX. Application injects the
 configured analyzer unchanged; the lot scanner contains no threshold selection.
 Coverage and lot recommendation rules are unaffected.
 
+`ResaleEconomicPolicy` separates global dimensionless rates from absolute
+currency configuration. Each canonical currency maps to one frozen
+`ResaleAbsoluteCosts` bundle. The mapping is defensively copied and immutable.
+`neutral()` means EUR only; callers use `neutral("USD")`, `neutral("GBP")`, or
+an explicit multimonetary mapping. Missing currency fails without zero/EUR
+fallback or FX.
+
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a
 number, or removes leading zeroes. Wallapop infrastructure reads the real `id`

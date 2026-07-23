@@ -253,5 +253,13 @@ EUR fallback or FX conversion.
 Currency homogeneity is checked before economic aggregation. Mixed game
 platforms remain valid because threshold selection depends on the homogeneous
 lot currency, not platform. Coverage, confidence, recommendation order and
-reason codes are unchanged. Absolute costs in `ResaleEconomicPolicy` and the
-mutable-list aliasing of `LotOpportunity` remain separate pending decisions.
+reason codes are unchanged. The mutable-list aliasing of `LotOpportunity`
+remains a separate pending issue.
+
+## P1.21B currency-specific resale costs
+
+`ResaleAbsoluteCosts` groups quick-sale discount per item, fixed selling cost
+per item, and one-time acquisition overhead. `ResaleEconomicPolicy` stores an
+immutable `Mapping[str, ResaleAbsoluteCosts]`; ratios remain global and
+dimensionless. Empty mappings are allowed but cannot calculate. Missing
+currencies fail without EUR/zero fallback or FX. Formulas are unchanged.

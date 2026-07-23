@@ -302,6 +302,13 @@ mappings configure no currency, and missing currencies fail diagnostically.
 There is no EUR fallback or FX. Coverage, recommendation order, reasons,
 economics, `LotOpportunity`, and the individual detector remain unchanged.
 
+P1.21B resolves the absolute resale-cost units. `ResaleAbsoluteCosts` groups
+the two per-item amounts and one-time acquisition overhead;
+`ResaleEconomicPolicy.absolute_costs_by_currency` selects the bundle by
+pipeline currency. Ratios remain global. `neutral()` configures only EUR by
+default, mappings may be empty, and missing currencies fail without EUR/zero
+fallback or FX. Formulas, thresholds, scores, ranking and coverage are intact.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

@@ -10,7 +10,10 @@ from unittest.mock import Mock
 import pytest
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import (
+    ResaleAbsoluteCosts,
+    ResaleEconomicPolicy,
+)
 from domain.interfaces.arbitrage_opportunity_detector import (
     ReasonCode,
     Recommendation,
@@ -100,7 +103,11 @@ class TestNewFields:
         estimate = create_market_estimate(
             sample_game, 20.0, 0.8, ConfidenceLevel.HIGH
         )
-        configured_policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05"))
+        configured_policy = ResaleEconomicPolicy(
+            {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("1.0"), Decimal("2.0"))},
+            Decimal("0.10"),
+            Decimal("0.05"),
+        )
         breakdown = configured_policy.calculate(
             [Decimal("20.0")], Decimal("10.0"), "EUR"
         )
@@ -131,7 +138,11 @@ class TestNewFields:
         )
         neutral = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
         costly = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy(Decimal("10.0"), Decimal("0.20"), Decimal("2.0"), Decimal("5.0"), Decimal("0.10"))
+            ResaleEconomicPolicy(
+                {"EUR": ResaleAbsoluteCosts(Decimal("10.0"), Decimal("2.0"), Decimal("5.0"))},
+                Decimal("0.20"),
+                Decimal("0.10"),
+            )
         )
 
         neutral_result = neutral.detect(listing, estimate)
@@ -892,7 +903,7 @@ class TestCurrencySpecificProfitThresholds:
             currency,
         )
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(),
+            ResaleEconomicPolicy.neutral(currency),
             min_net_profit_by_currency=thresholds,
         )
         return detector.detect(listing, estimate)

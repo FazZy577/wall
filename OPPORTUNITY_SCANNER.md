@@ -59,6 +59,11 @@ and an absent currency fails at `OPPORTUNITY_DETECTION`. There is no EUR
 fallback or FX conversion. Explicit Decimal zero remains zero and can affect
 the recommendation without changing valuation, economics, score or ranking.
 
+The injected `ResaleEconomicPolicy` independently resolves an immutable
+`ResaleAbsoluteCosts` bundle using the candidate currency. Missing bundles use
+the existing `OPPORTUNITY_DETECTION` failure path in batch scans, while
+`scan_listing()` returns `None`; no fallback or FX is performed.
+
 ## Execution-scoped comparable reuse (P1.1/P1.6)
 
 Previously, `scan_multiple()` ran the complete market valuation pipeline once per

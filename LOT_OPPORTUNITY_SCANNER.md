@@ -209,8 +209,14 @@ currency is homogeneous. Coverage and recommendation rules are unchanged.
 
 The scanner does not reconstruct or select thresholds. Under its current
 contract, an analyzer exception is logged and produces `opportunity=None`; it
-does not yet create a structured lot-analysis failure. That behavior and the
-currency semantics of absolute `ResaleEconomicPolicy` costs remain pending.
+does not yet create a structured lot-analysis failure. That behavior remains
+pending.
+
+The injected `ResaleEconomicPolicy` resolves all three absolute costs together
+from `absolute_costs_by_currency` using the homogeneous lot currency. The
+bundle has no fallback and no FX. Per-item costs and one-time overhead retain
+their formulas. A missing bundle preserves completed valuations and follows
+the existing logged-error result with `opportunity=None`.
 
 ## P1.14 unique comparables per game dataset
 

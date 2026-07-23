@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import ResaleAbsoluteCosts, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     Recommendation,
@@ -107,7 +107,11 @@ def main() -> None:
 
     # Create detector
     # Example strategy: sell 3 EUR below market. Configure real channel costs.
-    policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
+    policy = ResaleEconomicPolicy(
+        {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"))},
+        Decimal("0.0"),
+        Decimal("0.0"),
+    )
     detector = DefaultArbitrageOpportunityDetector(policy)
 
     # Create game

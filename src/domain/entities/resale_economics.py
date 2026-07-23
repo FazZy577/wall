@@ -1,8 +1,9 @@
 """Explicit Decimal-based economic policy and auditable resale calculation."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields
 from decimal import Decimal
+from types import MappingProxyType
 
 from domain._decimal import require_decimal
 from domain.currency import validate_currency_code
@@ -68,24 +69,45 @@ class EconomicBreakdown:
 
 
 @dataclass(frozen=True)
-class ResaleEconomicPolicy:
-    """Configuration for converting market references into net economics."""
+class ResaleAbsoluteCosts:
+    """Absolute resale costs for one currency."""
 
     quick_sale_discount_per_item: Decimal
-    selling_fee_rate: Decimal
     fixed_selling_cost_per_item: Decimal
     acquisition_overhead: Decimal
+
+    def __post_init__(self) -> None:
+        for field in fields(self):
+            require_decimal(field.name, getattr(self, field.name), non_negative=True)
+
+
+@dataclass(frozen=True)
+class ResaleEconomicPolicy:
+    """Currency-aware absolute costs and global dimensionless rates."""
+
+    absolute_costs_by_currency: Mapping[str, ResaleAbsoluteCosts]
+    selling_fee_rate: Decimal
     safety_buffer_rate: Decimal
 
     def __post_init__(self) -> None:
-        values = {
-            "quick_sale_discount_per_item": self.quick_sale_discount_per_item,
+        validated_costs: dict[str, ResaleAbsoluteCosts] = {}
+        for currency, costs in self.absolute_costs_by_currency.items():
+            validate_currency_code(currency, "absolute_costs_by_currency key")
+            if not isinstance(costs, ResaleAbsoluteCosts):
+                raise TypeError(
+                    "absolute_costs_by_currency values must be ResaleAbsoluteCosts"
+                )
+            validated_costs[currency] = costs
+        object.__setattr__(
+            self,
+            "absolute_costs_by_currency",
+            MappingProxyType(validated_costs),
+        )
+
+        for name, value in {
             "selling_fee_rate": self.selling_fee_rate,
-            "fixed_selling_cost_per_item": self.fixed_selling_cost_per_item,
-            "acquisition_overhead": self.acquisition_overhead,
             "safety_buffer_rate": self.safety_buffer_rate,
-        }
-        for name, value in values.items():
+        }.items():
             require_decimal(name, value, non_negative=True)
         if self.selling_fee_rate >= ONE:
             raise ValueError("selling_fee_rate must be less than 1")
@@ -95,8 +117,23 @@ class ResaleEconomicPolicy:
             raise ValueError("selling_fee_rate + safety_buffer_rate must be less than 1")
 
     @classmethod
-    def neutral(cls) -> "ResaleEconomicPolicy":
-        return cls(ZERO, ZERO, ZERO, ZERO, ZERO)
+    def neutral(cls, currency: str = "EUR") -> "ResaleEconomicPolicy":
+        validate_currency_code(currency)
+        return cls(
+            {currency: ResaleAbsoluteCosts(ZERO, ZERO, ZERO)},
+            ZERO,
+            ZERO,
+        )
+
+    def _absolute_costs_for_currency(
+        self, currency: str
+    ) -> ResaleAbsoluteCosts:
+        try:
+            return self.absolute_costs_by_currency[currency]
+        except KeyError:
+            raise ValueError(
+                f"No resale absolute costs configured for currency {currency}"
+            ) from None
 
     def calculate(
         self,
@@ -105,22 +142,26 @@ class ResaleEconomicPolicy:
         currency: str,
     ) -> EconomicBreakdown:
         """Calculate an auditable economic breakdown without rounding."""
-        require_decimal("acquisition_price", acquisition_price, non_negative=True)
-        validate_currency_code(currency)
         prices = tuple(reference_item_prices)
         for price in prices:
             require_decimal("reference item prices", price, non_negative=True)
+        require_decimal("acquisition_price", acquisition_price, non_negative=True)
+        validate_currency_code(currency)
+        absolute_costs = self._absolute_costs_for_currency(currency)
 
         expected_prices = tuple(
-            max(ZERO, price - self.quick_sale_discount_per_item) for price in prices
+            max(ZERO, price - absolute_costs.quick_sale_discount_per_item)
+            for price in prices
         )
         reference_market_value = sum(prices, ZERO)
         expected_sale_revenue = sum(expected_prices, ZERO)
         quick_sale_discount_total = reference_market_value - expected_sale_revenue
         selling_fees = expected_sale_revenue * self.selling_fee_rate
-        fixed_selling_costs = Decimal(len(prices)) * self.fixed_selling_cost_per_item
+        fixed_selling_costs = (
+            Decimal(len(prices)) * absolute_costs.fixed_selling_cost_per_item
+        )
         safety_buffer = expected_sale_revenue * self.safety_buffer_rate
-        total_acquisition_cost = acquisition_price + self.acquisition_overhead
+        total_acquisition_cost = acquisition_price + absolute_costs.acquisition_overhead
         net_expected_proceeds = (
             expected_sale_revenue
             - selling_fees
@@ -141,7 +182,7 @@ class ResaleEconomicPolicy:
             fixed_selling_costs,
             safety_buffer,
             acquisition_price,
-            self.acquisition_overhead,
+            absolute_costs.acquisition_overhead,
             total_acquisition_cost,
             net_expected_proceeds,
             net_profit,

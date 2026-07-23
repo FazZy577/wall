@@ -12,7 +12,11 @@ from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
-from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
+from domain.entities.resale_economics import (
+    EconomicBreakdown,
+    ResaleAbsoluteCosts,
+    ResaleEconomicPolicy,
+)
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     ReasonCode,
@@ -51,7 +55,11 @@ def _candidate() -> CandidateListing:
 
 
 def _breakdown() -> EconomicBreakdown:
-    return ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.10"), Decimal("1.0"), Decimal("2.0"), Decimal("0.05")).calculate(
+    return ResaleEconomicPolicy(
+        {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("1.0"), Decimal("2.0"))},
+        Decimal("0.10"),
+        Decimal("0.05"),
+    ).calculate(
         [Decimal("20.0")], Decimal("10.0"), "EUR"
     )
 

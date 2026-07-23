@@ -9,7 +9,10 @@ from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import (
+    ResaleAbsoluteCosts,
+    ResaleEconomicPolicy,
+)
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from infrastructure.dataset_builders.default_price_dataset_builder import (
@@ -368,13 +371,20 @@ async def test_scanner_uses_currency_specific_thresholds_offline() -> None:
         1.0,
         DetectionMethod.ALIAS_MATCH,
     )
+    gbp_game = DetectedGame(
+        "Minecraft",
+        "Minecraft",
+        Platform.PS5,
+        1.0,
+        DetectionMethod.EXACT_MATCH,
+    )
     game_detector = Mock()
-    game_detector.detect_games.side_effect = [[eur_game], [usd_game]]
+    game_detector.detect_games.side_effect = [[eur_game], [usd_game], [gbp_game]]
     collector = Mock()
 
     async def collect(game: DetectedGame, *args: object, **kwargs: object):
         del args, kwargs
-        currency = "EUR" if game is eur_game else "USD"
+        currency = "EUR" if game is eur_game else "USD" if game is usd_game else "GBP"
         return [
             _comparable(f"{currency}-{index}", 20.0, currency, game)
             for index in range(20)
@@ -385,11 +395,21 @@ async def test_scanner_uses_currency_specific_thresholds_offline() -> None:
         game_detector,
         collector,
         DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(),
+            ResaleEconomicPolicy(
+                {
+                    "EUR": ResaleAbsoluteCosts(Decimal("3"), Decimal("1"), Decimal("2")),
+                    "USD": ResaleAbsoluteCosts(Decimal("2"), Decimal("0.5"), Decimal("1")),
+                    "GBP": ResaleAbsoluteCosts(Decimal("4"), Decimal("2"), Decimal("3")),
+                },
+                Decimal("0"),
+                Decimal("0"),
+            ),
             min_net_profit_by_currency={
-                "EUR": Decimal("10"),
-                "USD": Decimal("8"),
+                "EUR": Decimal("4"),
+                "USD": Decimal("6"),
+                "GBP": Decimal("1"),
             },
+            min_net_profit_margin_percent=Decimal("0"),
         ),
     )
 
@@ -397,20 +417,27 @@ async def test_scanner_uses_currency_specific_thresholds_offline() -> None:
         [
             _candidate("candidate-eur", 10.0, "EUR"),
             _candidate("candidate-usd", 10.0, "USD", "RDR2 PS4"),
+            _candidate("candidate-gbp", 10.0, "GBP", "Minecraft PS5"),
         ]
     )
 
-    assert result.successful == 2
+    assert result.successful == 3
     assert result.failed == 0
-    assert [opportunity.currency for opportunity in result.opportunities] == [
+    assert {opportunity.currency for opportunity in result.opportunities} == {
         "EUR",
         "USD",
-    ]
+        "GBP",
+    }
     assert all(
         opportunity.recommendation is Recommendation.BUY
         for opportunity in result.opportunities
     )
-    assert collector.collect_comparables.await_count == 2
+    assert {
+        opportunity.currency: opportunity.net_profit
+        for opportunity in result.opportunities
+    } == {"EUR": Decimal("4"), "USD": Decimal("6.5"), "GBP": Decimal("1")}
+    assert len({item.opportunity_score for item in result.opportunities}) == 3
+    assert collector.collect_comparables.await_count == 3
 
 
 @pytest.mark.asyncio
@@ -437,7 +464,14 @@ async def test_batch_isolates_missing_currency_threshold_as_detection_failure() 
 
     collector.collect_comparables = AsyncMock(side_effect=collect)
     detector = DefaultArbitrageOpportunityDetector(
-        ResaleEconomicPolicy.neutral(),
+        ResaleEconomicPolicy(
+            {
+                "EUR": ResaleAbsoluteCosts(Decimal("0"), Decimal("0"), Decimal("0")),
+                "USD": ResaleAbsoluteCosts(Decimal("0"), Decimal("0"), Decimal("0")),
+            },
+            Decimal("0"),
+            Decimal("0"),
+        ),
         min_net_profit_by_currency={"EUR": Decimal("10")},
     )
     scanner = _scanner_for_currencies(game_detector, collector, detector)
@@ -465,3 +499,40 @@ async def test_batch_isolates_missing_currency_threshold_as_detection_failure() 
     game_detector.detect_games.side_effect = None
     game_detector.detect_games.return_value = [usd_game]
     assert await scanner.scan_listing(candidates[1]) is None
+
+
+@pytest.mark.asyncio
+async def test_scanner_isolates_missing_absolute_cost_bundle() -> None:
+    usd_game = DetectedGame(
+        "Red Dead Redemption 2",
+        "RDR2",
+        Platform.PS4,
+        1.0,
+        DetectionMethod.ALIAS_MATCH,
+    )
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [usd_game]
+    collector = Mock()
+    collector.collect_comparables = AsyncMock(
+        return_value=[
+            _comparable(f"USD-{index}", 20.0, "USD", usd_game)
+            for index in range(20)
+        ]
+    )
+    detector = DefaultArbitrageOpportunityDetector(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"USD": Decimal("8")},
+    )
+    scanner = _scanner_for_currencies(game_detector, collector, detector)
+    candidate = _candidate("missing-usd-costs", 10.0, "USD", "RDR2 PS4")
+
+    result = await scanner.scan_multiple([candidate])
+
+    assert result.successful == 0
+    assert result.failed == 1
+    assert result.failures[0].listing_id == "missing-usd-costs"
+    assert result.failures[0].stage is PipelineStage.OPPORTUNITY_DETECTION
+    assert result.failures[0].error_message == (
+        "No resale absolute costs configured for currency USD"
+    )
+    assert await scanner.scan_listing(candidate) is None

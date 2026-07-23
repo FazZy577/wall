@@ -20,7 +20,7 @@ from application.interfaces.opportunity_scanner import RankingResult
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import ResaleAbsoluteCosts, ResaleEconomicPolicy
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -125,7 +125,11 @@ async def main() -> None:
     outlier_removal = DefaultOutlierRemoval()
     market_estimator = DefaultMarketPriceEstimator()
     # Example strategy: 3 EUR below market; this is not a production default.
-    economic_policy = ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
+    economic_policy = ResaleEconomicPolicy(
+        {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"))},
+        Decimal("0.0"),
+        Decimal("0.0"),
+    )
     arbitrage_detector = DefaultArbitrageOpportunityDetector(economic_policy)
 
     print("  РІСљвЂњ GameDetector (mock)")

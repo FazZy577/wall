@@ -11,7 +11,10 @@ from application.use_cases.default_lot_opportunity_scanner import (
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import (
+    ResaleAbsoluteCosts,
+    ResaleEconomicPolicy,
+)
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
@@ -243,7 +246,7 @@ async def test_lot_scanner_uses_injected_usd_threshold_offline() -> None:
         "usd-lot", "GTA V lot", "", Decimal("5"), "USD", "url"
     )
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy.neutral(),
+        ResaleEconomicPolicy.neutral("USD"),
         min_net_profit_by_currency={"EUR": Decimal("10"), "USD": Decimal("8")},
     )
     scanner = _currency_scanner(candidate, game, analyzer)
@@ -259,6 +262,44 @@ async def test_lot_scanner_uses_injected_usd_threshold_offline() -> None:
 
 
 @pytest.mark.asyncio
+async def test_lot_scanner_selects_distinct_cost_bundles_by_currency() -> None:
+    policy = ResaleEconomicPolicy(
+        {
+            "EUR": ResaleAbsoluteCosts(Decimal("3"), Decimal("1"), Decimal("2")),
+            "USD": ResaleAbsoluteCosts(Decimal("2"), Decimal("0.5"), Decimal("1")),
+            "GBP": ResaleAbsoluteCosts(Decimal("4"), Decimal("2"), Decimal("3")),
+        },
+        Decimal("0"),
+        Decimal("0"),
+    )
+    analyzer = DefaultLotOpportunityAnalyzer(
+        policy,
+        min_net_profit_by_currency={
+            "EUR": Decimal("0"),
+            "USD": Decimal("0"),
+            "GBP": Decimal("0"),
+        },
+    )
+    expected_profit = {
+        "EUR": Decimal("4"),
+        "USD": Decimal("6.5"),
+        "GBP": Decimal("1"),
+    }
+
+    for currency in ("EUR", "USD", "GBP"):
+        game = _game("GTA V")
+        candidate = CandidateListing(
+            f"{currency}-lot", "GTA V lot", "", Decimal("5"), currency, "url"
+        )
+        result = await _currency_scanner(candidate, game, analyzer).scan_lot(candidate)
+
+        assert result.opportunity is not None
+        assert result.opportunity.currency == currency
+        assert result.opportunity.net_profit == expected_profit[currency]
+        assert result.opportunity.economic_breakdown.item_count == 1
+
+
+@pytest.mark.asyncio
 async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -267,7 +308,7 @@ async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
         "usd-unconfigured", "GTA V lot", "", Decimal("5"), "USD", "url"
     )
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy.neutral(),
+        ResaleEconomicPolicy.neutral("USD"),
         min_net_profit_by_currency={"EUR": Decimal("10")},
     )
     scanner = _currency_scanner(candidate, game, analyzer)
@@ -282,3 +323,26 @@ async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
         "No minimum lot net profit threshold configured for currency USD"
         in caplog.text
     )
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_preserves_unstructured_missing_cost_bundle_failure(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    game = _game("GTA V")
+    candidate = CandidateListing(
+        "usd-costs-unconfigured", "GTA V lot", "", Decimal("5"), "USD", "url"
+    )
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"USD": Decimal("8")},
+    )
+    scanner = _currency_scanner(candidate, game, analyzer)
+
+    result = await scanner.scan_lot(candidate)
+
+    assert len(result.game_valuations) == 1
+    assert result.game_valuations[0].currency == "USD"
+    assert result.opportunity is None
+    assert result.failures == []
+    assert "No resale absolute costs configured for currency USD" in caplog.text

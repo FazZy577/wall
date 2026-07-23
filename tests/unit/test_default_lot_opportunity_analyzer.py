@@ -13,7 +13,10 @@ from domain.currency import CurrencyMismatchError
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotReasonCode
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import (
+    ResaleAbsoluteCosts,
+    ResaleEconomicPolicy,
+)
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import (
     DetectedGame,
@@ -141,7 +144,11 @@ def test_p16_detection_source_change_preserves_economic_results(
 
 def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"))
+        ResaleEconomicPolicy(
+            {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"))},
+            Decimal("0.0"),
+            Decimal("0.0"),
+        )
     )
     candidate = CandidateListing("lot", "Lot", "", Decimal("40.0"), "EUR", "url")
     valuations = [
@@ -161,7 +168,11 @@ def test_quick_sale_policy_builds_one_aggregate_lot_breakdown() -> None:
 
 def test_partial_and_empty_valuations_only_charge_successful_items() -> None:
     analyzer = DefaultLotOpportunityAnalyzer(
-        ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("1.0"), Decimal("2.0"), Decimal("0.0"))
+        ResaleEconomicPolicy(
+            {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("1.0"), Decimal("2.0"))},
+            Decimal("0.0"),
+            Decimal("0.0"),
+        )
     )
     candidate = CandidateListing("lot", "Lot", "", Decimal("40.0"), "EUR", "url")
     valuations = [_make_valuation("GTA V", 15.0), _make_valuation("RDR2", 20.0)]
@@ -532,7 +543,7 @@ class TestCurrencySpecificLotProfitThresholds:
             "Game", float(Decimal("10") + Decimal(net_profit)), currency=currency
         )
         analyzer = DefaultLotOpportunityAnalyzer(
-            ResaleEconomicPolicy.neutral(),
+            ResaleEconomicPolicy.neutral(currency),
             min_net_profit_by_currency=thresholds,
         )
         return analyzer.analyze(listing, [valuation], 1)

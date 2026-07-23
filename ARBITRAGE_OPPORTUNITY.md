@@ -29,6 +29,13 @@ economic policy then accounts explicitly for quick-sale discount, selling
 fees, fixed costs, overhead, and safety buffer before exposing net profit,
 margin, ROI, acquisition discount, and break-even revenue.
 
+`ResaleEconomicPolicy` groups its three absolute amounts in immutable
+`ResaleAbsoluteCosts` values keyed by canonical currency. Quick-sale discount
+and fixed selling cost apply per item; acquisition overhead applies once per
+operation. Fee and safety-buffer rates remain global dimensionless ratios.
+There is no currency fallback or FX. `neutral()` configures only EUR;
+`neutral("USD")` and `neutral("GBP")` configure only the requested currency.
+
 ### Canonical financial vocabulary
 
 `EconomicBreakdown` is the single source of financial truth. Opportunities

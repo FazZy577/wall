@@ -21,7 +21,7 @@ from application.use_cases.default_lot_opportunity_scanner import (
 )
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
-from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.resale_economics import ResaleAbsoluteCosts, ResaleEconomicPolicy
 from domain.interfaces.game_detector import (
     DetectedGame,
     DetectionMethod,
@@ -224,7 +224,11 @@ async def main() -> None:
         market_estimator=FakeMarketPriceEstimator(),
         # Explicit example policy: 3 EUR below market for each valued game.
         lot_analyzer=DefaultLotOpportunityAnalyzer(
-            ResaleEconomicPolicy(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0"), Decimal("0.0")),
+            ResaleEconomicPolicy(
+                {"EUR": ResaleAbsoluteCosts(Decimal("3.0"), Decimal("0.0"), Decimal("0.0"))},
+                Decimal("0.0"),
+                Decimal("0.0"),
+            ),
             min_net_profit_by_currency={"EUR": Decimal("10.0")},
         ),
     )
