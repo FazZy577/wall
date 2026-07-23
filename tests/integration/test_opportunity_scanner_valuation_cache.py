@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
@@ -35,26 +36,36 @@ def _game() -> DetectedGame:
     )
 
 
-def _candidate(identifier: str, price: float) -> CandidateListing:
+def _candidate(
+    identifier: str,
+    price: float,
+    currency: str = "EUR",
+    title: str = "GTA V PS4",
+) -> CandidateListing:
     return CandidateListing(
         listing_id=identifier,
-        title="GTA V PS4",
+        title=title,
         description="",
         price=Decimal(str(price)),
-        currency="EUR",
+        currency=currency,
         url=f"https://example.test/{identifier}",
         raw_listing={"kind": "candidate", "id": identifier},
     )
 
 
-def _comparable(identifier: str, price: float) -> ComparableListing:
+def _comparable(
+    identifier: str,
+    price: float,
+    currency: str = "EUR",
+    detected_game: DetectedGame | None = None,
+) -> ComparableListing:
     return ComparableListing(
         listing_id=identifier,
         title="GTA V PS4",
         description="",
         price=Decimal(str(price)),
-        currency="EUR",
-        detected_game=_game(),
+        currency=currency,
+        detected_game=detected_game or _game(),
         url=f"https://example.test/{identifier}",
         raw_listing={"kind": "comparable", "id": identifier},
     )
@@ -84,7 +95,8 @@ async def test_scanner_uses_injected_detector_with_explicit_zero_threshold() -> 
     )
     configured_detector = Mock(
         wraps=DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={"EUR": Decimal("0")},
         )
     )
     ranker = Mock(wraps=DefaultOpportunityRanker())
@@ -327,3 +339,129 @@ async def test_candidate_exclusion_is_specific_before_local_deduplication() -> N
     assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
     assert collector.collect_comparables.await_count == 1
     assert [item.listing_id for item in raw_comparables] == ["A", "A", "B", "B", "C"]
+
+
+def _scanner_for_currencies(
+    game_detector: Mock,
+    collector: Mock,
+    detector: DefaultArbitrageOpportunityDetector,
+) -> DefaultOpportunityScanner:
+    return DefaultOpportunityScanner(
+        game_detector=game_detector,
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        arbitrage_detector=detector,
+        opportunity_ranker=DefaultOpportunityRanker(),
+    )
+
+
+@pytest.mark.asyncio
+async def test_scanner_uses_currency_specific_thresholds_offline() -> None:
+    eur_game = _game()
+    usd_game = DetectedGame(
+        "Red Dead Redemption 2",
+        "RDR2",
+        Platform.PS4,
+        1.0,
+        DetectionMethod.ALIAS_MATCH,
+    )
+    game_detector = Mock()
+    game_detector.detect_games.side_effect = [[eur_game], [usd_game]]
+    collector = Mock()
+
+    async def collect(game: DetectedGame, *args: object, **kwargs: object):
+        del args, kwargs
+        currency = "EUR" if game is eur_game else "USD"
+        return [
+            _comparable(f"{currency}-{index}", 20.0, currency, game)
+            for index in range(20)
+        ]
+
+    collector.collect_comparables = AsyncMock(side_effect=collect)
+    scanner = _scanner_for_currencies(
+        game_detector,
+        collector,
+        DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={
+                "EUR": Decimal("10"),
+                "USD": Decimal("8"),
+            },
+        ),
+    )
+
+    result = await scanner.scan_multiple(
+        [
+            _candidate("candidate-eur", 10.0, "EUR"),
+            _candidate("candidate-usd", 10.0, "USD", "RDR2 PS4"),
+        ]
+    )
+
+    assert result.successful == 2
+    assert result.failed == 0
+    assert [opportunity.currency for opportunity in result.opportunities] == [
+        "EUR",
+        "USD",
+    ]
+    assert all(
+        opportunity.recommendation is Recommendation.BUY
+        for opportunity in result.opportunities
+    )
+    assert collector.collect_comparables.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_batch_isolates_missing_currency_threshold_as_detection_failure() -> None:
+    eur_game = _game()
+    usd_game = DetectedGame(
+        "Red Dead Redemption 2",
+        "RDR2",
+        Platform.PS4,
+        1.0,
+        DetectionMethod.ALIAS_MATCH,
+    )
+    game_detector = Mock()
+    game_detector.detect_games.side_effect = [[eur_game], [usd_game], [eur_game]]
+    collector = Mock()
+
+    async def collect(game: DetectedGame, *args: object, **kwargs: object):
+        del args, kwargs
+        currency = "EUR" if game is eur_game else "USD"
+        return [
+            _comparable(f"{currency}-{index}", 20.0, currency, game)
+            for index in range(20)
+        ]
+
+    collector.collect_comparables = AsyncMock(side_effect=collect)
+    detector = DefaultArbitrageOpportunityDetector(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"EUR": Decimal("10")},
+    )
+    scanner = _scanner_for_currencies(game_detector, collector, detector)
+    candidates = [
+        _candidate("A", 10.0, "EUR"),
+        _candidate("B", 10.0, "USD", "RDR2 PS4"),
+        _candidate("C", 10.0, "EUR"),
+    ]
+
+    result = await scanner.scan_multiple(candidates)
+
+    assert (result.successful, result.failed) == (2, 1)
+    assert [opportunity.listing.listing_id for opportunity in result.opportunities] == [
+        "A",
+        "C",
+    ]
+    assert result.failures[0].listing_id == "B"
+    assert result.failures[0].stage is PipelineStage.OPPORTUNITY_DETECTION
+    assert result.failures[0].error_message == (
+        "No minimum net profit threshold configured for currency USD"
+    )
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 1)
+    assert collector.collect_comparables.await_count == 2
+
+    game_detector.detect_games.side_effect = None
+    game_detector.detect_games.return_value = [usd_game]
+    assert await scanner.scan_listing(candidates[1]) is None

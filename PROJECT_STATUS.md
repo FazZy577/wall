@@ -288,6 +288,13 @@ explicit numeric zero. Defaults remain 10 EUR net profit, 25 percent net profit
 margin and 0.50 confidence. Rule order, comparison operators, reason codes,
 score weights, economics, ranking and lot analysis are unchanged.
 
+P1.19B makes the individual detector's absolute net-profit threshold explicit
+per currency through `min_net_profit_by_currency`. `None` retains only the
+historical EUR `Decimal("10.0")` default; explicit mappings are not merged with
+it, empty mappings configure nothing, and missing currencies raise a diagnostic
+configuration error. There is no EUR fallback or FX. Margin, confidence, score,
+ranking, economics, and the lot analyzer remain unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

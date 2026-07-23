@@ -56,13 +56,17 @@ The detector uses three key thresholds to determine whether a listing is worth p
 
 | Threshold | Default Value | Description |
 |-----------|---------------|-------------|
-| **Minimum Profit** | EUR 10.00 | Absolute profit required to justify effort |
+| **Minimum Profit** | `{"EUR": Decimal("10.0")}` | Absolute profit configured per currency |
 | **Minimum Margin** | 25% | Relative profit margin required |
 | **Minimum Confidence** | 0.50 | Confidence in market price estimate |
 
-Omitting a threshold or passing `None` selects the unchanged default shown
-above. Passing an explicit numeric zero preserves zero; zero does not mean
-"use the default" and is not normalized to a positive value. The existing
+Omitting `min_net_profit_by_currency` or passing `None` configures only the
+historical EUR default shown above. An explicit mapping replaces that default;
+USD, GBP, and other currencies must be configured explicitly. An empty mapping
+configures no currency. Passing an explicit `Decimal("0")` preserves zero; zero
+does not mean "use the default" and is not normalized to a positive value. A
+missing currency raises a configuration error: there is no EUR fallback or FX
+conversion. The existing
 comparison operators and rule order are unchanged, so a zero configuration can
 legitimately change `Recommendation` and its existing reason code. It does not
 change the `opportunity_score` formula or weights.
@@ -72,7 +76,7 @@ change the `opportunity_score` formula or weights.
 ### BUY - Clear Opportunity
 
 **Criteria**: ALL of the following must be true:
-- Expected profit >= EUR 10.00
+- Expected profit >= the threshold configured for the breakdown currency
 - Profit margin >= 25%
 - Confidence score >= 0.50
 - Listing price > 0
@@ -94,7 +98,7 @@ Margin:  45.5%
 **Criteria**: Positive profit but doesn't meet all BUY thresholds
 
 **Reason Codes**:
-- `low_expected_profit`: Profit is positive but below EUR 10.00
+- `low_expected_profit`: Profit is positive but below its currency threshold
 - `fair_price`: Margin is positive but below 25%
 
 **Example 1** (Low Profit):
@@ -173,7 +177,8 @@ else:
 ```python
 # More conservative thresholds
 detector = DefaultArbitrageOpportunityDetector(
-    min_net_profit_eur=15.0,      # Require at least EUR 15 profit
+    economic_policy,
+    min_net_profit_by_currency={"EUR": Decimal("15")},
     min_net_profit_margin_percent=35.0,  # Require at least 35% margin
     min_confidence_score=0.70, # Require higher confidence
 )
@@ -291,7 +296,7 @@ if net_profit <= 0:
 ### Step 4: Threshold Evaluation
 
 ```python
-if (net_profit >= min_net_profit_eur AND
+if (net_profit >= min_net_profit_by_currency[economic_breakdown.currency] AND
     net_profit_margin_percentage >= min_net_profit_margin_percent AND
     confidence >= min_confidence_score):
     return BUY (undervalued)
@@ -300,7 +305,7 @@ if (net_profit >= min_net_profit_eur AND
 ### Step 5: Borderline Cases
 
 ```python
-if net_profit > 0 AND net_profit < min_net_profit_eur:
+if net_profit > 0 AND net_profit < min_net_profit_by_currency[economic_breakdown.currency]:
     return MAYBE (low_expected_profit)
 
 if net_profit > 0 AND net_profit_margin_percentage < min_net_profit_margin_percent:
@@ -426,7 +431,8 @@ For risk-averse users who want high-confidence opportunities:
 
 ```python
 detector = DefaultArbitrageOpportunityDetector(
-    min_net_profit_eur=15.0,       # Higher profit requirement
+    economic_policy,
+    min_net_profit_by_currency={"EUR": Decimal("15")},
     min_net_profit_margin_percent=35.0,   # Higher margin requirement
     min_confidence_score=0.70, # Higher confidence requirement
 )
@@ -440,7 +446,8 @@ For users willing to take more risk:
 
 ```python
 detector = DefaultArbitrageOpportunityDetector(
-    min_net_profit_eur=5.0,        # Lower profit requirement
+    economic_policy,
+    min_net_profit_by_currency={"EUR": Decimal("5")},
     min_net_profit_margin_percent=15.0,   # Lower margin requirement
     min_confidence_score=0.40, # Lower confidence requirement
 )
@@ -453,8 +460,8 @@ detector = DefaultArbitrageOpportunityDetector(
 Default thresholds provide a good balance:
 
 ```python
-detector = DefaultArbitrageOpportunityDetector()
-# min_net_profit_eur=10.0
+detector = DefaultArbitrageOpportunityDetector(economic_policy)
+# min_net_profit_by_currency={"EUR": Decimal("10.0")}
 # min_net_profit_margin_percent=25.0
 # min_confidence_score=0.50
 ```
@@ -508,7 +515,7 @@ class MLArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
 Both thresholds serve different purposes:
 
-- **Profit threshold (EUR 10)**: Ensures absolute profit justifies effort
+- **Profit threshold by currency (default EUR 10 only)**: Ensures absolute profit justifies effort without comparing unlike monetary units
   - Example: 50% margin on EUR 2 item = EUR 1 profit (not worth it)
   
 - **Margin threshold (25%)**: Ensures relative value is good

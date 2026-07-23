@@ -378,10 +378,13 @@ at the per-candidate iteration boundary. Such a failure becomes an application
 for that candidate. This application concern is not duplicated in Domain,
 Infrastructure or the lot-scanning use case.
 
-The individual arbitrage detector owns its three optional decision thresholds.
-Dependency injection supplies the configured detector to Application unchanged;
-omission or `None` selects the existing defaults, while explicit zero is a real
-configuration value. The lot analyzer has separate rules and is unaffected.
+The individual arbitrage detector owns its decision thresholds. Its absolute
+net-profit configuration is a `Mapping[str, Decimal]` resolved from
+`EconomicBreakdown.currency`; omission or `None` means only EUR 10.0, while an
+explicit mapping replaces the default and zero remains zero. Missing currencies
+are configuration errors—there is no EUR fallback or FX. Dependency injection
+supplies the detector to Application unchanged. Margin and confidence rules and
+the separate lot analyzer are unaffected.
 
 Publication identifiers are opaque strings validated by the shared Domain
 function `validate_listing_id`. Domain never strips, changes case, parses a

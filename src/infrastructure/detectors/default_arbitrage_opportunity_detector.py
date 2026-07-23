@@ -4,11 +4,13 @@ Detects profitable arbitrage opportunities by comparing listing prices
 against estimated market prices using configurable business rules.
 """
 
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from decimal import Decimal
+from types import MappingProxyType
 
 from domain._decimal import require_decimal
-from domain.currency import CurrencyMismatchError
+from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import (
@@ -28,35 +30,46 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
     """
 
     # Business rule constants
-    MIN_NET_PROFIT_EUR = Decimal("10.0")
+    DEFAULT_MIN_NET_PROFIT_BY_CURRENCY: Mapping[str, Decimal] = MappingProxyType(
+        {"EUR": Decimal("10.0")}
+    )
     MIN_NET_PROFIT_MARGIN_PERCENT = Decimal("25.0")
     MIN_CONFIDENCE_SCORE = 0.50
 
     def __init__(
         self,
         economic_policy: ResaleEconomicPolicy,
-        min_net_profit_eur: Decimal | None = None,
+        min_net_profit_by_currency: Mapping[str, Decimal] | None = None,
         min_net_profit_margin_percent: Decimal | None = None,
         min_confidence_score: float | None = None,
     ) -> None:
         """Initialize with optional custom thresholds.
 
         Args:
-            min_net_profit_eur: Minimum profit in EUR (default: 10.0)
+            min_net_profit_by_currency: Minimum profit by currency. Defaults to
+                EUR 10.0 only when omitted or None.
             min_net_profit_margin_percent: Minimum profit margin % (default: 25.0)
             min_confidence_score: Minimum confidence score (default: 0.50)
         """
-        if min_net_profit_eur is not None:
-            require_decimal("min_net_profit_eur", min_net_profit_eur)
+        configured_profit_thresholds = (
+            self.DEFAULT_MIN_NET_PROFIT_BY_CURRENCY
+            if min_net_profit_by_currency is None
+            else min_net_profit_by_currency
+        )
+        validated_profit_thresholds: dict[str, Decimal] = {}
+        for currency, threshold in configured_profit_thresholds.items():
+            validate_currency_code(currency, "min_net_profit_by_currency key")
+            require_decimal(
+                f"min_net_profit_by_currency[{currency!r}]", threshold
+            )
+            validated_profit_thresholds[currency] = threshold
         if min_net_profit_margin_percent is not None:
             require_decimal(
                 "min_net_profit_margin_percent", min_net_profit_margin_percent
             )
         self.economic_policy = economic_policy
-        self.min_net_profit_eur = (
-            self.MIN_NET_PROFIT_EUR
-            if min_net_profit_eur is None
-            else min_net_profit_eur
+        self.min_net_profit_by_currency: Mapping[str, Decimal] = MappingProxyType(
+            validated_profit_thresholds
         )
         self.min_net_profit_margin_percent = (
             self.MIN_NET_PROFIT_MARGIN_PERCENT
@@ -99,6 +112,9 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             acquisition_price=listing_price,
             currency=listing.currency,
         )
+        min_net_profit = self._min_net_profit_for_currency(
+            economic_breakdown.currency
+        )
         # Extract confidence
         confidence_score = market_estimate.confidence_score
         confidence_level = market_estimate.confidence_level
@@ -109,6 +125,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             net_profit=economic_breakdown.net_profit,
             net_profit_margin_percentage=economic_breakdown.net_profit_margin_percentage,
             confidence_score=confidence_score,
+            min_net_profit=min_net_profit,
         )
 
         # Calculate opportunity score (0-100)
@@ -140,6 +157,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         net_profit: Decimal,
         net_profit_margin_percentage: Decimal,
         confidence_score: float,
+        min_net_profit: Decimal,
     ) -> tuple[Recommendation, ReasonCode]:
         """Determine recommendation and reason based on business rules.
 
@@ -165,7 +183,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             return Recommendation.SKIP, ReasonCode.OVERPRICED
 
         # Check if meets all BUY criteria
-        meets_profit_threshold = net_profit >= self.min_net_profit_eur
+        meets_profit_threshold = net_profit >= min_net_profit
         meets_margin_threshold = net_profit_margin_percentage >= self.min_net_profit_margin_percent
         meets_confidence_threshold = confidence_score >= self.min_confidence_score
 
@@ -173,7 +191,7 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             return Recommendation.BUY, ReasonCode.UNDERVALUED
 
         # Positive profit but doesn't meet all thresholds
-        if net_profit > 0 and net_profit < self.min_net_profit_eur:
+        if net_profit > 0 and net_profit < min_net_profit:
             return Recommendation.MAYBE, ReasonCode.LOW_EXPECTED_PROFIT
 
         # Fair price (small profit margin)
@@ -182,6 +200,16 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
 
         # Default: something profitable but uncertain
         return Recommendation.MAYBE, ReasonCode.FAIR_PRICE
+
+    def _min_net_profit_for_currency(self, currency: str) -> Decimal:
+        """Return the configured absolute threshold for ``currency``."""
+        try:
+            return self.min_net_profit_by_currency[currency]
+        except KeyError:
+            raise ValueError(
+                "No minimum net profit threshold configured for currency "
+                f"{currency}"
+            ) from None
 
     def _calculate_opportunity_score(
         self,

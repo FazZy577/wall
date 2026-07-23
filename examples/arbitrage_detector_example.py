@@ -252,7 +252,10 @@ def main() -> None:
     print("-" * 80)
     print()
     print("For a BUY recommendation, ALL of the following must be true:")
-    print(f"  - Expected profit >= EUR {detector.min_net_profit_eur:.2f}")
+    print(
+        "  - Expected profit >= EUR "
+        f"{detector.min_net_profit_by_currency['EUR']:.2f}"
+    )
     print(f"  - Profit margin >= {detector.min_net_profit_margin_percent:.1f}%")
     print(f"  - Confidence score >= {detector.min_confidence_score:.2f}")
     print(f"  - Listing price > 0")

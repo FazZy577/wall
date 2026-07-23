@@ -69,11 +69,12 @@ def create_market_estimate(
     estimated_price: float,
     confidence_score: float,
     confidence_level: ConfidenceLevel,
+    currency: str = "EUR",
 ) -> MarketPriceEstimate:
     """Helper to create market estimate."""
     return MarketPriceEstimate(
         estimated_price=Decimal(str(estimated_price)),
-        currency="EUR",
+        currency=currency,
         confidence_score=confidence_score,
         confidence_level=confidence_level,
         strategy=EstimationStrategy.MEDIAN,
@@ -621,25 +622,25 @@ class TestCustomThresholds:
         omitted = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
         explicit_none = DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral(),
-            min_net_profit_eur=None,
+            min_net_profit_by_currency=None,
             min_net_profit_margin_percent=None,
             min_confidence_score=None,
         )
 
         for detector in (omitted, explicit_none):
-            assert detector.min_net_profit_eur == Decimal("10.0")
+            assert detector.min_net_profit_by_currency == {"EUR": Decimal("10.0")}
             assert detector.min_net_profit_margin_percent == Decimal("25.0")
             assert detector.min_confidence_score == 0.5
 
     def test_all_explicit_zero_thresholds_are_preserved(self) -> None:
         detector = DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral(),
-            min_net_profit_eur=Decimal("0"),
+            min_net_profit_by_currency={"EUR": Decimal("0")},
             min_net_profit_margin_percent=Decimal("0"),
             min_confidence_score=0.0,
         )
 
-        assert detector.min_net_profit_eur == Decimal("0")
+        assert detector.min_net_profit_by_currency == {"EUR": Decimal("0")}
         assert detector.min_net_profit_margin_percent == Decimal("0")
         assert detector.min_confidence_score == 0.0
 
@@ -647,23 +648,23 @@ class TestCustomThresholds:
         ("configured", "expected"),
         [
             (
-                {"min_net_profit_eur": Decimal("0")},
-                (Decimal("0"), Decimal("25.0"), 0.5),
+                {"min_net_profit_by_currency": {"EUR": Decimal("0")}},
+                ({"EUR": Decimal("0")}, Decimal("25.0"), 0.5),
             ),
             (
                 {"min_net_profit_margin_percent": Decimal("0")},
-                (Decimal("10.0"), Decimal("0"), 0.5),
+                ({"EUR": Decimal("10.0")}, Decimal("0"), 0.5),
             ),
             (
                 {"min_confidence_score": 0.0},
-                (Decimal("10.0"), Decimal("25.0"), 0.0),
+                ({"EUR": Decimal("10.0")}, Decimal("25.0"), 0.0),
             ),
         ],
     )
     def test_one_zero_does_not_change_other_thresholds(
         self,
         configured: dict[str, object],
-        expected: tuple[Decimal, Decimal, float],
+        expected: tuple[dict[str, Decimal], Decimal, float],
     ) -> None:
         detector = DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral(),
@@ -671,7 +672,7 @@ class TestCustomThresholds:
         )
 
         assert (
-            detector.min_net_profit_eur,
+            detector.min_net_profit_by_currency,
             detector.min_net_profit_margin_percent,
             detector.min_confidence_score,
         ) == expected
@@ -679,25 +680,26 @@ class TestCustomThresholds:
     def test_positive_custom_thresholds_are_preserved_exactly(self) -> None:
         detector = DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral(),
-            min_net_profit_eur=Decimal("1.0"),
+            min_net_profit_by_currency={"EUR": Decimal("1.0")},
             min_net_profit_margin_percent=Decimal("2.0"),
             min_confidence_score=0.25,
         )
 
-        assert detector.min_net_profit_eur == Decimal("1.0")
+        assert detector.min_net_profit_by_currency == {"EUR": Decimal("1.0")}
         assert detector.min_net_profit_margin_percent == Decimal("2.0")
         assert detector.min_confidence_score == 0.25
 
     def test_none_and_zero_have_distinct_semantics(self) -> None:
         none_detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=None
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency=None
         )
         zero_detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={"EUR": Decimal("0")},
         )
 
-        assert none_detector.min_net_profit_eur == Decimal("10.0")
-        assert zero_detector.min_net_profit_eur == Decimal("0")
+        assert none_detector.min_net_profit_by_currency == {"EUR": Decimal("10.0")}
+        assert zero_detector.min_net_profit_by_currency == {"EUR": Decimal("0")}
 
     def test_zero_profit_threshold_changes_only_decision(
         self,
@@ -711,7 +713,8 @@ class TestCustomThresholds:
             ResaleEconomicPolicy.neutral()
         ).detect(sample_listing, estimate)
         zero_result = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("0")
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={"EUR": Decimal("0")},
         ).detect(sample_listing, estimate)
 
         assert (default_result.recommendation, default_result.reason) == (
@@ -789,7 +792,7 @@ class TestCustomThresholds:
         )
         detector = DefaultArbitrageOpportunityDetector(
             ResaleEconomicPolicy.neutral(),
-            min_net_profit_eur=Decimal("0"),
+            min_net_profit_by_currency={"EUR": Decimal("0")},
             min_net_profit_margin_percent=Decimal("0"),
             min_confidence_score=0.0,
         )
@@ -808,7 +811,8 @@ class TestCustomThresholds:
         """Should use custom minimum profit threshold."""
         # Custom threshold: 15РІвЂљВ¬ instead of 10РІвЂљВ¬
         detector = DefaultArbitrageOpportunityDetector(
-            ResaleEconomicPolicy.neutral(), min_net_profit_eur=Decimal("15.0")
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={"EUR": Decimal("15.0")},
         )
 
         market_estimate = create_market_estimate(
@@ -854,6 +858,158 @@ class TestCustomThresholds:
 
         # Would be BUY with default (25%), but not with 40% threshold
         assert result.recommendation == Recommendation.MAYBE
+
+
+class TestCurrencySpecificProfitThresholds:
+    """Absolute profit thresholds are resolved in breakdown currency."""
+
+    @staticmethod
+    def _detect(
+        currency: str,
+        net_profit: str,
+        thresholds: dict[str, Decimal] | None = None,
+    ):
+        game = DetectedGame(
+            "Grand Theft Auto V",
+            "gta v",
+            Platform.PS4,
+            1.0,
+            DetectionMethod.EXACT_MATCH,
+        )
+        listing = CandidateListing(
+            f"candidate-{currency}",
+            "GTA V",
+            "",
+            Decimal("10"),
+            currency,
+            "url",
+        )
+        estimate = create_market_estimate(
+            game,
+            float(Decimal("10") + Decimal(net_profit)),
+            0.8,
+            ConfidenceLevel.HIGH,
+            currency,
+        )
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency=thresholds,
+        )
+        return detector.detect(listing, estimate)
+
+    def test_default_and_none_configure_only_historical_eur(self) -> None:
+        omitted = DefaultArbitrageOpportunityDetector(ResaleEconomicPolicy.neutral())
+        explicit_none = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency=None
+        )
+
+        assert omitted.min_net_profit_by_currency == {"EUR": Decimal("10.0")}
+        assert explicit_none.min_net_profit_by_currency == {
+            "EUR": Decimal("10.0")
+        }
+
+    @pytest.mark.parametrize(
+        ("profit", "recommendation", "reason"),
+        [
+            ("9", Recommendation.MAYBE, ReasonCode.LOW_EXPECTED_PROFIT),
+            ("10", Recommendation.BUY, ReasonCode.UNDERVALUED),
+            ("11", Recommendation.BUY, ReasonCode.UNDERVALUED),
+        ],
+    )
+    def test_default_eur_behavior_is_unchanged(
+        self, profit: str, recommendation: Recommendation, reason: ReasonCode
+    ) -> None:
+        result = self._detect("EUR", profit)
+        assert (result.recommendation, result.reason) == (recommendation, reason)
+
+    @pytest.mark.parametrize("currency", ["USD", "GBP"])
+    def test_default_rejects_unconfigured_currency(self, currency: str) -> None:
+        with pytest.raises(
+            ValueError,
+            match=f"No minimum net profit threshold configured for currency {currency}",
+        ):
+            self._detect(currency, "9")
+
+    def test_each_currency_uses_only_its_own_threshold(self) -> None:
+        thresholds = {
+            "EUR": Decimal("10"),
+            "USD": Decimal("8"),
+            "GBP": Decimal("12"),
+        }
+        eur = self._detect("EUR", "9", thresholds)
+        usd = self._detect("USD", "9", thresholds)
+        gbp = self._detect("GBP", "9", thresholds)
+
+        assert (eur.recommendation, eur.reason) == (
+            Recommendation.MAYBE,
+            ReasonCode.LOW_EXPECTED_PROFIT,
+        )
+        assert (usd.recommendation, usd.reason) == (
+            Recommendation.BUY,
+            ReasonCode.UNDERVALUED,
+        )
+        assert (gbp.recommendation, gbp.reason) == (
+            Recommendation.MAYBE,
+            ReasonCode.LOW_EXPECTED_PROFIT,
+        )
+        assert eur.opportunity_score == usd.opportunity_score == gbp.opportunity_score
+
+    def test_empty_mapping_is_not_none_and_zero_is_preserved(self) -> None:
+        empty = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency={}
+        )
+        zero = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(),
+            min_net_profit_by_currency={
+                "EUR": Decimal("0"),
+                "USD": Decimal("0"),
+            },
+        )
+
+        assert empty.min_net_profit_by_currency == {}
+        with pytest.raises(ValueError, match="currency EUR"):
+            self._detect("EUR", "9", {})
+        assert zero.min_net_profit_by_currency == {
+            "EUR": Decimal("0"),
+            "USD": Decimal("0"),
+        }
+        assert self._detect("EUR", "10", dict(zero.min_net_profit_by_currency)).recommendation is Recommendation.BUY
+        assert self._detect("USD", "10", dict(zero.min_net_profit_by_currency)).recommendation is Recommendation.BUY
+        with pytest.raises(ValueError, match="currency GBP"):
+            self._detect("GBP", "1", dict(zero.min_net_profit_by_currency))
+
+    @pytest.mark.parametrize(
+        "currency", ["", "eur", " EUR", "EUR ", "€", "EURO", None, 123, True]
+    )
+    def test_invalid_currency_keys_are_rejected(self, currency: object) -> None:
+        with pytest.raises((TypeError, ValueError), match="min_net_profit_by_currency key"):
+            DefaultArbitrageOpportunityDetector(
+                ResaleEconomicPolicy.neutral(),
+                min_net_profit_by_currency={currency: Decimal("10")},  # type: ignore[dict-item]
+            )
+
+    @pytest.mark.parametrize(
+        "threshold",
+        [10.0, True, Decimal("NaN"), Decimal("Infinity")],
+    )
+    def test_invalid_threshold_values_are_rejected(self, threshold: object) -> None:
+        with pytest.raises((TypeError, ValueError), match="min_net_profit_by_currency"):
+            DefaultArbitrageOpportunityDetector(
+                ResaleEconomicPolicy.neutral(),
+                min_net_profit_by_currency={"EUR": threshold},  # type: ignore[dict-item]
+            )
+
+    def test_configuration_is_copied_defensively(self) -> None:
+        config = {"EUR": Decimal("10")}
+        detector = DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral(), min_net_profit_by_currency=config
+        )
+        config["EUR"] = Decimal("999")
+        config["USD"] = Decimal("1")
+
+        assert detector.min_net_profit_by_currency == {"EUR": Decimal("10")}
+        with pytest.raises(TypeError):
+            detector.min_net_profit_by_currency["EUR"] = Decimal("1")  # type: ignore[index]
 
 
 class TestExplainMethod:

@@ -51,10 +51,13 @@ CandidateListing (lot priced at 40 EUR)
 The candidate is never a market observation and cannot enter the price dataset.
 
 The scanner uses the injected `IArbitrageOpportunityDetector` instance as-is;
-it does not reconstruct detector configuration. Optional detector thresholds
-use their documented defaults only when omitted or set to `None`. Explicit
-numeric zero remains zero and can therefore affect the recommendation without
-changing market valuation, economics, score formula or ranking.
+it does not reconstruct detector configuration. The absolute net-profit
+threshold is selected from `min_net_profit_by_currency` using the resulting
+`EconomicBreakdown.currency`. Omission or `None` configures only EUR 10.0;
+an explicit mapping replaces that default, an empty mapping configures nothing,
+and an absent currency fails at `OPPORTUNITY_DETECTION`. There is no EUR
+fallback or FX conversion. Explicit Decimal zero remains zero and can affect
+the recommendation without changing valuation, economics, score or ranking.
 
 ## Execution-scoped comparable reuse (P1.1/P1.6)
 
