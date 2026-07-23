@@ -316,6 +316,12 @@ or its derived values. Order and duplicates remain intact, no deep copy is
 performed, and lot economics, coverage, thresholds and recommendations do not
 change.
 
+P1.23 adds a separate structured aggregate failure to `LotScanResult`.
+Analyzer exceptions retain completed valuations and game-level failures while
+setting `opportunity=None` and `analysis_failure=FailureInfo(...,
+stage=LOT_ANALYSIS)`. Successful BUY, MAYBE and SKIP results leave the field at
+`None`; logging and `BaseException` propagation remain unchanged.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

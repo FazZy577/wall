@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
@@ -316,7 +317,7 @@ async def test_lot_scanner_selects_distinct_cost_bundles_by_currency() -> None:
 
 
 @pytest.mark.asyncio
-async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
+async def test_lot_scanner_structures_missing_threshold_failure(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     game = _game("GTA V")
@@ -335,6 +336,11 @@ async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
     assert result.game_valuations[0].currency == "USD"
     assert result.opportunity is None
     assert result.failures == []
+    assert result.analysis_failure is not None
+    assert result.analysis_failure.stage is PipelineStage.LOT_ANALYSIS
+    assert result.analysis_failure.error_message == (
+        "ValueError: No minimum lot net profit threshold configured for currency USD"
+    )
     assert (
         "No minimum lot net profit threshold configured for currency USD"
         in caplog.text
@@ -342,7 +348,7 @@ async def test_lot_scanner_preserves_unstructured_missing_threshold_failure(
 
 
 @pytest.mark.asyncio
-async def test_lot_scanner_preserves_unstructured_missing_cost_bundle_failure(
+async def test_lot_scanner_structures_missing_cost_bundle_failure(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     game = _game("GTA V")
@@ -361,4 +367,9 @@ async def test_lot_scanner_preserves_unstructured_missing_cost_bundle_failure(
     assert result.game_valuations[0].currency == "USD"
     assert result.opportunity is None
     assert result.failures == []
+    assert result.analysis_failure is not None
+    assert result.analysis_failure.stage is PipelineStage.LOT_ANALYSIS
+    assert result.analysis_failure.error_message == (
+        "ValueError: No resale absolute costs configured for currency USD"
+    )
     assert "No resale absolute costs configured for currency USD" in caplog.text

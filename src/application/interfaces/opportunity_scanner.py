@@ -25,6 +25,7 @@ class PipelineStage(StrEnum):
     STATISTICS_RECALCULATION = "statistics_recalculation"
     MARKET_ESTIMATION = "market_estimation"
     OPPORTUNITY_DETECTION = "opportunity_detection"
+    LOT_ANALYSIS = "lot_analysis"
 
 
 @dataclass

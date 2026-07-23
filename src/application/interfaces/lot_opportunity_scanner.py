@@ -14,6 +14,8 @@ from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
 
+from .opportunity_scanner import FailureInfo
+
 
 class LotPipelineStage(StrEnum):
     """Pipeline stages for lot valuation tracking."""
@@ -63,6 +65,7 @@ class LotScanResult:
         is_complete: Whether all detected games were valued
         processing_time: Time taken to process (seconds)
         created_at: Scan timestamp
+        analysis_failure: Structured aggregate analyzer failure, if any
     """
 
     listing: CandidateListing
@@ -76,6 +79,7 @@ class LotScanResult:
     processing_time: float
     created_at: datetime
     detected_games: list[DetectedGame] = field(default_factory=list)
+    analysis_failure: FailureInfo | None = None
 
     def explain(self) -> str:
         """Generate deterministic human-readable lot scan explanation."""

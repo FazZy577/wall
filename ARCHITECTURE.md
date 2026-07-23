@@ -402,6 +402,12 @@ successful lot valuations. Application and analyzer code may use mutable local
 lists, while the domain entity stores an ordered tuple created by its factory.
 `LotScanResult` retains its existing list contract; the two collections are not
 aliased. This changes no dependency direction or economic calculation.
+
+The Application lot-scanner contract separates local valuation failures from
+aggregate analysis failures. `GameValuationFailure` remains game-scoped;
+`LotScanResult.analysis_failure: FailureInfo | None` reports an ordinary
+analyzer exception at `PipelineStage.LOT_ANALYSIS`. The domain analyzer does
+not depend on scanner results and is not modified by this adaptation.
 `neutral()` means EUR only; callers use `neutral("USD")`, `neutral("GBP")`, or
 an explicit multimonetary mapping. Missing currency fails without zero/EUR
 fallback or FX.

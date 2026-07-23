@@ -276,3 +276,8 @@ canonicalizes a supplied list for the same reason.
 aliased by `LotOpportunity`. No valuation is deep-copied, and economic formulas,
 mixed-platform support, Decimal values, currency-specific costs and thresholds
 are unchanged.
+
+`LotScanResult.analysis_failure` is independent from that snapshot and from
+per-game `GameValuationFailure` entries. It uses application-level
+`FailureInfo` solely when aggregate lot analysis raises; successful BUY, MAYBE
+and SKIP results leave it as `None`.

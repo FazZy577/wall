@@ -207,16 +207,16 @@ the threshold from `EconomicBreakdown.currency`, without EUR fallback or FX.
 USD/GBP require explicit entries. Mixed platforms remain supported when the lot
 currency is homogeneous. Coverage and recommendation rules are unchanged.
 
-The scanner does not reconstruct or select thresholds. Under its current
-contract, an analyzer exception is logged and produces `opportunity=None`; it
-does not yet create a structured lot-analysis failure. That behavior remains
-pending.
+The scanner does not reconstruct or select thresholds. An ordinary analyzer
+exception is still logged and produces `opportunity=None`, but is also exposed
+as `LotScanResult.analysis_failure` using the canonical `FailureInfo` with
+`PipelineStage.LOT_ANALYSIS`.
 
 The injected `ResaleEconomicPolicy` resolves all three absolute costs together
 from `absolute_costs_by_currency` using the homogeneous lot currency. The
 bundle has no fallback and no FX. Per-item costs and one-time overhead retain
-their formulas. A missing bundle preserves completed valuations and follows
-the existing logged-error result with `opportunity=None`.
+their formulas. A missing bundle preserves completed valuations and produces a
+structured `analysis_failure` alongside `opportunity=None`.
 
 ## P1.22 opportunity snapshot boundary
 
@@ -226,6 +226,21 @@ ordered `tuple[GameValuation, ...]`. Consequently, mutating
 `LotScanResult.game_valuations` after the scan does not alter the opportunity's
 valuation collection or any derived value. Duplicates and mixed-platform order
 are preserved; no deep copy, sorting or deduplication is introduced.
+
+## P1.23 structured aggregate-analysis failures
+
+`LotScanResult.failures` remains a list of `GameValuationFailure` values tied
+to individual games. The separate optional `analysis_failure` contains at most
+one canonical `FailureInfo` for an exception raised by the aggregate analyzer.
+Its listing ID is the candidate lot, its stage is `LOT_ANALYSIS`, and its error
+message preserves the exception type and message without embedding a traceback.
+
+Game-level and aggregate failures can coexist. Completed valuations are not
+discarded. A valid BUY, MAYBE or SKIP opportunity always has
+`analysis_failure=None`; SKIP is a business result, not a technical failure.
+The analyzer continues to raise and the scanner adapts ordinary `Exception`
+instances while preserving the existing operational log. `BaseException`,
+including `KeyboardInterrupt` and `SystemExit`, is not captured.
 
 ## P1.14 unique comparables per game dataset
 

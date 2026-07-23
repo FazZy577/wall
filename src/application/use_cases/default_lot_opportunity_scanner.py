@@ -17,6 +17,7 @@ from application.interfaces.lot_opportunity_scanner import (
     LotPipelineStage,
     LotScanResult,
 )
+from application.interfaces.opportunity_scanner import FailureInfo, PipelineStage
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
@@ -133,6 +134,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
 
         # Call analyzer
         opportunity: LotOpportunity | None = None
+        analysis_failure: FailureInfo | None = None
 
         if total_detected_games > 0:
             try:
@@ -147,6 +149,19 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
                 )
             except Exception as e:
                 logger.error(f"Lot analysis failed: {e}", exc_info=True)
+                exception_type = type(e).__name__
+                exception_message = str(e)
+                formatted_error = (
+                    f"{exception_type}: {exception_message}"
+                    if exception_message
+                    else exception_type
+                )
+                analysis_failure = FailureInfo(
+                    listing_id=listing.listing_id,
+                    stage=PipelineStage.LOT_ANALYSIS,
+                    reason="Lot opportunity analysis failed",
+                    error_message=formatted_error,
+                )
 
         return self._build_result(
             listing=listing,
@@ -156,6 +171,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             total_detected_games=total_detected_games,
             detected_games=detected_games,
             start_time=start_time,
+            analysis_failure=analysis_failure,
         )
 
     @staticmethod
@@ -312,6 +328,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         total_detected_games: int,
         detected_games: list[DetectedGame],
         start_time: float,
+        analysis_failure: FailureInfo | None = None,
     ) -> LotScanResult:
         """Build the LotScanResult from collected data."""
         successfully_valued = len(game_valuations)
@@ -334,4 +351,5 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             processing_time=processing_time,
             created_at=datetime.now(UTC),
             detected_games=detected_games,
+            analysis_failure=analysis_failure,
         )

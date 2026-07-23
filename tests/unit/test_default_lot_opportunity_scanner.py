@@ -4,12 +4,19 @@ Tests the orchestration of the lot valuation pipeline with mocks.
 No Playwright. No Wallapop API calls.
 """
 
+from dataclasses import asdict, fields
 from decimal import Decimal
+from typing import get_type_hints
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from application.interfaces.lot_opportunity_scanner import LotPipelineStage
+from application.interfaces.lot_opportunity_scanner import (
+    GameValuationFailure,
+    LotPipelineStage,
+    LotScanResult,
+)
+from application.interfaces.opportunity_scanner import FailureInfo, PipelineStage
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
@@ -189,6 +196,16 @@ def _setup_pipeline_mocks(
 # ---------------------------------------------------------------------------
 # Full pipeline
 # ---------------------------------------------------------------------------
+
+
+def test_lot_scan_result_exposes_optional_analysis_failure_at_end() -> None:
+    result_fields = fields(LotScanResult)
+
+    assert result_fields[-1].name == "analysis_failure"
+    assert result_fields[-1].default is None
+    assert get_type_hints(LotScanResult)["analysis_failure"] == FailureInfo | None
+    assert PipelineStage.LOT_ANALYSIS.value == "lot_analysis"
+    assert sum(stage is PipelineStage.LOT_ANALYSIS for stage in PipelineStage) == 1
 
 
 class TestFullPipeline:
@@ -464,6 +481,7 @@ class TestFailureHandling:
         assert result.is_complete is False
         assert len(result.failures) == 1
         assert result.failures[0].stage == LotPipelineStage.PRICE_COLLECTION
+        assert result.analysis_failure is None
 
     @pytest.mark.asyncio
     async def test_market_estimator_failure(
@@ -514,7 +532,24 @@ class TestFailureHandling:
         assert "Estimation failed" in (result.failures[0].error_message or "")
 
     @pytest.mark.asyncio
-    async def test_analyzer_failure_preserves_valuations(
+    @pytest.mark.parametrize(
+        ("analyzer_error", "expected_error"),
+        [
+            (RuntimeError("Analyzer crashed"), "RuntimeError: Analyzer crashed"),
+            (RuntimeError(), "RuntimeError"),
+            (
+                ValueError(
+                    "No minimum lot net profit threshold configured for currency USD"
+                ),
+                "ValueError: No minimum lot net profit threshold configured for currency USD",
+            ),
+            (
+                ValueError("No resale absolute costs configured for currency USD"),
+                "ValueError: No resale absolute costs configured for currency USD",
+            ),
+        ],
+    )
+    async def test_analyzer_failure_preserves_valuations_and_is_structured(
         self,
         scanner: DefaultLotOpportunityScanner,
         mock_price_collector: Mock,
@@ -523,8 +558,11 @@ class TestFailureHandling:
         mock_outlier_removal: Mock,
         mock_market_estimator: Mock,
         mock_lot_analyzer: Mock,
+        analyzer_error: Exception,
+        expected_error: str,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
-        """When analyzer fails, opportunity is None but valuations preserved."""
+        """Ordinary analyzer failures are observable without losing valuations."""
         candidate = CandidateListing(
             listing_id="analyzer_fail",
             title="Analyzer fails",
@@ -545,12 +583,123 @@ class TestFailureHandling:
             comparable_prices=[12.0, 15.0],
         )
 
-        mock_lot_analyzer.analyze.side_effect = RuntimeError("Analyzer crashed")
+        mock_lot_analyzer.analyze.side_effect = analyzer_error
 
         result = await scanner.scan_lot(candidate)
 
         assert result.opportunity is None
         assert len(result.game_valuations) == 1  # Valuations preserved
+        assert result.failures == []
+        assert result.analysis_failure == FailureInfo(
+            listing_id=candidate.listing_id,
+            stage=PipelineStage.LOT_ANALYSIS,
+            reason="Lot opportunity analysis failed",
+            error_message=expected_error,
+        )
+        assert "Lot analysis failed" in caplog.text
+        assert "Traceback" not in (result.analysis_failure.error_message or "")
+        assert asdict(result)["analysis_failure"] == asdict(result.analysis_failure)
+        assert "analysis_failure=FailureInfo(" in repr(result)
+        if not str(analyzer_error):
+            assert not expected_error.endswith(": ")
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "recommendation",
+        [Recommendation.BUY, Recommendation.MAYBE, Recommendation.SKIP],
+    )
+    async def test_successful_recommendations_are_not_analysis_failures(
+        self,
+        scanner: DefaultLotOpportunityScanner,
+        mock_price_collector: Mock,
+        mock_dataset_builder: Mock,
+        mock_statistics: Mock,
+        mock_outlier_removal: Mock,
+        mock_market_estimator: Mock,
+        mock_lot_analyzer: Mock,
+        recommendation: Recommendation,
+    ) -> None:
+        candidate = CandidateListing(
+            "valid-result", "GTA V", "", Decimal("20"), "EUR", "url"
+        )
+        _setup_pipeline_mocks(
+            scanner,
+            mock_price_collector,
+            mock_dataset_builder,
+            mock_statistics,
+            mock_outlier_removal,
+            mock_market_estimator,
+            mock_lot_analyzer,
+            comparable_prices=[12.0, 15.0],
+        )
+        opportunity = mock_lot_analyzer.analyze.return_value
+        opportunity.recommendation = recommendation
+
+        result = await scanner.scan_lot(candidate)
+
+        assert result.opportunity is opportunity
+        assert result.analysis_failure is None
+        assert asdict(result)["analysis_failure"] is None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("base_error", [KeyboardInterrupt(), SystemExit()])
+    async def test_analyzer_baseexceptions_propagate(
+        self,
+        scanner: DefaultLotOpportunityScanner,
+        mock_price_collector: Mock,
+        mock_dataset_builder: Mock,
+        mock_statistics: Mock,
+        mock_outlier_removal: Mock,
+        mock_market_estimator: Mock,
+        mock_lot_analyzer: Mock,
+        base_error: BaseException,
+    ) -> None:
+        candidate = CandidateListing(
+            "base-error", "Analyzer fails", "", Decimal("20"), "EUR", "url"
+        )
+        _setup_pipeline_mocks(
+            scanner,
+            mock_price_collector,
+            mock_dataset_builder,
+            mock_statistics,
+            mock_outlier_removal,
+            mock_market_estimator,
+            mock_lot_analyzer,
+            comparable_prices=[12.0, 15.0],
+        )
+        mock_lot_analyzer.analyze.side_effect = base_error
+
+        with pytest.raises(type(base_error)):
+            await scanner.scan_lot(candidate)
+
+    @pytest.mark.asyncio
+    async def test_game_failure_and_analysis_failure_remain_separate(
+        self,
+        scanner: DefaultLotOpportunityScanner,
+        mock_lot_analyzer: Mock,
+    ) -> None:
+        candidate = CandidateListing(
+            "combined", "GTA V RDR2", "", Decimal("20"), "EUR", "url"
+        )
+        valuation = Mock()
+        game_failure = GameValuationFailure(
+            game=_make_game("RDR2"),
+            stage=LotPipelineStage.PRICE_COLLECTION,
+            reason="No comparables",
+            listing_id=candidate.listing_id,
+        )
+        scanner._value_game = AsyncMock(  # type: ignore[method-assign]
+            side_effect=[(valuation, None), (None, game_failure)]
+        )
+        mock_lot_analyzer.analyze.side_effect = RuntimeError("analysis boom")
+
+        result = await scanner.scan_lot(candidate)
+
+        assert result.game_valuations == [valuation]
+        assert result.failures == [game_failure]
+        assert result.analysis_failure is not None
+        assert result.analysis_failure.stage is PipelineStage.LOT_ANALYSIS
+        assert result.opportunity is None
 
     @pytest.mark.asyncio
     async def test_empty_detected_games(
@@ -580,6 +729,7 @@ class TestFailureHandling:
         assert result.is_complete is False
         assert result.failures[0].stage is LotPipelineStage.GAME_DETECTION
         assert result.failures[0].listing_id == candidate.listing_id
+        assert result.analysis_failure is None
         mock_price_collector.collect_comparables.assert_not_awaited()
 
     @pytest.mark.asyncio
