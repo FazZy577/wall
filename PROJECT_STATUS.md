@@ -322,6 +322,12 @@ setting `opportunity=None` and `analysis_failure=FailureInfo(...,
 stage=LOT_ANALYSIS)`. Successful BUY, MAYBE and SKIP results leave the field at
 `None`; logging and `BaseException` propagation remain unchanged.
 
+P1.24B migrates `WallapopPriceCollector` from whole-search best-effort to
+propagating the original technical exception. Real empty searches still return
+`[]`; per-item exceptions still warn and continue. Existing scanners and the
+execution-scoped cache now distinguish empty market data from collection
+failure without a new result model, exception type, retry or fallback.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

@@ -371,6 +371,10 @@ identity. Before returning a `ComparableListing`, it requires exact equality
 of both canonical name and `Platform` with the requested `DetectedGame`.
 Application does not duplicate this filter, and the builder remains concerned
 with validation and publication deduplication rather than platform matching.
+Whole-search technical exceptions propagate unchanged to Application, while
+ordinary failures processing one raw listing remain warning-and-continue.
+Thus an empty collection means a completed search with no valid comparables;
+it is not the representation of a source failure.
 
 The batch opportunity use case isolates synchronous game-detection exceptions
 at the per-candidate iteration boundary. Such a failure becomes an application

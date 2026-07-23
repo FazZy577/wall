@@ -84,6 +84,12 @@ GameValuation
 
 Cada juego se valora de forma independiente. Un fallo en un juego se guarda como `GameValuationFailure` con la etapa exacta donde ocurrió.
 
+Una búsqueda externa completada sin resultados produce el fallo funcional de
+no comparables en `PRICE_COLLECTION`, sin `error_message`. Una excepción
+técnica propagada por `WallapopPriceCollector` produce un fallo distinto en la
+misma etapa con el mensaje original; los juegos posteriores continúan. Los
+errores aislados por raw listing mantienen su warning best-effort.
+
 ## Tratamiento de fallos parciales
 
 Un lote puede contener juegos que no se puedan valorar por falta de comparables, dataset vacío, errores estadísticos, errores de estimación o errores inesperados del pipeline.

@@ -93,9 +93,9 @@ Game → Generate Search Query → WallapopClient → Raw Listings
    - Examples: "Grand Theft Auto V" → "GTA V", "EA Sports FC 24" → "FC 24"
 
 2. **Search Wallapop**
-   - Call `WallapopClient.search_all_pages()`
+   - Call the injected `IMarketplaceSearch.search_listings()` implementation
    - Fetch 3x `max_results` to account for filtering
-   - Handle API errors gracefully (return empty list)
+   - Propagate whole-search technical failures unchanged
 
 3. **Process Each Listing**
    - Extract listing data (id, title, description, price, url)
@@ -231,22 +231,24 @@ comparables = await price_collector.collect_comparables(
 
 ## Error Handling
 
-The price collector is designed to be **resilient**:
+The price collector distinguishes whole-search failures from item failures.
 
 ### API Errors
 
 If Wallapop API fails:
-- Log error
-- Return empty list `[]`
-- Do not raise exception
+- Propagate the original exception unchanged
+- Do not return `[]`
+- Do not duplicate the consumer scanner's ERROR log
 
 ```python
-try:
-    raw_listings = await self.wallapop_client.search_all_pages(...)
-except Exception as e:
-    logger.error(f"Failed to search Wallapop: {e}")
-    return []
+raw_listings = await self.marketplace_search.search_listings(...)
 ```
+
+An empty list means that the search completed but produced no valid
+comparables. Individual scanner batches convert propagated failures to
+`FailureInfo`; lot scans convert them to `GameValuationFailure`. The individual
+execution cache stores a real empty collection separately from a collection
+failure. No retry, fallback or new collector exception is introduced.
 
 ### Individual Listing Failures
 
@@ -300,11 +302,13 @@ Valid comparable: GTA V Premium Edition - EUR 18.0
 Failed to process listing 123456: invalid price format
 ```
 
-### ERROR Level
+Whole-search failures are not logged at ERROR by the collector because they
+propagate to the consuming scanner. Item-level warnings remain local.
 
-```
-Failed to search Wallapop: Network timeout
-```
+The Playwright gateway may still interpret missing or incorrectly typed
+`data/section/items` structures as an empty page. Handling that separate
+payload-boundary behavior is outside P1.24B. Likewise, the defensive warning
+path for a non-mapping raw item remains unchanged.
 
 ## Testing
 

@@ -35,6 +35,13 @@ class IPriceCollector(ABC):
             max_results: Maximum number of comparables to collect (None for all)
 
         Returns:
-            List of validated comparable listings
+            List of validated comparable listings. An empty list means the
+            operation completed without any valid comparables.
+
+        Raises:
+            Exception: Technical failures from the concrete implementation or
+                external source may propagate. They are not represented as an
+                empty list by this general contract. Implementations may still
+                isolate individual malformed items when documented.
         """
         pass

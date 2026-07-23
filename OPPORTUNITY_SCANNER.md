@@ -81,6 +81,12 @@ only its own non-empty `listing_id` and runs the local dataset, statistics,
 outlier and estimation stages. This keeps one Wallapop call per game identity
 without preventing another candidate from acting as a comparable.
 
+`WallapopPriceCollector` propagates whole-search technical exceptions. The
+scanner therefore caches those as `PRICE_COLLECTION` failures, whereas a
+successfully completed empty search is cached as `comparables=[]` and produces
+the existing no-comparables result. Item-level collector errors remain
+best-effort and do not abort other raw listings.
+
 `PriceCollector` guarantees that every cached comparable matches the requested
 canonical name and platform. Therefore a PS4 cache entry cannot contain PS5
 observations. There is no cross-generation compatibility or platform fallback;

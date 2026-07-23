@@ -1,10 +1,12 @@
 """Offline integration coverage for the unified lot analysis flow."""
 
+import logging
 from decimal import Decimal
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.lot_opportunity_scanner import LotPipelineStage
 from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
@@ -19,6 +21,7 @@ from domain.entities.resale_economics import (
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
@@ -46,6 +49,18 @@ class _Detector:
     def detect_games(self, listing_text: object) -> list[DetectedGame]:
         del listing_text
         return self.games
+
+
+class _RawDetector:
+    def detect_games(self, listing_text: object) -> list[DetectedGame]:
+        title = str(getattr(listing_text, "title", ""))
+        return [_game("RDR2" if "RDR2" in title else "GTA V")]
+
+
+class _AcceptComparable:
+    def is_valid_comparable(self, game: object, listing: object) -> bool:
+        del game, listing
+        return True
 
 
 class _Collector:
@@ -141,6 +156,115 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
         for call in builder.build.call_args_list
     )
     assert candidate.raw_listing == {"kind": "candidate"}
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_distinguishes_empty_from_propagated_source_failure(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    candidate = CandidateListing(
+        "source-lot", "GTA V + RDR2", "", Decimal("5"), "EUR", "url"
+    )
+    games = [_game("GTA V"), _game("RDR2")]
+    source = Mock()
+
+    async def search_listings(**kwargs: object) -> list[dict[str, object]]:
+        if "GTA V" in str(kwargs["keywords"]):
+            raise RuntimeError("source unavailable")
+        return [
+            {
+                "id": f"rdr-{index}",
+                "title": "RDR2 PS4",
+                "description": "Game",
+                "price": "20",
+                "currency": "EUR",
+            }
+            for index in range(20)
+        ]
+
+    source.search_listings = AsyncMock(side_effect=search_listings)
+    collector = WallapopPriceCollector(source, _RawDetector(), _AcceptComparable())
+    analyzer = DefaultLotOpportunityAnalyzer(
+        ResaleEconomicPolicy.neutral(),
+        min_net_profit_by_currency={"EUR": Decimal("0")},
+    )
+    scanner = DefaultLotOpportunityScanner(
+        game_detector=_Detector(games),
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+    with caplog.at_level(logging.INFO):
+        result = await scanner.scan_lot(candidate)
+
+    assert len(result.game_valuations) == 1
+    assert result.successfully_valued_games == 1
+    assert result.failed_games == 1
+    assert result.is_complete is False
+    assert result.game_valuations[0].game.canonical_name == "RDR2"
+    assert len(result.failures) == 1
+    assert result.failures[0].stage is LotPipelineStage.PRICE_COLLECTION
+    assert result.failures[0].reason == "Error during price_collection"
+    assert result.failures[0].error_message == "source unavailable"
+    assert result.opportunity is not None
+    assert result.analysis_failure is None
+    collector_errors = [
+        record
+        for record in caplog.records
+        if record.name == "infrastructure.collectors.wallapop_price_collector"
+        and record.levelno >= logging.ERROR
+    ]
+    scanner_errors = [
+        record
+        for record in caplog.records
+        if record.name
+        == "application.use_cases.default_lot_opportunity_scanner"
+        and record.levelno >= logging.ERROR
+    ]
+    assert collector_errors == []
+    assert len(scanner_errors) == 1
+    assert source.search_listings.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_lot_scanner_real_empty_search_remains_functional_failure() -> None:
+    candidate = CandidateListing(
+        "empty-lot", "GTA V", "", Decimal("5"), "EUR", "url"
+    )
+    source = Mock()
+
+    async def empty_search(**kwargs: object) -> list[dict[str, object]]:
+        del kwargs
+        return []
+
+    source.search_listings = AsyncMock(side_effect=empty_search)
+    collector = WallapopPriceCollector(source, _RawDetector(), _AcceptComparable())
+    analyzer = DefaultLotOpportunityAnalyzer(ResaleEconomicPolicy.neutral())
+    scanner = DefaultLotOpportunityScanner(
+        game_detector=_Detector([_game("GTA V")]),
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        lot_analyzer=analyzer,
+    )
+
+    result = await scanner.scan_lot(candidate)
+
+    assert result.game_valuations == []
+    assert len(result.failures) == 1
+    assert result.failures[0].stage is LotPipelineStage.PRICE_COLLECTION
+    assert result.failures[0].reason == (
+        "No comparable listings available in currency EUR"
+    )
+    assert result.failures[0].error_message is None
+    assert result.analysis_failure is None
+    assert source.search_listings.await_count == 1
 
 
 @pytest.mark.asyncio

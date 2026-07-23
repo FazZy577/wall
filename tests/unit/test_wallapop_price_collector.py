@@ -4,6 +4,8 @@ Tests the orchestration of WallapopClient → GameDetector → ComparableFilter
 using mocks (no real API calls).
 """
 
+import asyncio
+import logging
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -16,6 +18,12 @@ from domain.interfaces.game_detector import (
     Platform,
 )
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
+from infrastructure.marketplaces.wallapop.playwright_client import (
+    WallapopPlaywrightError,
+    WallapopSearchHTTPError,
+    WallapopSearchResponseError,
+    WallapopSearchTimeoutError,
+)
 
 
 @pytest.fixture
@@ -598,19 +606,27 @@ class TestCollectComparables:
         self,
         price_collector: WallapopPriceCollector,
         mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
         target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """Should return empty list if no listings found."""
         # Mock empty Wallapop response
         mock_wallapop_client.search_listings.return_value = []
 
-        result = await price_collector.collect_comparables(
-            game=target_game,
-            latitude=40.4168,
-            longitude=-3.7038,
-        )
+        with caplog.at_level(logging.INFO):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
 
         assert result == []
+        mock_wallapop_client.search_listings.assert_awaited_once()
+        mock_game_detector.detect_games.assert_not_called()
+        mock_comparable_filter.is_valid_comparable.assert_not_called()
+        assert not [record for record in caplog.records if record.levelno >= logging.ERROR]
 
     @pytest.mark.asyncio
     async def test_all_listings_filtered(
@@ -690,23 +706,67 @@ class TestCollectComparables:
         assert call_args.kwargs["max_results"] == 9  # 3 * 3
 
     @pytest.mark.asyncio
-    async def test_wallapop_api_error(
+    @pytest.mark.parametrize(
+        "source_error",
+        [
+            RuntimeError("source unavailable"),
+            RuntimeError(),
+            ValueError("invalid external configuration"),
+            WallapopPlaywrightError("browser unavailable"),
+            WallapopSearchTimeoutError("search timed out"),
+            WallapopSearchHTTPError(503),
+            WallapopSearchResponseError("malformed response"),
+        ],
+    )
+    async def test_source_error_propagates_unchanged(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        source_error: Exception,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Whole-search failures propagate with original identity and type."""
+        mock_wallapop_client.search_listings.side_effect = source_error
+
+        with caplog.at_level(logging.DEBUG), pytest.raises(type(source_error)) as exc_info:
+            await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert exc_info.value is source_error
+        mock_wallapop_client.search_listings.assert_awaited_once()
+        mock_game_detector.detect_games.assert_not_called()
+        mock_comparable_filter.is_valid_comparable.assert_not_called()
+        assert "Failed to search Wallapop" not in caplog.text
+        assert not [record for record in caplog.records if record.levelno >= logging.ERROR]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "source_error",
+        [KeyboardInterrupt(), SystemExit(), asyncio.CancelledError()],
+    )
+    async def test_source_baseexception_propagates(
         self,
         price_collector: WallapopPriceCollector,
         mock_wallapop_client: Mock,
         target_game: DetectedGame,
+        source_error: BaseException,
     ) -> None:
-        """Should return empty list on Wallapop API error."""
-        # Mock Wallapop to raise exception
-        mock_wallapop_client.search_listings.side_effect = Exception("API Error")
+        mock_wallapop_client.search_listings.side_effect = source_error
 
-        result = await price_collector.collect_comparables(
-            game=target_game,
-            latitude=40.4168,
-            longitude=-3.7038,
-        )
+        with pytest.raises(type(source_error)) as exc_info:
+            await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
 
-        assert result == []
+        assert exc_info.value is source_error
 
     @pytest.mark.asyncio
     async def test_partial_listing_failures(
@@ -760,6 +820,49 @@ class TestCollectComparables:
         assert len(result) == 2
         assert result[0].price == 15.0
         assert result[1].price == 18.0
+
+    @pytest.mark.asyncio
+    async def test_valid_failed_valid_items_preserve_best_effort_and_order(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_wallapop_client.search_listings.return_value = [
+            {
+                "id": index,
+                "title": "GTA V PS4",
+                "description": "Game",
+                "price": 15 + index,
+                "currency": "EUR",
+            }
+            for index in (1, 2, 3)
+        ]
+        mock_game_detector.detect_games.side_effect = [
+            [target_game],
+            RuntimeError("bad item"),
+            [target_game],
+        ]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        with caplog.at_level(logging.WARNING):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert [item.listing_id for item in result] == ["1", "3"]
+        assert mock_game_detector.detect_games.call_count == 3
+        assert mock_comparable_filter.is_valid_comparable.call_count == 2
+        warnings = [
+            record for record in caplog.records if record.levelno == logging.WARNING
+        ]
+        assert len(warnings) == 1
+        assert "Failed to process listing 2: bad item" in warnings[0].getMessage()
 
     @pytest.mark.asyncio
     async def test_search_query_passed_to_wallapop(

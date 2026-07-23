@@ -66,24 +66,26 @@ class WallapopPriceCollector(IPriceCollector):
             max_results: Maximum number of comparables to collect (None for all)
 
         Returns:
-            List of validated comparable listings
+            List of validated comparable listings. Empty means the search
+            completed without valid comparables.
+
+        Raises:
+            Exception: The original technical exception from the injected
+                marketplace search operation.
         """
         # Step 1: Generate search query
         search_query = self._generate_search_query(game)
         logger.info(f"Searching for '{search_query}' (game: {game.canonical_name})")
 
-        # Step 2: Search Wallapop
-        try:
-            raw_listings = await self.marketplace_search.search_listings(
-                keywords=search_query,
-                latitude=latitude,
-                longitude=longitude,
-                max_results=max_results * 3 if max_results else 100,
-            )
-            logger.info(f"Found {len(raw_listings)} raw listings from Wallapop")
-        except Exception as e:
-            logger.error(f"Failed to search Wallapop: {e}")
-            return []
+        # Step 2: Search Wallapop. Whole-operation failures propagate so
+        # application scanners can distinguish them from a successful empty search.
+        raw_listings = await self.marketplace_search.search_listings(
+            keywords=search_query,
+            latitude=latitude,
+            longitude=longitude,
+            max_results=max_results * 3 if max_results else 100,
+        )
+        logger.info(f"Found {len(raw_listings)} raw listings from Wallapop")
 
         # Step 3 & 4 & 5: Process each listing
         comparables: list[ComparableListing] = []

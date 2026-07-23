@@ -15,6 +15,7 @@ from domain.entities.resale_economics import (
 )
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
 )
@@ -88,6 +89,80 @@ class _OfflineCollector:
         del game, latitude, longitude, max_results
         self.calls += 1
         return [_comparable(f"comparable-{index}", 30.0) for index in range(20)]
+
+
+class _AcceptComparable:
+    def is_valid_comparable(self, game: object, listing: object) -> bool:
+        del game, listing
+        return True
+
+
+def _wallapop_scanner(
+    source: Mock,
+) -> tuple[DefaultOpportunityScanner, Mock, Mock]:
+    game_detector = Mock()
+    game_detector.detect_games.return_value = [_game()]
+    collector = WallapopPriceCollector(
+        marketplace_search=source,
+        game_detector=game_detector,
+        comparable_filter=_AcceptComparable(),
+    )
+    builder = Mock()
+    ranker = Mock()
+    ranker.rank.side_effect = lambda opportunities, strategy: opportunities
+    return (
+        DefaultOpportunityScanner(
+            game_detector=game_detector,
+            price_collector=collector,
+            dataset_builder=builder,
+            statistics=Mock(),
+            outlier_removal=Mock(),
+            market_estimator=Mock(),
+            arbitrage_detector=Mock(),
+            opportunity_ranker=ranker,
+        ),
+        builder,
+        ranker,
+    )
+
+
+@pytest.mark.asyncio
+async def test_wallapop_empty_and_source_failure_are_distinct_and_cached() -> None:
+    candidates = [_candidate("first", 5.0), _candidate("second", 6.0)]
+
+    empty_source = Mock()
+    empty_source.search_listings = AsyncMock(return_value=[])
+    empty_scanner, empty_builder, empty_ranker = _wallapop_scanner(empty_source)
+    empty_result = await empty_scanner.scan_multiple(candidates)
+
+    source_error = RuntimeError("source unavailable")
+    failing_source = Mock()
+    failing_source.search_listings = AsyncMock(side_effect=source_error)
+    failing_scanner, failing_builder, failing_ranker = _wallapop_scanner(
+        failing_source
+    )
+    error_result = await failing_scanner.scan_multiple(candidates)
+
+    assert empty_source.search_listings.await_count == 1
+    assert failing_source.search_listings.await_count == 1
+    assert empty_builder.build.call_count == failing_builder.build.call_count == 0
+    empty_ranker.rank.assert_called_once()
+    failing_ranker.rank.assert_called_once()
+    assert (empty_result.comparable_cache_misses, empty_result.comparable_cache_hits) == (1, 1)
+    assert (error_result.comparable_cache_misses, error_result.comparable_cache_hits) == (1, 1)
+    assert all(failure.stage is PipelineStage.PRICE_COLLECTION for failure in empty_result.failures)
+    assert all(
+        failure.reason == "No comparable listings available in currency EUR"
+        and failure.error_message is None
+        for failure in empty_result.failures
+    )
+    assert all(failure.stage is PipelineStage.PRICE_COLLECTION for failure in error_result.failures)
+    assert all(
+        failure.reason == "Error during price_collection"
+        and failure.error_message == "source unavailable"
+        for failure in error_result.failures
+    )
+    assert await failing_scanner.scan_listing(candidates[0]) is None
 
 
 @pytest.mark.asyncio
