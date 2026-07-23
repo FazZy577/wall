@@ -31,7 +31,7 @@ The lot domain model introduces three new entities that enable analyzing bundles
 | | ArbitrageOpportunity | LotOpportunity |
 |---|---|---|
 | **Scope** | Single game | Bundle of games |
-| **Game field** | `game: DetectedGame` (singular) | `game_valuations: list[GameValuation]` (plural) |
+| **Game field** | `game: DetectedGame` (singular) | `game_valuations: tuple[GameValuation, ...]` (plural) |
 | **Market price** | Single game's market price | Sum of all games' market values |
 | **Profit** | `market_price - listing_price` | `reference_market_value - lot_price` |
 | **Confidence** | Single estimate's confidence | Aggregate (mean) of individual confidences |
@@ -92,7 +92,7 @@ Created via `GameValuation.from_market_estimate(game, estimate, observations_rem
 @dataclass
 class LotOpportunity:
     listing: CandidateListing
-    game_valuations: list[GameValuation]
+    game_valuations: tuple[GameValuation, ...]
     lot_price: float
     aggregate_confidence_score: float
     recommendation: Recommendation
@@ -253,8 +253,7 @@ EUR fallback or FX conversion.
 Currency homogeneity is checked before economic aggregation. Mixed game
 platforms remain valid because threshold selection depends on the homogeneous
 lot currency, not platform. Coverage, confidence, recommendation order and
-reason codes are unchanged. The mutable-list aliasing of `LotOpportunity`
-remains a separate pending issue.
+reason codes are unchanged.
 
 ## P1.21B currency-specific resale costs
 
@@ -263,3 +262,17 @@ per item, and one-time acquisition overhead. `ResaleEconomicPolicy` stores an
 immutable `Mapping[str, ResaleAbsoluteCosts]`; ratios remain global and
 dimensionless. Empty mappings are allowed but cannot calculate. Missing
 currencies fail without EUR/zero fallback or FX. Formulas are unchanged.
+
+## P1.22 immutable valuation snapshot
+
+`LotOpportunity.from_valuations()` takes one ordered tuple snapshot of the
+provided valuation list. The opportunity stores that tuple, so later clear,
+append or replacement operations on the analyzer/scanner list cannot change
+its confidence, item count, market value, profit, recommendation or score.
+Order and duplicates are preserved. The direct constructor defensively
+canonicalizes a supplied list for the same reason.
+
+`LotScanResult.game_valuations` deliberately remains a mutable list. It is not
+aliased by `LotOpportunity`. No valuation is deep-copied, and economic formulas,
+mixed-platform support, Decimal values, currency-specific costs and thresholds
+are unchanged.

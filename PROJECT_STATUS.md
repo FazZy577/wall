@@ -309,6 +309,13 @@ pipeline currency. Ratios remain global. `neutral()` configures only EUR by
 default, mappings may be empty, and missing currencies fail without EUR/zero
 fallback or FX. Formulas, thresholds, scores, ranking and coverage are intact.
 
+P1.22 makes `LotOpportunity.game_valuations` an ordered tuple snapshot. The
+factory and direct constructor no longer retain a caller-owned mutable list;
+later mutation of `LotScanResult.game_valuations` cannot change the opportunity
+or its derived values. Order and duplicates remain intact, no deep copy is
+performed, and lot economics, coverage, thresholds and recommendations do not
+change.
+
 ## P1.13 zero-IQR outlier safety
 
 Tukey now explicitly abstains when IQR is exactly zero: no observations are

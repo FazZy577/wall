@@ -117,6 +117,22 @@ async def test_real_offline_lot_pipeline_uses_one_candidate_and_three_valuations
     assert result.opportunity is not None
     assert result.opportunity.reference_market_value == 45.0
     assert result.opportunity.lot_price == 40.0
+    opportunity_state = (
+        result.opportunity.game_valuations,
+        result.opportunity.aggregate_confidence_score,
+        result.opportunity.economic_breakdown.item_count,
+        result.opportunity.reference_market_value,
+        result.opportunity.net_profit,
+    )
+    result.game_valuations.clear()
+    assert (
+        result.opportunity.game_valuations,
+        result.opportunity.aggregate_confidence_score,
+        result.opportunity.economic_breakdown.item_count,
+        result.opportunity.reference_market_value,
+        result.opportunity.net_profit,
+    ) == opportunity_state
+    assert isinstance(result.opportunity.game_valuations, tuple)
     assert len(collector.calls) == 3
     analyzer.analyze.assert_called_once()
     assert all(

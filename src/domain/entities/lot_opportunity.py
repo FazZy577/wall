@@ -52,7 +52,7 @@ class LotOpportunity:
     """
 
     listing: CandidateListing
-    game_valuations: list[GameValuation]
+    game_valuations: tuple[GameValuation, ...]
     lot_price: Decimal
     aggregate_confidence_score: float
     recommendation: Recommendation
@@ -62,6 +62,8 @@ class LotOpportunity:
     economic_breakdown: EconomicBreakdown
 
     def __post_init__(self) -> None:
+        if not isinstance(self.game_valuations, tuple):
+            self.game_valuations = tuple(self.game_valuations)
         require_decimal("lot_price", self.lot_price, non_negative=True)
         if self.listing.currency != self.economic_breakdown.currency:
             raise CurrencyMismatchError(
@@ -145,14 +147,15 @@ class LotOpportunity:
         Returns:
             LotOpportunity with computed aggregate metrics
         """
+        valuation_snapshot = tuple(game_valuations)
         lot_price = listing.price
 
         # Aggregate confidence: arithmetic mean of individual scores
         # Future: may be replaced by a weighted mean based on sample size
-        if game_valuations:
+        if valuation_snapshot:
             aggregate_confidence_score = round(
-                sum(v.confidence_score for v in game_valuations)
-                / len(game_valuations),
+                sum(v.confidence_score for v in valuation_snapshot)
+                / len(valuation_snapshot),
                 4,
             )
         else:
@@ -160,7 +163,7 @@ class LotOpportunity:
 
         return cls(
             listing=listing,
-            game_valuations=game_valuations,
+            game_valuations=valuation_snapshot,
             lot_price=lot_price,
             aggregate_confidence_score=aggregate_confidence_score,
             recommendation=recommendation,

@@ -6,6 +6,7 @@ No external calls. No Playwright. No Wallapop.
 
 from datetime import datetime
 from decimal import Decimal
+from typing import get_type_hints
 
 import pytest
 
@@ -613,6 +614,107 @@ class TestLotOpportunity:
             LotReasonCode.INVALID_LOT_PRICE,
         ]
         assert len(codes) == 7
+
+    def test_game_valuations_field_has_canonical_tuple_type(self) -> None:
+        assert get_type_hints(LotOpportunity)["game_valuations"] == tuple[
+            GameValuation, ...
+        ]
+
+    def test_factory_snapshots_caller_list_against_clear_append_and_replace(
+        self,
+    ) -> None:
+        candidate = CandidateListing(
+            "snapshot", "Snapshot lot", "", Decimal("10"), "EUR", "url"
+        )
+        valuation_a = self._make_valuation("A", 20.0, 0.8)
+        valuation_b = self._make_valuation("B", 30.0, 0.4)
+        valuations = [valuation_a]
+        original_identity = id(valuations)
+        opportunity = LotOpportunity.from_valuations(
+            candidate,
+            valuations,
+            Recommendation.BUY,
+            LotReasonCode.UNDERVALUED_LOT,
+            75.0,
+            _economic_breakdown(candidate, valuations),
+        )
+        original_state = (
+            opportunity.game_valuations,
+            opportunity.aggregate_confidence_score,
+            opportunity.economic_breakdown.item_count,
+            opportunity.reference_market_value,
+            opportunity.net_profit,
+            opportunity.recommendation,
+            opportunity.opportunity_score,
+        )
+
+        valuations.clear()
+        valuations.append(valuation_b)
+        valuations[0] = valuation_b
+
+        assert id(valuations) == original_identity
+        assert opportunity.game_valuations == (valuation_a,)
+        assert opportunity.game_valuations[0] is valuation_a
+        assert (
+            opportunity.game_valuations,
+            opportunity.aggregate_confidence_score,
+            opportunity.economic_breakdown.item_count,
+            opportunity.reference_market_value,
+            opportunity.net_profit,
+            opportunity.recommendation,
+            opportunity.opportunity_score,
+        ) == original_state
+
+    def test_exposed_snapshot_is_immutable_and_preserves_order_and_duplicates(
+        self,
+    ) -> None:
+        candidate = CandidateListing(
+            "ordered", "Ordered lot", "", Decimal("10"), "EUR", "url"
+        )
+        valuation_a = self._make_valuation("A", 20.0, 0.8)
+        valuation_b = self._make_valuation("B", 30.0, 0.4)
+        valuations = [valuation_a, valuation_b, valuation_a]
+        original = list(valuations)
+        opportunity = LotOpportunity.from_valuations(
+            candidate,
+            valuations,
+            Recommendation.BUY,
+            LotReasonCode.UNDERVALUED_LOT,
+            80.0,
+            _economic_breakdown(candidate, valuations),
+        )
+
+        assert opportunity.game_valuations == (valuation_a, valuation_b, valuation_a)
+        assert valuations == original
+        assert opportunity.aggregate_confidence_score == 0.6667
+        assert opportunity.economic_breakdown.item_count == 3
+        for mutator in ("append", "clear", "extend", "insert", "pop", "remove"):
+            assert not hasattr(opportunity.game_valuations, mutator)
+        with pytest.raises(TypeError):
+            opportunity.game_valuations[0] = valuation_b  # type: ignore[index]
+
+    def test_direct_constructor_canonicalizes_list_without_aliasing(self) -> None:
+        candidate = CandidateListing(
+            "direct", "Direct lot", "", Decimal("10"), "EUR", "url"
+        )
+        valuation = self._make_valuation("A", 20.0)
+        valuations = [valuation]
+        opportunity = LotOpportunity(
+            candidate,
+            valuations,  # type: ignore[arg-type]
+            candidate.price,
+            valuation.confidence_score,
+            Recommendation.BUY,
+            LotReasonCode.UNDERVALUED_LOT,
+            50.0,
+            datetime.now(),
+            _economic_breakdown(candidate, valuations),
+        )
+
+        valuations.clear()
+
+        assert opportunity.game_valuations == (valuation,)
+        assert isinstance(opportunity.game_valuations, tuple)
 
 
 # ---------------------------------------------------------------------------

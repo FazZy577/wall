@@ -396,6 +396,12 @@ Coverage and lot recommendation rules are unaffected.
 `ResaleEconomicPolicy` separates global dimensionless rates from absolute
 currency configuration. Each canonical currency maps to one frozen
 `ResaleAbsoluteCosts` bundle. The mapping is defensively copied and immutable.
+
+`LotOpportunity` is the immutable-snapshot boundary for the collection of
+successful lot valuations. Application and analyzer code may use mutable local
+lists, while the domain entity stores an ordered tuple created by its factory.
+`LotScanResult` retains its existing list contract; the two collections are not
+aliased. This changes no dependency direction or economic calculation.
 `neutral()` means EUR only; callers use `neutral("USD")`, `neutral("GBP")`, or
 an explicit multimonetary mapping. Missing currency fails without zero/EUR
 fallback or FX.

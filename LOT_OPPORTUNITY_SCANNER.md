@@ -218,6 +218,15 @@ bundle has no fallback and no FX. Per-item costs and one-time overhead retain
 their formulas. A missing bundle preserves completed valuations and follows
 the existing logged-error result with `opportunity=None`.
 
+## P1.22 opportunity snapshot boundary
+
+The scanner and analyzer continue accumulating successful valuations in local
+lists. `LotOpportunity.from_valuations()` snapshots that collection once as an
+ordered `tuple[GameValuation, ...]`. Consequently, mutating
+`LotScanResult.game_valuations` after the scan does not alter the opportunity's
+valuation collection or any derived value. Duplicates and mixed-platform order
+are preserved; no deep copy, sorting or deduplication is introduced.
+
 ## P1.14 unique comparables per game dataset
 
 For each detected game, candidate exclusion and lot-currency filtering still
