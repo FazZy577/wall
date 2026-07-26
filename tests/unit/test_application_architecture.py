@@ -6,6 +6,7 @@ import inspect
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
+from application.interfaces.candidate_search import ICandidateSearch
 from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
 from application.interfaces.opportunity_scanner import IOpportunityScanner, RankingResult
 from application.use_cases.default_lot_opportunity_scanner import (
@@ -27,6 +28,9 @@ from infrastructure.analyzers.default_lot_opportunity_analyzer import (
 )
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
+)
+from infrastructure.marketplaces.wallapop.adapter import (
+    WallapopCandidateSearchAdapter,
 )
 
 SRC_ROOT = Path(__file__).parents[2] / "src"
@@ -142,6 +146,18 @@ def test_application_does_not_import_infrastructure() -> None:
     ]
 
     assert forbidden == []
+
+
+def test_candidate_search_contract_and_wallapop_adapter_respect_layers() -> None:
+    contract_path = SRC_ROOT / "application/interfaces/candidate_search.py"
+    contract_source = contract_path.read_text(encoding="utf-8")
+
+    assert ICandidateSearch.__module__ == "application.interfaces.candidate_search"
+    assert WallapopCandidateSearchAdapter.__module__ == (
+        "infrastructure.marketplaces.wallapop.adapter"
+    )
+    assert "infrastructure" not in contract_source
+    assert "wallapop" not in contract_source.casefold()
 
 
 def test_domain_does_not_import_application_or_infrastructure() -> None:
