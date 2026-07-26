@@ -465,6 +465,178 @@ class TestCollectComparables:
     """Test end-to-end comparable collection."""
 
     @pytest.mark.asyncio
+    async def test_non_dict_items_are_warned_and_ignored(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_wallapop_client.search_listings.return_value = [
+            None,
+            "invalid",
+            123,
+            [],
+            object(),
+        ]
+
+        with caplog.at_level(logging.WARNING):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert result == []
+        mock_game_detector.detect_games.assert_not_called()
+        mock_comparable_filter.is_valid_comparable.assert_not_called()
+        warnings = [
+            record.getMessage()
+            for record in caplog.records
+            if record.levelno == logging.WARNING
+        ]
+        assert warnings == [
+            "Ignoring malformed marketplace listing at index 0: type=NoneType",
+            "Ignoring malformed marketplace listing at index 1: type=str",
+            "Ignoring malformed marketplace listing at index 2: type=int",
+            "Ignoring malformed marketplace listing at index 3: type=list",
+            "Ignoring malformed marketplace listing at index 4: type=object",
+        ]
+        assert all("unknown" not in warning for warning in warnings)
+
+    @pytest.mark.asyncio
+    async def test_non_dict_item_between_valid_items_does_not_abort_collection(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        mock_wallapop_client.search_listings.return_value = [
+            {
+                "id": 1,
+                "title": "GTA V PS4",
+                "description": "First valid listing",
+                "price": 15,
+                "currency": "EUR",
+            },
+            None,
+            {
+                "id": 2,
+                "title": "GTA V PS4",
+                "description": "Second valid listing",
+                "price": 18,
+                "currency": "EUR",
+            },
+        ]
+        mock_game_detector.detect_games.return_value = [target_game]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        with caplog.at_level(logging.WARNING):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert [comparable.listing_id for comparable in result] == ["1", "2"]
+        assert mock_game_detector.detect_games.call_count == 2
+        assert mock_comparable_filter.is_valid_comparable.call_count == 2
+        assert "Ignoring malformed marketplace listing at index 1: type=NoneType" in (
+            caplog.text
+        )
+
+    @pytest.mark.asyncio
+    async def test_exception_handler_survives_dict_with_broken_get(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        class BrokenGetDict(dict[str, object]):
+            def get(self, key: str, default: object = None) -> object:
+                raise RuntimeError("broken get")
+
+        mock_wallapop_client.search_listings.return_value = [
+            BrokenGetDict(),
+            {
+                "id": 2,
+                "title": "GTA V PS4",
+                "description": "Valid listing",
+                "price": 18,
+                "currency": "EUR",
+            },
+        ]
+        mock_game_detector.detect_games.return_value = [target_game]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        with caplog.at_level(logging.WARNING):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert [comparable.listing_id for comparable in result] == ["2"]
+        assert "Failed to process listing unknown: broken get" in caplog.text
+
+    @pytest.mark.asyncio
+    async def test_exception_handler_survives_unprintable_item_error(
+        self,
+        price_collector: WallapopPriceCollector,
+        mock_wallapop_client: Mock,
+        mock_game_detector: Mock,
+        mock_comparable_filter: Mock,
+        target_game: DetectedGame,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        class UnprintableError(Exception):
+            def __str__(self) -> str:
+                raise RuntimeError("cannot format error")
+
+        mock_wallapop_client.search_listings.return_value = [
+            {
+                "id": 1,
+                "title": "GTA V PS4",
+                "description": "Broken listing",
+                "price": 15,
+                "currency": "EUR",
+            },
+            {
+                "id": 2,
+                "title": "GTA V PS4",
+                "description": "Valid listing",
+                "price": 18,
+                "currency": "EUR",
+            },
+        ]
+        mock_game_detector.detect_games.side_effect = [
+            UnprintableError(),
+            [target_game],
+        ]
+        mock_comparable_filter.is_valid_comparable.return_value = True
+
+        with caplog.at_level(logging.WARNING):
+            result = await price_collector.collect_comparables(
+                game=target_game,
+                latitude=40.4168,
+                longitude=-3.7038,
+            )
+
+        assert [comparable.listing_id for comparable in result] == ["2"]
+        assert (
+            "Failed to process listing 1: <unprintable UnprintableError>"
+            in caplog.text
+        )
+
+    @pytest.mark.asyncio
     async def test_successful_collection(
         self,
         price_collector: WallapopPriceCollector,

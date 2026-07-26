@@ -90,7 +90,15 @@ class WallapopPriceCollector(IPriceCollector):
         # Step 3 & 4 & 5: Process each listing
         comparables: list[ComparableListing] = []
 
-        for raw_listing in raw_listings:
+        for index, raw_listing in enumerate(raw_listings):
+            if not isinstance(raw_listing, dict):
+                logger.warning(
+                    "Ignoring malformed marketplace listing at index %d: type=%s",
+                    index,
+                    type(raw_listing).__name__,
+                )
+                continue
+
             try:
                 comparable = self._process_listing(raw_listing, game)
                 if comparable:
@@ -108,8 +116,22 @@ class WallapopPriceCollector(IPriceCollector):
 
             except Exception as e:
                 # Log but continue processing other listings
-                listing_id = raw_listing.get("id", "unknown")
-                logger.warning(f"Failed to process listing {listing_id}: {e}")
+                try:
+                    listing_id = (
+                        normalize_wallapop_listing_id(raw_listing.get("id"))
+                        or "unknown"
+                    )
+                except Exception:
+                    listing_id = "unknown"
+                try:
+                    error_message = str(e)
+                except Exception:
+                    error_message = f"<unprintable {type(e).__name__}>"
+                logger.warning(
+                    "Failed to process listing %s: %s",
+                    listing_id,
+                    error_message,
+                )
                 continue
 
         logger.info(f"Collected {len(comparables)} valid comparables for {game.canonical_name}")
