@@ -65,3 +65,5 @@ storage-state.json
 
 # Claude Code local configuration
 .openclaude/
+response.txt
+validation_report.json
