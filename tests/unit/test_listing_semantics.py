@@ -278,7 +278,7 @@ def test_candidate_listing_never_accepts_or_reads_detected_games() -> None:
                     and isinstance(node, ast.Attribute)
                     and node.attr == "detected_games"
                     and isinstance(node.value, ast.Name)
-                    and node.value.id in {"candidate", "listing"}
+                    and node.value.id == "listing"
                 ):
                     violations.append(str(source_file.relative_to(repository_root)))
 

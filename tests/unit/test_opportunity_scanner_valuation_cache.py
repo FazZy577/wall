@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.opportunity_scanner import PipelineStage, ScanResult
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
@@ -393,3 +394,51 @@ async def test_candidate_exclusion_preserves_leading_zeros_and_case(
     assert [
         item.listing_id for item in mocks["builder"].build.call_args_list[1].args[0]
     ] == ["00123", "123", "abc"]
+
+
+@pytest.mark.asyncio
+async def test_detected_batch_reuses_cache_without_detection_or_input_mutation(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    detected_game = game()
+    candidates = [
+        DetectedCandidate(listing(str(index), detected_game), (detected_game,))
+        for index in range(5)
+    ]
+    original = list(candidates)
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    scanner.opportunity_ranker = ranker
+
+    result = await scanner.scan_detected_multiple(candidates)
+
+    assert candidates == original
+    scanner.game_detector.detect_games.assert_not_called()
+    assert mocks["collector"].collect_comparables.await_count == 1
+    assert mocks["builder"].build.call_count == 5
+    assert mocks["statistics"].calculate.call_count == 10
+    assert mocks["outliers"].remove_outliers.call_count == 5
+    assert mocks["estimator"].estimate.call_count == 5
+    assert mocks["detector"].detect.call_count == 5
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 4)
+    assert (result.total_processed, result.successful, result.failed) == (5, 5, 0)
+    ranker.rank.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_detected_batches_do_not_share_cache(
+    cache_scanner: tuple[DefaultOpportunityScanner, dict[str, Mock]],
+) -> None:
+    scanner, mocks = cache_scanner
+    detected_game = game()
+    candidates = (
+        DetectedCandidate(listing("A", detected_game), (detected_game,)),
+        DetectedCandidate(listing("B", detected_game), (detected_game,)),
+    )
+
+    first = await scanner.scan_detected_multiple(candidates)
+    second = await scanner.scan_detected_multiple(candidates)
+
+    assert mocks["collector"].collect_comparables.await_count == 2
+    assert (first.comparable_cache_misses, first.comparable_cache_hits) == (1, 1)
+    assert (second.comparable_cache_misses, second.comparable_cache_hits) == (1, 1)

@@ -14,6 +14,7 @@ from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
 
+from .detected_candidate import DetectedCandidate
 from .opportunity_scanner import FailureInfo
 
 
@@ -196,4 +197,12 @@ class ILotOpportunityScanner(ABC):
         Returns:
             LotScanResult with opportunity, valuations, and failures
         """
+        pass
+
+    @abstractmethod
+    async def scan_detected_lot(
+        self,
+        candidate: DetectedCandidate,
+    ) -> LotScanResult:
+        """Scan a lot without repeating game detection."""
         pass

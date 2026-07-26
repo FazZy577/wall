@@ -4,12 +4,14 @@ Tests the orchestration of the complete pipeline with mocks.
 No Playwright. No Wallapop API calls.
 """
 
+import asyncio
 from datetime import datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
@@ -1138,7 +1140,141 @@ async def test_scan_listing_keeps_return_none_contract_for_detector_exception(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("critical_error", [KeyboardInterrupt(), SystemExit()])
+async def test_detected_listing_skips_detector_and_matches_existing_entry_point(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_game: DetectedGame,
+    sample_comparable: ComparableListing,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_arbitrage_detector: Mock,
+) -> None:
+    expected = _setup_successful_pipeline_mocks(
+        scanner,
+        sample_comparable,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_arbitrage_detector,
+    )
+
+    existing_result = await scanner.scan_listing(sample_listing)
+    detected_result = await scanner.scan_detected_listing(
+        DetectedCandidate(sample_listing, (sample_game,))
+    )
+
+    assert existing_result is expected
+    assert detected_result is expected
+    mock_game_detector.detect_games.assert_called_once()
+    assert mock_price_collector.collect_comparables.await_count == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("game_count", [0, 2])
+async def test_detected_listing_preserves_non_individual_semantics_without_detection(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_game: DetectedGame,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    game_count: int,
+) -> None:
+    games = tuple(sample_game for _ in range(game_count))
+
+    result = await scanner.scan_detected_listing(
+        DetectedCandidate(sample_listing, games)
+    )
+
+    assert result is None
+    mock_game_detector.detect_games.assert_not_called()
+    mock_price_collector.collect_comparables.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_scan_multiple_detects_each_listing_once(
+    scanner: DefaultOpportunityScanner,
+    mock_game_detector: Mock,
+) -> None:
+    listings = [_detection_candidate(identifier) for identifier in ("A", "B", "C")]
+    mock_game_detector.detect_games.return_value = []
+    mock_game_detector.detect_games.side_effect = None
+
+    result = await scanner.scan_multiple(listings)
+
+    assert mock_game_detector.detect_games.call_count == len(listings)
+    assert result.total_processed == 3
+    assert result.failed == 3
+
+
+@pytest.mark.asyncio
+async def test_detected_batch_preserves_zero_multiple_failure_order_and_counts(
+    scanner: DefaultOpportunityScanner,
+    sample_game: DetectedGame,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+) -> None:
+    candidates = (
+        DetectedCandidate(_detection_candidate("zero"), ()),
+        DetectedCandidate(_detection_candidate("single"), (sample_game,)),
+        DetectedCandidate(
+            _detection_candidate("multiple"),
+            (sample_game, sample_game),
+        ),
+    )
+    mock_price_collector.collect_comparables.return_value = []
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    scanner.opportunity_ranker = ranker
+
+    result = await scanner.scan_detected_multiple(candidates)
+
+    mock_game_detector.detect_games.assert_not_called()
+    assert [failure.listing_id for failure in result.failures] == [
+        "zero",
+        "single",
+        "multiple",
+    ]
+    assert [failure.reason for failure in result.failures] == [
+        "No game detected in listing",
+        "No comparable listings available in currency EUR",
+        "Multiple games detected; use LotOpportunityScanner",
+    ]
+    assert (result.total_processed, result.successful, result.failed) == (3, 0, 3)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 0)
+    ranker.rank.assert_called_once_with([], scanner.ranking_strategy)
+
+
+@pytest.mark.asyncio
+async def test_detected_batch_propagates_cancellation_without_ranking(
+    scanner: DefaultOpportunityScanner,
+    sample_listing: CandidateListing,
+    sample_game: DetectedGame,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+) -> None:
+    mock_price_collector.collect_comparables.side_effect = asyncio.CancelledError()
+    ranker = Mock(wraps=DefaultOpportunityRanker())
+    scanner.opportunity_ranker = ranker
+
+    with pytest.raises(asyncio.CancelledError):
+        await scanner.scan_detected_multiple(
+            [DetectedCandidate(sample_listing, (sample_game,))]
+        )
+
+    mock_game_detector.detect_games.assert_not_called()
+    ranker.rank.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "critical_error",
+    [asyncio.CancelledError(), KeyboardInterrupt(), SystemExit()],
+)
 async def test_scan_multiple_does_not_capture_base_exceptions(
     scanner: DefaultOpportunityScanner,
     mock_game_detector: Mock,

@@ -8,9 +8,11 @@ Contains NO business logic — only coordination.
 
 import logging
 import time
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import cast
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import (
     GameValuationFailure,
     ILotOpportunityScanner,
@@ -96,12 +98,29 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             LotScanResult with opportunity, valuations, and failures
         """
         start_time = time.time()
-
-        detected_games = self._deduplicate_games(
-            self.game_detector.detect_games(
-                ListingText(title=listing.title, description=listing.description)
-            )
+        detected_games = self.game_detector.detect_games(
+            ListingText(title=listing.title, description=listing.description)
         )
+        return await self._scan_detected_lot(
+            DetectedCandidate(listing, tuple(detected_games)),
+            start_time,
+        )
+
+    async def scan_detected_lot(
+        self,
+        candidate: DetectedCandidate,
+    ) -> LotScanResult:
+        """Scan a lot from games detected by an upstream application boundary."""
+        return await self._scan_detected_lot(candidate, time.time())
+
+    async def _scan_detected_lot(
+        self,
+        candidate: DetectedCandidate,
+        start_time: float,
+    ) -> LotScanResult:
+        """Run the common lot pipeline from an existing detection."""
+        listing = candidate.listing
+        detected_games = self._deduplicate_games(candidate.detected_games)
         total_detected_games = len(detected_games)
         game_valuations: list[GameValuation] = []
         failures: list[GameValuationFailure] = []
@@ -175,7 +194,7 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         )
 
     @staticmethod
-    def _deduplicate_games(games: list[DetectedGame]) -> list[DetectedGame]:
+    def _deduplicate_games(games: Sequence[DetectedGame]) -> list[DetectedGame]:
         """Keep first occurrence of each normalized game identity."""
         unique: list[DetectedGame] = []
         seen: set[tuple[str, str]] = set()

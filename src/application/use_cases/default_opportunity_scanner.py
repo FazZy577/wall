@@ -2,10 +2,12 @@
 
 import logging
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import cast
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.opportunity_scanner import (
     FailureInfo,
     IOpportunityScanner,
@@ -252,30 +254,11 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             detected_games = self.game_detector.detect_games(
                 ListingText(title=listing.title, description=listing.description)
             )
-            if not detected_games:
-                logger.warning(f"Listing {listing.listing_id} has no detected game")
-                return None
-            if len(detected_games) > 1:
-                logger.warning(
-                    "Listing %s contains multiple games; use LotOpportunityScanner",
-                    listing.listing_id,
-                )
-                return None
-            (detected_game,) = detected_games
-
-            valuation = await self._get_or_create_market_valuation(
-                detected_game, context, listing.listing_id, listing.currency
+            return await self._scan_detected_listing(
+                DetectedCandidate(listing, tuple(detected_games)),
+                context,
+                start_time,
             )
-            if valuation.failure is not None or valuation.estimate is None:
-                return None
-
-            opportunity = self.arbitrage_detector.detect(listing, valuation.estimate)
-            logger.info(
-                f"{opportunity.recommendation.upper()} detected "
-                f"(score: {opportunity.opportunity_score:.1f}/100)"
-            )
-            logger.info(f"Processing completed in {time.time() - start_time:.2f} s")
-            return opportunity
         except Exception as error:
             logger.error(
                 f"Failed to scan listing {listing.listing_id}: {error}",
@@ -283,22 +266,71 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             )
             return None
 
+    async def scan_detected_listing(
+        self,
+        candidate: DetectedCandidate,
+    ) -> ArbitrageOpportunity | None:
+        """Scan one already detected candidate with a fresh context."""
+        context = _ScanExecutionContext()
+        start_time = time.time()
+        listing = candidate.listing
+
+        try:
+            logger.info(f"Scanning listing: {listing.listing_id}")
+            return await self._scan_detected_listing(candidate, context, start_time)
+        except Exception as error:
+            logger.error(
+                f"Failed to scan listing {listing.listing_id}: {error}",
+                exc_info=True,
+            )
+            return None
+
+    async def _scan_detected_listing(
+        self,
+        candidate: DetectedCandidate,
+        context: _ScanExecutionContext,
+        start_time: float,
+    ) -> ArbitrageOpportunity | None:
+        """Run the individual pipeline from an existing detection."""
+        listing = candidate.listing
+        if not candidate.detected_games:
+            logger.warning(f"Listing {listing.listing_id} has no detected game")
+            return None
+        if len(candidate.detected_games) > 1:
+            logger.warning(
+                "Listing %s contains multiple games; use LotOpportunityScanner",
+                listing.listing_id,
+            )
+            return None
+        (detected_game,) = candidate.detected_games
+
+        valuation = await self._get_or_create_market_valuation(
+            detected_game, context, listing.listing_id, listing.currency
+        )
+        if valuation.failure is not None or valuation.estimate is None:
+            return None
+
+        opportunity = self.arbitrage_detector.detect(listing, valuation.estimate)
+        logger.info(
+            f"{opportunity.recommendation.upper()} detected "
+            f"(score: {opportunity.opportunity_score:.1f}/100)"
+        )
+        logger.info(f"Processing completed in {time.time() - start_time:.2f} s")
+        return opportunity
+
     async def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
-        """Scan listings, reusing valuations only within this invocation."""
+        """Detect and scan listings within one batch execution."""
         start_time = time.time()
         context = _ScanExecutionContext()
-        opportunities: list[ArbitrageOpportunity] = []
-        failures: list[FailureInfo] = []
+        listing_snapshot = tuple(listings)
+        entries: list[DetectedCandidate | FailureInfo] = []
 
-        logger.info(f"Starting batch scan of {len(listings)} listings")
-        for index, listing in enumerate(listings, 1):
-            listing_start = time.time()
-            logger.info(f"Scanning listing {index}/{len(listings)}")
-
+        for listing in listing_snapshot:
             try:
                 detected_games = self.game_detector.detect_games(
                     ListingText(title=listing.title, description=listing.description)
                 )
+                entries.append(DetectedCandidate(listing, tuple(detected_games)))
             except Exception as error:
                 exception_type = type(error).__name__
                 exception_message = str(error)
@@ -307,7 +339,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                     if exception_message
                     else exception_type
                 )
-                failures.append(
+                entries.append(
                     FailureInfo(
                         listing_id=listing.listing_id,
                         stage=PipelineStage.GAME_DETECTION,
@@ -315,8 +347,50 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                         error_message=exception_message or None,
                     )
                 )
+
+        return await self._scan_detected_multiple(
+            entries,
+            total_processed=len(listing_snapshot),
+            context=context,
+            start_time=start_time,
+        )
+
+    async def scan_detected_multiple(
+        self,
+        candidates: Sequence[DetectedCandidate],
+    ) -> ScanResult:
+        """Scan already detected candidates with one execution-scoped cache."""
+        candidate_snapshot = tuple(candidates)
+        return await self._scan_detected_multiple(
+            candidate_snapshot,
+            total_processed=len(candidate_snapshot),
+            context=_ScanExecutionContext(),
+            start_time=time.time(),
+        )
+
+    async def _scan_detected_multiple(
+        self,
+        entries: Sequence[DetectedCandidate | FailureInfo],
+        *,
+        total_processed: int,
+        context: _ScanExecutionContext,
+        start_time: float,
+    ) -> ScanResult:
+        """Run the common batch pipeline from detection results."""
+        opportunities: list[ArbitrageOpportunity] = []
+        failures: list[FailureInfo] = []
+
+        logger.info(f"Starting batch scan of {total_processed} listings")
+        for index, entry in enumerate(entries, 1):
+            listing_start = time.time()
+            logger.info(f"Scanning listing {index}/{total_processed}")
+
+            if isinstance(entry, FailureInfo):
+                failures.append(entry)
                 continue
-            if not detected_games:
+
+            listing = entry.listing
+            if not entry.detected_games:
                 failures.append(
                     FailureInfo(
                         listing_id=listing.listing_id,
@@ -325,7 +399,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                     )
                 )
                 continue
-            if len(detected_games) > 1:
+            if len(entry.detected_games) > 1:
                 failures.append(
                     FailureInfo(
                         listing_id=listing.listing_id,
@@ -334,7 +408,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
                     )
                 )
                 continue
-            (detected_game,) = detected_games
+            (detected_game,) = entry.detected_games
 
             valuation = await self._get_or_create_market_valuation(
                 detected_game, context, listing.listing_id, listing.currency
@@ -382,7 +456,7 @@ class DefaultOpportunityScanner(IOpportunityScanner):
             ordered_opportunities, self.ranking_strategy
         )
         return ScanResult(
-            total_processed=len(listings),
+            total_processed=total_processed,
             successful=len(opportunities),
             failed=len(failures),
             opportunities=ranking_result.ordered_opportunities,

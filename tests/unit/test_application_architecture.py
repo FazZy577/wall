@@ -4,9 +4,11 @@ import ast
 import importlib
 import inspect
 from pathlib import Path
+from typing import get_args, get_type_hints
 from unittest.mock import AsyncMock, Mock
 
 from application.interfaces.candidate_search import ICandidateSearch
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
 from application.interfaces.opportunity_scanner import IOpportunityScanner, RankingResult
 from application.use_cases.default_lot_opportunity_scanner import (
@@ -193,6 +195,7 @@ def test_scanner_symbols_have_single_application_definition() -> None:
         "LotPipelineStage": Path(
             "application/interfaces/lot_opportunity_scanner.py"
         ),
+        "DetectedCandidate": Path("application/interfaces/detected_candidate.py"),
     }
     definitions: dict[str, list[Path]] = {name: [] for name in expected}
 
@@ -216,6 +219,17 @@ def test_scanner_modules_are_canonical_application_modules() -> None:
     assert ILotOpportunityScanner.__module__ == (
         "application.interfaces.lot_opportunity_scanner"
     )
+    assert DetectedCandidate.__module__ == "application.interfaces.detected_candidate"
+
+
+def test_scanner_interfaces_share_one_detected_candidate_contract() -> None:
+    single_hints = get_type_hints(IOpportunityScanner.scan_detected_listing)
+    batch_hints = get_type_hints(IOpportunityScanner.scan_detected_multiple)
+    lot_hints = get_type_hints(ILotOpportunityScanner.scan_detected_lot)
+
+    assert single_hints["candidate"] is DetectedCandidate
+    assert get_args(batch_hints["candidates"]) == (DetectedCandidate,)
+    assert lot_hints["candidate"] is DetectedCandidate
 
 
 def test_old_scanner_modules_were_removed() -> None:
@@ -231,6 +245,7 @@ def test_old_scanner_modules_were_removed() -> None:
 
 def test_canonical_modules_import_without_cycles() -> None:
     modules = [
+        "application.interfaces.detected_candidate",
         "application.interfaces.opportunity_scanner",
         "application.interfaces.lot_opportunity_scanner",
         "application.use_cases.default_opportunity_scanner",
@@ -248,10 +263,16 @@ def test_scanner_and_collector_contracts_are_async_end_to_end() -> None:
     assert inspect.iscoroutinefunction(IPriceCollector.collect_comparables)
     assert inspect.iscoroutinefunction(IOpportunityScanner.scan_listing)
     assert inspect.iscoroutinefunction(IOpportunityScanner.scan_multiple)
+    assert inspect.iscoroutinefunction(IOpportunityScanner.scan_detected_listing)
+    assert inspect.iscoroutinefunction(IOpportunityScanner.scan_detected_multiple)
     assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_listing)
     assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_multiple)
+    assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_detected_listing)
+    assert inspect.iscoroutinefunction(DefaultOpportunityScanner.scan_detected_multiple)
     assert inspect.iscoroutinefunction(ILotOpportunityScanner.scan_lot)
+    assert inspect.iscoroutinefunction(ILotOpportunityScanner.scan_detected_lot)
     assert inspect.iscoroutinefunction(DefaultLotOpportunityScanner.scan_lot)
+    assert inspect.iscoroutinefunction(DefaultLotOpportunityScanner.scan_detected_lot)
     assert isinstance(AsyncMock(spec=IPriceCollector).collect_comparables, AsyncMock)
 
     synchronous_methods = [

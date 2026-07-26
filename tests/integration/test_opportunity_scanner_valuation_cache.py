@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.opportunity_scanner import PipelineStage
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
@@ -14,7 +15,12 @@ from domain.entities.resale_economics import (
     ResaleEconomicPolicy,
 )
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
-from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.game_detector import (
+    DetectedGame,
+    DetectionMethod,
+    ListingText,
+    Platform,
+)
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -265,6 +271,50 @@ async def test_real_pipeline_reuses_collection_but_preserves_per_candidate_formu
     assert result.opportunities[0].recommendation != result.opportunities[1].recommendation
     assert result.opportunities[0].listing is candidates[0]
     assert result.opportunities[0].listing.raw_listing["kind"] == "candidate"
+
+
+@pytest.mark.asyncio
+async def test_upstream_detection_enters_real_pipeline_without_redetection() -> None:
+    collector = _OfflineCollector()
+    upstream_detector = Mock()
+    upstream_detector.detect_games.return_value = [_game()]
+    scanner_detector = Mock()
+    scanner_detector.detect_games.side_effect = AssertionError(
+        "scanner repeated upstream detection"
+    )
+    scanner = DefaultOpportunityScanner(
+        game_detector=scanner_detector,
+        price_collector=collector,
+        dataset_builder=DefaultPriceDatasetBuilder(),
+        statistics=DefaultPriceStatistics(),
+        outlier_removal=DefaultOutlierRemoval(),
+        market_estimator=DefaultMarketPriceEstimator(),
+        arbitrage_detector=DefaultArbitrageOpportunityDetector(
+            ResaleEconomicPolicy.neutral()
+        ),
+        opportunity_ranker=DefaultOpportunityRanker(),
+    )
+    listings = [_candidate("upstream-A", 5.0), _candidate("upstream-B", 25.0)]
+    detected_candidates = tuple(
+        DetectedCandidate(
+            listing,
+            tuple(
+                upstream_detector.detect_games(
+                    ListingText(listing.title, listing.description)
+                )
+            ),
+        )
+        for listing in listings
+    )
+
+    result = await scanner.scan_detected_multiple(detected_candidates)
+
+    assert upstream_detector.detect_games.call_count == 2
+    scanner_detector.detect_games.assert_not_called()
+    assert collector.calls == 1
+    assert (result.total_processed, result.successful, result.failed) == (2, 2, 0)
+    assert (result.comparable_cache_misses, result.comparable_cache_hits) == (1, 1)
+    assert [opportunity.listing for opportunity in result.opportunities] == listings
 
 
 @pytest.mark.asyncio

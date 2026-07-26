@@ -2,10 +2,12 @@
 
 import statistics as std_stats
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from domain.entities.candidate_listing import CandidateListing
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
@@ -107,6 +109,22 @@ class IOpportunityScanner(ABC):
         pass
 
     @abstractmethod
+    async def scan_detected_listing(
+        self,
+        candidate: DetectedCandidate,
+    ) -> ArbitrageOpportunity | None:
+        """Scan one candidate without repeating game detection."""
+        pass
+
+    @abstractmethod
     async def scan_multiple(self, listings: list[CandidateListing]) -> ScanResult:
         """Scan candidates and continue after candidate-specific failures."""
+        pass
+
+    @abstractmethod
+    async def scan_detected_multiple(
+        self,
+        candidates: Sequence[DetectedCandidate],
+    ) -> ScanResult:
+        """Scan already detected candidates in one batch execution."""
         pass

@@ -4,6 +4,7 @@ Tests the orchestration of the lot valuation pipeline with mocks.
 No Playwright. No Wallapop API calls.
 """
 
+import asyncio
 from dataclasses import asdict, fields
 from decimal import Decimal
 from typing import get_type_hints
@@ -11,6 +12,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
+from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import (
     GameValuationFailure,
     LotPipelineStage,
@@ -995,3 +997,196 @@ def test_lot_game_identity_normalizes_aliases_but_separates_platforms() -> None:
     unique = DefaultLotOpportunityScanner._deduplicate_games([*ps4_aliases, ps5])
 
     assert unique == [ps4_aliases[0], ps5]
+
+
+@pytest.mark.asyncio
+async def test_detected_lot_skips_detector_and_matches_existing_entry_point(
+    scanner: DefaultLotOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    listing = CandidateListing(
+        "detected-lot",
+        "GTA V RDR2",
+        "",
+        Decimal("20"),
+        "EUR",
+        "url",
+    )
+    games = (_make_game("GTA V"), _make_game("RDR2"))
+    _setup_pipeline_mocks(
+        scanner,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_lot_analyzer,
+        comparable_prices=[12.0, 15.0],
+    )
+
+    existing_result = await scanner.scan_lot(listing)
+    detected_result = await scanner.scan_detected_lot(
+        DetectedCandidate(listing, games)
+    )
+
+    mock_game_detector.detect_games.assert_called_once()
+    assert existing_result.opportunity is detected_result.opportunity
+    assert existing_result.total_detected_games == detected_result.total_detected_games == 2
+    assert existing_result.successfully_valued_games == (
+        detected_result.successfully_valued_games
+    )
+    assert existing_result.failed_games == detected_result.failed_games == 0
+    assert existing_result.is_complete is detected_result.is_complete is True
+    assert detected_result.detected_games == list(games)
+
+
+@pytest.mark.asyncio
+async def test_detected_lot_empty_detection_preserves_structured_failure(
+    scanner: DefaultLotOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    listing = CandidateListing(
+        "empty-detected",
+        "No games",
+        "",
+        Decimal("10"),
+        "EUR",
+        "url",
+    )
+
+    result = await scanner.scan_detected_lot(DetectedCandidate(listing, ()))
+
+    mock_game_detector.detect_games.assert_not_called()
+    mock_price_collector.collect_comparables.assert_not_awaited()
+    mock_lot_analyzer.analyze.assert_not_called()
+    assert result.total_detected_games == 0
+    assert result.successfully_valued_games == 0
+    assert result.failed_games == 1
+    assert result.is_complete is False
+    assert result.failures[0].stage is LotPipelineStage.GAME_DETECTION
+    assert result.failures[0].listing_id == listing.listing_id
+
+
+@pytest.mark.asyncio
+async def test_detected_lot_preserves_order_and_existing_deduplication(
+    scanner: DefaultLotOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+    mock_dataset_builder: Mock,
+    mock_statistics: Mock,
+    mock_outlier_removal: Mock,
+    mock_market_estimator: Mock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    listing = CandidateListing(
+        "dedup-detected",
+        "GTA V RDR2",
+        "",
+        Decimal("20"),
+        "EUR",
+        "url",
+    )
+    gta = _make_game("GTA V")
+    rdr = _make_game("RDR2")
+    games = (rdr, gta, rdr)
+    _setup_pipeline_mocks(
+        scanner,
+        mock_price_collector,
+        mock_dataset_builder,
+        mock_statistics,
+        mock_outlier_removal,
+        mock_market_estimator,
+        mock_lot_analyzer,
+        comparable_prices=[12.0, 15.0],
+    )
+
+    result = await scanner.scan_detected_lot(
+        DetectedCandidate(listing, games)
+    )
+
+    mock_game_detector.detect_games.assert_not_called()
+    assert games == (rdr, gta, rdr)
+    assert result.detected_games == [rdr, gta]
+    assert [valuation.game for valuation in result.game_valuations] == [rdr, gta]
+    assert result.total_detected_games == 2
+    assert result.successfully_valued_games == 2
+    assert result.is_complete is True
+
+
+@pytest.mark.asyncio
+async def test_detected_lot_preserves_partial_and_aggregate_failures(
+    scanner: DefaultLotOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_lot_analyzer: Mock,
+) -> None:
+    listing = CandidateListing(
+        "partial-detected",
+        "GTA V RDR2",
+        "",
+        Decimal("20"),
+        "EUR",
+        "url",
+    )
+    gta = _make_game("GTA V")
+    rdr = _make_game("RDR2")
+    valuation = Mock(game=gta)
+    game_failure = GameValuationFailure(
+        game=rdr,
+        stage=LotPipelineStage.PRICE_COLLECTION,
+        reason="No comparables",
+        listing_id=listing.listing_id,
+    )
+    scanner._value_game = AsyncMock(  # type: ignore[method-assign]
+        side_effect=[(valuation, None), (None, game_failure)]
+    )
+    mock_lot_analyzer.analyze.side_effect = RuntimeError("analysis boom")
+
+    result = await scanner.scan_detected_lot(
+        DetectedCandidate(listing, (gta, rdr))
+    )
+
+    mock_game_detector.detect_games.assert_not_called()
+    assert result.game_valuations == [valuation]
+    assert result.failures == [game_failure]
+    assert result.total_detected_games == 2
+    assert result.successfully_valued_games == 1
+    assert result.failed_games == 1
+    assert result.is_complete is False
+    assert result.analysis_failure == FailureInfo(
+        listing_id=listing.listing_id,
+        stage=PipelineStage.LOT_ANALYSIS,
+        reason="Lot opportunity analysis failed",
+        error_message="RuntimeError: analysis boom",
+    )
+
+
+@pytest.mark.asyncio
+async def test_detected_lot_propagates_cancellation(
+    scanner: DefaultLotOpportunityScanner,
+    mock_game_detector: Mock,
+    mock_price_collector: AsyncMock,
+) -> None:
+    listing = CandidateListing(
+        "cancelled-detected",
+        "GTA V",
+        "",
+        Decimal("20"),
+        "EUR",
+        "url",
+    )
+    mock_price_collector.collect_comparables.side_effect = asyncio.CancelledError()
+
+    with pytest.raises(asyncio.CancelledError):
+        await scanner.scan_detected_lot(
+            DetectedCandidate(listing, (_make_game("GTA V"),))
+        )
+
+    mock_game_detector.detect_games.assert_not_called()
