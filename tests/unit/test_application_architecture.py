@@ -24,6 +24,9 @@ from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
+from application.use_cases.default_search_orchestrator import (
+    DefaultSearchOrchestrator,
+)
 from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportunityDetector
 from domain.interfaces.game_detector import IGameDetector
@@ -171,9 +174,13 @@ def test_candidate_search_contract_and_wallapop_adapter_respect_layers() -> None
     assert "wallapop" not in contract_source.casefold()
 
 
-def test_search_orchestrator_contract_is_application_only_and_has_no_implementation() -> None:
+def test_search_orchestrator_contract_and_implementation_stay_in_application() -> None:
     contract_path = SRC_ROOT / "application/interfaces/search_orchestrator.py"
     contract_source = contract_path.read_text(encoding="utf-8")
+    implementation_path = (
+        SRC_ROOT / "application/use_cases/default_search_orchestrator.py"
+    )
+    implementation_source = implementation_path.read_text(encoding="utf-8")
 
     assert ISearchOrchestrator.__module__ == (
         "application.interfaces.search_orchestrator"
@@ -184,9 +191,51 @@ def test_search_orchestrator_contract_is_application_only_and_has_no_implementat
     )
     assert "infrastructure" not in contract_source
     assert "wallapop" not in contract_source.casefold()
-    assert not (
-        SRC_ROOT / "application/use_cases/default_search_orchestrator.py"
-    ).exists()
+    assert DefaultSearchOrchestrator.__module__ == (
+        "application.use_cases.default_search_orchestrator"
+    )
+    assert issubclass(DefaultSearchOrchestrator, ISearchOrchestrator)
+    assert "infrastructure" not in implementation_source
+    assert "wallapop" not in implementation_source.casefold()
+    assert "playwright" not in implementation_source.casefold()
+    assert "asyncio.run" not in implementation_source
+    assert "ranker" not in implementation_source.casefold()
+
+
+def test_search_orchestrator_injects_only_application_and_domain_ports() -> None:
+    parameters = inspect.signature(DefaultSearchOrchestrator).parameters
+    hints = get_type_hints(DefaultSearchOrchestrator.__init__)
+
+    assert list(parameters) == [
+        "candidate_search",
+        "game_detector",
+        "opportunity_scanner",
+        "lot_opportunity_scanner",
+    ]
+    assert hints["candidate_search"] is ICandidateSearch
+    assert hints["game_detector"] is IGameDetector
+    assert hints["opportunity_scanner"] is IOpportunityScanner
+    assert hints["lot_opportunity_scanner"] is ILotOpportunityScanner
+    assert all(
+        parameter.default is inspect.Parameter.empty
+        for parameter in parameters.values()
+    )
+
+
+def test_default_search_orchestrator_has_one_application_definition() -> None:
+    definitions = [
+        source_file.relative_to(SRC_ROOT)
+        for source_file in SRC_ROOT.rglob("*.py")
+        for node in ast.walk(
+            ast.parse(source_file.read_text(encoding="utf-8"))
+        )
+        if isinstance(node, ast.ClassDef)
+        and node.name == "DefaultSearchOrchestrator"
+    ]
+
+    assert definitions == [
+        Path("application/use_cases/default_search_orchestrator.py")
+    ]
 
 
 def test_search_orchestrator_contract_symbols_have_one_definition_and_reuse_existing_models() -> None:
@@ -312,6 +361,7 @@ def test_canonical_modules_import_without_cycles() -> None:
         "application.interfaces.lot_opportunity_scanner",
         "application.use_cases.default_opportunity_scanner",
         "application.use_cases.default_lot_opportunity_scanner",
+        "application.use_cases.default_search_orchestrator",
         "domain.entities.candidate_listing",
         "domain.entities.comparable_listing",
         "infrastructure.collectors.wallapop_price_collector",
