@@ -11,6 +11,15 @@ from application.interfaces.candidate_search import ICandidateSearch
 from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
 from application.interfaces.opportunity_scanner import IOpportunityScanner, RankingResult
+from application.interfaces.search_orchestrator import (
+    CandidateItemFailureRecord,
+    CandidateRoutingFailure,
+    CandidateRoutingFailureKind,
+    ISearchOrchestrator,
+    SearchOrchestrationResult,
+    SearchPlan,
+    SearchQueryFailure,
+)
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
@@ -162,6 +171,58 @@ def test_candidate_search_contract_and_wallapop_adapter_respect_layers() -> None
     assert "wallapop" not in contract_source.casefold()
 
 
+def test_search_orchestrator_contract_is_application_only_and_has_no_implementation() -> None:
+    contract_path = SRC_ROOT / "application/interfaces/search_orchestrator.py"
+    contract_source = contract_path.read_text(encoding="utf-8")
+
+    assert ISearchOrchestrator.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert SearchPlan.__module__ == "application.interfaces.search_orchestrator"
+    assert SearchOrchestrationResult.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert "infrastructure" not in contract_source
+    assert "wallapop" not in contract_source.casefold()
+    assert not (
+        SRC_ROOT / "application/use_cases/default_search_orchestrator.py"
+    ).exists()
+
+
+def test_search_orchestrator_contract_symbols_have_one_definition_and_reuse_existing_models() -> None:
+    expected = {
+        "SearchPlan",
+        "SearchQueryFailure",
+        "CandidateItemFailureRecord",
+        "CandidateRoutingFailure",
+        "CandidateRoutingFailureKind",
+        "SearchOrchestrationResult",
+        "ISearchOrchestrator",
+    }
+    definitions: dict[str, list[Path]] = {name: [] for name in expected}
+
+    for source_file in SRC_ROOT.rglob("*.py"):
+        tree = ast.parse(source_file.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and node.name in definitions:
+                definitions[node.name].append(source_file.relative_to(SRC_ROOT))
+
+    canonical = Path("application/interfaces/search_orchestrator.py")
+    assert definitions == {name: [canonical] for name in expected}
+    assert CandidateItemFailureRecord.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert CandidateRoutingFailure.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert CandidateRoutingFailureKind.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert SearchQueryFailure.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+
+
 def test_domain_does_not_import_application_or_infrastructure() -> None:
     forbidden_roots = ("application", "infrastructure", "src.application", "src.infrastructure")
     forbidden = [
@@ -246,6 +307,7 @@ def test_old_scanner_modules_were_removed() -> None:
 def test_canonical_modules_import_without_cycles() -> None:
     modules = [
         "application.interfaces.detected_candidate",
+        "application.interfaces.search_orchestrator",
         "application.interfaces.opportunity_scanner",
         "application.interfaces.lot_opportunity_scanner",
         "application.use_cases.default_opportunity_scanner",
