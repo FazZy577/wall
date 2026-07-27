@@ -33,6 +33,27 @@ Los casos de uso de escaneo propagan ahora la interfaz async de
 `PriceCollector`: sus métodos públicos son awaitables, el procesamiento sigue
 siendo secuencial y el event loop se controla únicamente desde entry points.
 
+## P2.4B SearchOrchestrator
+
+`DefaultSearchOrchestrator` coordina en Application un `SearchPlan` explícito:
+deduplica consultas y candidatos, ejecuta búsquedas secuenciales, detecta cada
+candidato una vez y enruta candidatos individuales y lotes a los scanners
+existentes. `SearchOrchestrationResult` conserva por separado el `ScanResult`,
+los `LotScanResult` y los fallos de búsqueda, conversión y routing.
+
+El ejemplo offline `examples/search_orchestrator_example.py` conecta las
+implementaciones productivas a un puerto de búsqueda en memoria, sin red ni
+Playwright. El smoke test live opt-in
+`tests/e2e/test_search_orchestrator_live.py` usa una sola query (`gta 5 ps4`),
+como máximo un candidato y diez comparables por valoración, con lifecycle
+externo de una única sesión Playwright. Los tests live solo se activan con
+`RUN_LIVE_WALLAPOP_TESTS=1` para este smoke test; el comando normal de
+validación continúa usando `-m "not live"` para excluir toda la suite live.
+
+El orquestador no crea clientes, no controla el event loop, no rankea de nuevo,
+no persiste datos, no genera aliases, no reintenta y no ejecuta búsquedas en
+paralelo.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete
@@ -45,14 +66,16 @@ siendo secuencial y el event loop se controla únicamente desde entry points.
 - **Integration test**: opt-in live search with at most five returned listings.
 - **E2E test**: opt-in real pipeline from Playwright through market price
   estimation, without persistence, lots, or `OpportunityScanner`.
-- **Live test activation**: requires `RUN_LIVE_WALLAPOP_TESTS=1`; normal pytest
-  runs skip live tests.
+- **P2.4B live smoke activation**: the new SearchOrchestrator smoke test
+  requires `RUN_LIVE_WALLAPOP_TESTS=1`; normal validation uses
+  `pytest -m "not live"` to skip the live suite.
 - **Live validation (2026-07-18)**: integration and minimal E2E passed with
   visible Chromium. The E2E captured 9 raw listings and produced 3 valid
   comparables for GTA V.
 - **Next step**: execute and monitor the opt-in live suite periodically, then
-  address any frontend/API drift as a separate task. `SearchOrchestrator`
-  remains outside this P0 phase.
+  address any frontend/API drift as a separate task. Search orchestration is
+  implemented as an Application use case; product-facing scheduling, history,
+  notifications and API remain pending.
 
 ## ✅ What's Been Completed
 

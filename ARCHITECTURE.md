@@ -55,6 +55,30 @@ La orquestación de escaneos pertenece a Application. Sus casos de uso reciben
 puertos por constructor y no conocen Wallapop, Playwright ni implementaciones
 concretas de Infrastructure.
 
+## P2 Search orchestration
+
+`DefaultSearchOrchestrator` es un caso de uso adicional de Application. Recibe
+`ICandidateSearch`, `IGameDetector`, `IOpportunityScanner` e
+`ILotOpportunityScanner` por inyección; no importa adaptadores de
+Infrastructure ni instancia clientes concretos. Su ejecución es secuencial y
+determinista: deduplica `SearchQuery`, obtiene `CandidateListing`, deduplica
+por `listing_id`, detecta una vez por candidato y dirige los candidatos al
+scanner individual o al scanner de lotes.
+
+Los resultados permanecen separados: `SearchOrchestrationResult` contiene un
+`ScanResult` opcional para el batch individual, una tupla de `LotScanResult` y
+fallos de consulta, de item y de routing. El orquestador no vuelve a rankear;
+`DefaultOpportunityScanner` sigue delegando el ranking individual a su
+`IOpportunityRanker` inyectado. Tampoco calcula comparables, estadísticas,
+outliers, estimaciones o economía.
+
+El lifecycle de marketplace es externo al caso de uso. Un entry point puede
+compartir una instancia de `WallapopPlaywrightClient` entre
+`WallapopCandidateSearchAdapter` y `WallapopPriceCollector` dentro de un
+`async with`; el orquestador no abre/cierra Playwright, no controla el event
+loop y no usa `asyncio.run()`. No hay persistencia, reintentos, aliases
+automáticos ni concurrencia.
+
 Los scanners son async de extremo a extremo porque el collector realiza I/O
 async. Application usa `await` directo y nunca inicia ni cierra el event loop;
 esa responsabilidad pertenece al entry point. El procesamiento continúa
