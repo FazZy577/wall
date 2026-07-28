@@ -20,6 +20,12 @@ from application.interfaces.search_orchestrator import (
     SearchPlan,
     SearchQueryFailure,
 )
+from application.interfaces.search_plan_generator import (
+    GameSearchTarget,
+    ISearchPlanGenerator,
+    SearchPlanGenerationRequest,
+    SearchPlanGenerationResult,
+)
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
@@ -27,6 +33,7 @@ from application.use_cases.default_opportunity_scanner import DefaultOpportunity
 from application.use_cases.default_search_orchestrator import (
     DefaultSearchOrchestrator,
 )
+from domain.entities.detected_game import Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportunityDetector
@@ -286,7 +293,7 @@ def test_domain_does_not_import_application_or_infrastructure() -> None:
     assert forbidden == []
 
 
-def test_game_catalog_boundary_respects_layers_without_generator_or_detector_migration() -> None:
+def test_game_catalog_boundary_respects_layers_without_implementation_or_detector_migration() -> None:
     entry_path = SRC_ROOT / "domain/entities/game_catalog_entry.py"
     port_path = SRC_ROOT / "domain/interfaces/game_catalog.py"
     domain_source = "\n".join(
@@ -310,9 +317,41 @@ def test_game_catalog_boundary_respects_layers_without_generator_or_detector_mig
     assert "import json" not in domain_source
     assert "importlib.resources" not in domain_source
     assert "IGameCatalog" not in application_source
-    assert "SearchPlanGenerator" not in application_source
+    assert "DefaultSearchPlanGenerator" not in application_source
     assert "PackagedGameCatalog" not in detector_source
     assert "IGameCatalog" not in detector_source
+
+
+def test_search_plan_generator_contract_respects_application_boundary() -> None:
+    contract_path = SRC_ROOT / "application/interfaces/search_plan_generator.py"
+    contract_source = contract_path.read_text(encoding="utf-8")
+    target_hints = get_type_hints(GameSearchTarget)
+    result_hints = get_type_hints(SearchPlanGenerationResult)
+
+    assert GameSearchTarget.__module__ == (
+        "application.interfaces.search_plan_generator"
+    )
+    assert SearchPlanGenerationRequest.__module__ == (
+        "application.interfaces.search_plan_generator"
+    )
+    assert SearchPlanGenerationResult.__module__ == (
+        "application.interfaces.search_plan_generator"
+    )
+    assert ISearchPlanGenerator.__module__ == (
+        "application.interfaces.search_plan_generator"
+    )
+    assert target_hints["platform"] is Platform
+    assert result_hints["plan"] is SearchPlan
+    assert not inspect.iscoroutinefunction(ISearchPlanGenerator.generate)
+    assert "infrastructure" not in contract_source.casefold()
+    assert "wallapop" not in contract_source.casefold()
+    assert "playwright" not in contract_source.casefold()
+    assert "fuzzygamedetector" not in contract_source.casefold()
+    assert "igamecatalog" not in contract_source.casefold()
+    assert "asyncio" not in contract_source
+    assert not (
+        SRC_ROOT / "application/use_cases/default_search_plan_generator.py"
+    ).exists()
 
 
 def test_scanner_symbols_have_single_application_definition() -> None:
