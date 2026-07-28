@@ -27,8 +27,10 @@ from application.use_cases.default_opportunity_scanner import DefaultOpportunity
 from application.use_cases.default_search_orchestrator import (
     DefaultSearchOrchestrator,
 )
+from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportunityDetector
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import IGameDetector
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
@@ -40,6 +42,7 @@ from domain.interfaces.price_statistics import IPriceStatistics
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
@@ -281,6 +284,35 @@ def test_domain_does_not_import_application_or_infrastructure() -> None:
     ]
 
     assert forbidden == []
+
+
+def test_game_catalog_boundary_respects_layers_without_generator_or_detector_migration() -> None:
+    entry_path = SRC_ROOT / "domain/entities/game_catalog_entry.py"
+    port_path = SRC_ROOT / "domain/interfaces/game_catalog.py"
+    domain_source = "\n".join(
+        path.read_text(encoding="utf-8") for path in (entry_path, port_path)
+    )
+    application_source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (SRC_ROOT / "application").rglob("*.py")
+    )
+    detector_source = (
+        SRC_ROOT / "infrastructure/detectors/fuzzy_game_detector.py"
+    ).read_text(encoding="utf-8")
+
+    assert GameCatalogEntry.__module__ == "domain.entities.game_catalog_entry"
+    assert IGameCatalog.__module__ == "domain.interfaces.game_catalog"
+    assert PackagedGameCatalog.__module__ == (
+        "infrastructure.catalogs.packaged_game_catalog"
+    )
+    assert issubclass(PackagedGameCatalog, IGameCatalog)
+    assert "infrastructure" not in domain_source
+    assert "import json" not in domain_source
+    assert "importlib.resources" not in domain_source
+    assert "IGameCatalog" not in application_source
+    assert "SearchPlanGenerator" not in application_source
+    assert "PackagedGameCatalog" not in detector_source
+    assert "IGameCatalog" not in detector_source
 
 
 def test_scanner_symbols_have_single_application_definition() -> None:
