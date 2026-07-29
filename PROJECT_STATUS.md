@@ -54,6 +54,40 @@ El orquestador no crea clientes, no controla el event loop, no rankea de nuevo,
 no persiste datos, no genera aliases, no reintenta y no ejecuta búsquedas en
 paralelo.
 
+## P3.2B SearchPlanGenerator
+
+El catálogo canónico está expuesto en Domain mediante `GameCatalogEntry` e
+`IGameCatalog`. `PackagedGameCatalog`, en Infrastructure, valida y entrega un
+snapshot inmutable del recurso empaquetado: actualmente 50 entradas, todas
+PS4.
+
+`DefaultSearchPlanGenerator` vive en Application e implementa la estrategia
+`CANONICAL_ONLY`. Resuelve targets por nombre canónico normalizado y
+plataforma, construye queries canónicas, conserva el orden, deduplica targets
+equivalentes y aplica `max_queries` después de deduplicar. Los errores por
+target desconocido, catálogo inválido o límite superado son atómicos: no se
+devuelve un plan parcial.
+
+La integración offline completa conecta:
+
+```text
+PackagedGameCatalog
+    -> DefaultSearchPlanGenerator
+    -> SearchPlan
+    -> DefaultSearchOrchestrator
+```
+
+El ejemplo ejecutable y su smoke test no usan red ni Playwright. La validación
+de esta fase registra 1229 tests no-live pasando, 3 tests live excluidos, MyPy
+limpio en 70 archivos y las mismas 47 incidencias Ruff históricas.
+
+Existe generación automática determinista de `SearchPlan`, sin IA. No utiliza
+LLM, embeddings, fuzzy matching para resolver targets ni `detection_aliases`
+como keywords. Todavía no están implementados aliases seguros de búsqueda,
+`CANONICAL_AND_ALIASES`, selección automática de todo el catálogo, generación
+con IA, persistencia, histórico, scheduler, notificaciones, CLI operativa,
+API/dashboard, demanda o liquidez.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete
@@ -229,6 +263,7 @@ uv run ruff check src tests && uv run mypy src && uv run pytest
 
 - `README.md` - Project overview
 - `ARCHITECTURE.md` - Detailed architecture documentation
+- `SEARCH_PLAN_GENERATOR.md` - Deterministic canonical plan generation
 - `DEVELOPMENT.md` - Development quick start
 - `PROJECT_STATUS.md` - This file
 

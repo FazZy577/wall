@@ -84,6 +84,48 @@ async. Application usa `await` directo y nunca inicia ni cierra el event loop;
 esa responsabilidad pertenece al entry point. El procesamiento continúa
 siendo estrictamente secuencial.
 
+## P3 deterministic search-plan generation
+
+La generación de planes es un caso de uso separado de Application.
+`DefaultSearchPlanGenerator` implementa `ISearchPlanGenerator`, recibe
+`IGameCatalog` por constructor y produce un `SearchPlanGenerationResult` con
+un `SearchPlan` explícito. La estrategia actual `CANONICAL_ONLY` resuelve
+targets por nombre canónico normalizado y plataforma, construye keywords
+canónicas, conserva el orden y deduplica antes de aplicar el límite atómico de
+consultas.
+
+```text
+External entry point
+        |
+        +-- Infrastructure
+        |       +-- PackagedGameCatalog implements IGameCatalog
+        |       +-- marketplace adapters and valuation implementations
+        |
+        +-- Application
+                +-- DefaultSearchPlanGenerator (sync)
+                |       +-- Domain: GameCatalogEntry and IGameCatalog
+                |
+                +-- DefaultSearchOrchestrator (async)
+                        +-- existing scanners and Domain ports
+```
+
+`GameCatalogEntry` e `IGameCatalog` pertenecen a Domain.
+`PackagedGameCatalog` pertenece a Infrastructure y desacopla Application del
+formato JSON empaquetado. Los contratos de generación y
+`DefaultSearchPlanGenerator` viven en Application. Por tanto, Application no
+importa Infrastructure y la composición se realiza desde un entry point
+externo.
+
+El generator es síncrono y no ejecuta el plan. El orchestrator es async y no
+genera queries. Un entry point llama primero a `generate()` y después a
+`execute()`. Las métricas de generación y ejecución permanecen separadas.
+
+La generación automática existente es determinista y no usa IA, LLM,
+embeddings, fuzzy matching ni aliases de detección. El catálogo validado
+contiene actualmente 50 juegos, todos PS4. `FuzzyGameDetector` aún carga el
+recurso por su propio camino histórico; no ha sido migrado a `IGameCatalog`.
+Esta duplicidad temporal de carga queda como limitación técnica.
+
 El ranking de oportunidades individuales tiene un único contrato,
 `IOpportunityRanker`, y una única implementación productiva,
 `DefaultOpportunityRanker`. `DefaultOpportunityScanner` recibe el puerto por

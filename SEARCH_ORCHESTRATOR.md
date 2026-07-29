@@ -47,6 +47,13 @@ conservan el contrato separado de `DefaultLotOpportunityScanner`.
 incluye `keywords`, `latitude`, `longitude` y `max_results`; el contrato valida
 texto no vacío, coordenadas finitas y un límite positivo.
 
+El plan puede construirse manualmente o generarse de forma determinista con
+`DefaultSearchPlanGenerator`. El generator síncrono resuelve targets del
+catálogo y devuelve un plan explícito; después, un entry point entrega ese plan
+al orchestrator async. Las responsabilidades y métricas siguen separadas: el
+orquestador no genera queries. Véase
+[`SEARCH_PLAN_GENERATOR.md`](SEARCH_PLAN_GENERATOR.md).
+
 La clave local de deduplicación normaliza solo `keywords` con `strip`,
 colapso de espacios y `casefold`, y conserva sin redondear las coordenadas y
 `max_results`. La primera consulta gana y las consultas duplicadas no se
@@ -144,7 +151,10 @@ no se convierte en una búsqueda vacía.
 
 ## Limitaciones actuales
 
-El caso de uso no genera automáticamente aliases ni variantes, no persiste
-histórico, no ofrece CLI/API/dashboard, no implementa FX ni demanda/liquidez y
-no automatiza ejecuciones periódicas. La disponibilidad del smoke test live
-depende de Wallapop, Chromium y la estructura pública vigente de su endpoint.
+El caso de uso no genera queries, aliases ni variantes. Un caso de uso
+separado puede generar automáticamente consultas canónicas deterministas, pero
+todavía no existen aliases seguros de búsqueda ni generación mediante IA. El
+orquestador no persiste histórico, no ofrece CLI/API/dashboard, no implementa
+FX ni demanda/liquidez y no automatiza ejecuciones periódicas. La
+disponibilidad del smoke test live depende de Wallapop, Chromium y la
+estructura pública vigente de su endpoint.
