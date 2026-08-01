@@ -12,6 +12,7 @@ from presentation.cli.composition import (
 )
 from presentation.cli.config import AppConfig
 from presentation.cli.config_loader import AppConfigLoadError, load_app_config
+from presentation.cli.terminal_report import render_terminal_report
 
 PROJECT_ROOT = Path(__file__).parents[2]
 SRC_ROOT = PROJECT_ROOT / "src"
@@ -151,11 +152,37 @@ def test_composition_root_wires_layers_and_owns_live_client_lifecycle() -> None:
     assert mutable_globals == []
 
 
+def test_terminal_report_is_a_pure_presentation_boundary() -> None:
+    report_path = SRC_ROOT / "presentation/cli/terminal_report.py"
+    source = report_path.read_text(encoding="utf-8")
+    imported_modules = _imports_from_file(report_path)
+
+    assert render_terminal_report.__module__ == "presentation.cli.terminal_report"
+    assert "application." in " ".join(imported_modules)
+    assert "domain." in " ".join(imported_modules)
+    assert not any(
+        module == "infrastructure"
+        or module.startswith("infrastructure.")
+        for module in imported_modules
+    )
+    assert "infrastructure" not in source.casefold()
+    assert "playwright" not in source.casefold()
+    assert "presentation.cli.composition" not in imported_modules
+    assert "presentation.cli.config_loader" not in imported_modules
+    assert "argparse" not in imported_modules
+    assert "tomllib" not in imported_modules
+    assert "json" not in imported_modules
+    assert "asyncio" not in imported_modules
+    assert "print(" not in source
+    assert "logging" not in imported_modules
+    assert "raw_listing" not in source
+    assert "open(" not in source
+
+
 def test_future_cli_modules_do_not_exist_yet() -> None:
     forbidden_paths = [
         SRC_ROOT / "presentation/cli/main.py",
         SRC_ROOT / "presentation/cli/__main__.py",
-        SRC_ROOT / "presentation/cli/terminal_report.py",
         SRC_ROOT / "presentation/cli/json_report.py",
     ]
 
