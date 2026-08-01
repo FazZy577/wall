@@ -3,7 +3,9 @@
 import ast
 from pathlib import Path
 
+from presentation.cli import config_loader
 from presentation.cli.config import AppConfig
+from presentation.cli.config_loader import AppConfigLoadError, load_app_config
 
 PROJECT_ROOT = Path(__file__).parents[2]
 SRC_ROOT = PROJECT_ROOT / "src"
@@ -78,15 +80,36 @@ def test_config_has_no_forbidden_operational_imports_or_execution() -> None:
     assert "DefaultSearchOrchestrator" not in source
 
 
+def test_config_loader_stays_in_presentation_and_has_no_execution_dependencies() -> None:
+    loader_path = SRC_ROOT / "presentation/cli/config_loader.py"
+    source = loader_path.read_text(encoding="utf-8")
+    imported_modules = _imports_from_file(loader_path)
+
+    assert "presentation.cli.config" in imported_modules
+    assert "tomllib" in imported_modules
+    assert "infrastructure" not in source.casefold()
+    assert "playwright" not in source.casefold()
+    assert "argparse" not in imported_modules
+    assert "asyncio" not in imported_modules
+    assert "pydantic_settings" not in imported_modules
+    assert "DefaultSearchPlanGenerator" not in source
+    assert "DefaultSearchOrchestrator" not in source
+    assert "async def" not in source
+    assert "await " not in source
+    assert AppConfigLoadError.__module__ == "presentation.cli.config_loader"
+    assert load_app_config.__annotations__["path"] is Path
+    assert load_app_config.__annotations__["return"] is AppConfig
+    assert load_app_config.__module__ == "presentation.cli.config_loader"
+    assert set(config_loader.__all__) == {"AppConfigLoadError", "load_app_config"}
+
+
 def test_future_cli_modules_do_not_exist_yet() -> None:
     forbidden_paths = [
-        SRC_ROOT / "presentation/cli/config_loader.py",
         SRC_ROOT / "presentation/cli/composition.py",
         SRC_ROOT / "presentation/cli/main.py",
         SRC_ROOT / "presentation/cli/__main__.py",
         SRC_ROOT / "presentation/cli/terminal_report.py",
         SRC_ROOT / "presentation/cli/json_report.py",
-        PROJECT_ROOT / "config.example.toml",
     ]
 
     assert not any(path.exists() for path in forbidden_paths)

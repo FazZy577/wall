@@ -1,0 +1,48 @@
+# Example operational configuration for the future CLI.
+# Decimal values are strings intentionally, so binary floating-point values
+# cannot enter the economic policy at the TOML boundary.
+
+[wallapop]
+headless = true
+timeout_ms = 30000
+max_pages = 1
+request_delay = 1.0
+
+[location]
+latitude = 40.4168
+longitude = -3.7038
+
+[search]
+strategy = "canonical_only"
+max_queries = 10
+max_results_per_query = 20
+
+[[search.targets]]
+canonical_name = "Grand Theft Auto V"
+platform = "PS4"
+
+[[search.targets]]
+canonical_name = "Red Dead Redemption 2"
+platform = "PS4"
+
+[economics]
+selling_fee_rate = "0.10"
+safety_buffer_rate = "0.05"
+individual_min_net_profit_margin_percent = "25.0"
+individual_min_confidence_score = 0.50
+
+[[economics.currencies]]
+currency = "EUR"
+quick_sale_discount_per_item = "1.50"
+fixed_selling_cost_per_item = "0.75"
+acquisition_overhead = "2.00"
+individual_min_net_profit = "10.00"
+lot_min_net_profit = "15.00"
+
+[output]
+terminal = true
+json_path = "reports/scan.json"
+overwrite = false
+
+[safety]
+max_targets = 10
