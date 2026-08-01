@@ -298,7 +298,7 @@ def test_scanners_receive_the_configured_location() -> None:
     assert orchestrator.lot_opportunity_scanner.longitude == config.location.longitude
 
 
-def test_composition_has_no_neutral_policy_async_or_mutable_globals() -> None:
+def test_composition_has_no_neutral_policy_event_loop_or_mutable_globals() -> None:
     source = COMPOSITION_PATH.read_text(encoding="utf-8")
     tree = ast.parse(source)
     mutable_globals = [
@@ -312,7 +312,7 @@ def test_composition_has_no_neutral_policy_async_or_mutable_globals() -> None:
     ]
 
     assert "ResaleEconomicPolicy.neutral" not in source
-    assert "async def" not in source
-    assert "await " not in source
-    assert "playwright" not in source.casefold()
+    assert "asyncio.run" not in source
+    assert "new_event_loop" not in source
+    assert "run_until_complete" not in source
     assert mutable_globals == []

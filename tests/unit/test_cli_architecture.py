@@ -5,7 +5,11 @@ import inspect
 from pathlib import Path
 
 from presentation.cli import config_loader
-from presentation.cli.composition import OperationalRuntime, build_operational_runtime
+from presentation.cli.composition import (
+    OperationalRuntime,
+    build_operational_runtime,
+    open_operational_runtime,
+)
 from presentation.cli.config import AppConfig
 from presentation.cli.config_loader import AppConfigLoadError, load_app_config
 
@@ -105,7 +109,7 @@ def test_config_loader_stays_in_presentation_and_has_no_execution_dependencies()
     assert set(config_loader.__all__) == {"AppConfigLoadError", "load_app_config"}
 
 
-def test_composition_root_wires_layers_without_owning_external_lifecycle() -> None:
+def test_composition_root_wires_layers_and_owns_live_client_lifecycle() -> None:
     composition_path = SRC_ROOT / "presentation/cli/composition.py"
     source = composition_path.read_text(encoding="utf-8")
     imported_modules = _imports_from_file(composition_path)
@@ -119,18 +123,29 @@ def test_composition_root_wires_layers_without_owning_external_lifecycle() -> No
 
     assert OperationalRuntime.__module__ == "presentation.cli.composition"
     assert build_operational_runtime.__module__ == "presentation.cli.composition"
+    assert open_operational_runtime.__module__ == "presentation.cli.composition"
     assert not inspect.iscoroutinefunction(build_operational_runtime)
+    assert inspect.isasyncgenfunction(open_operational_runtime.__wrapped__)
     assert any(module.startswith("domain.") for module in imported_modules)
     assert any(module.startswith("application.") for module in imported_modules)
     assert any(module.startswith("infrastructure.") for module in imported_modules)
-    assert "WallapopPlaywrightClient" not in source
-    assert "playwright" not in source.casefold()
+    assert (
+        "infrastructure.marketplaces.wallapop.playwright_client"
+        in imported_modules
+    )
+    assert "WallapopPlaywrightClient" in source
+    assert "asynccontextmanager" in source
+    assert "async with WallapopPlaywrightClient" in source
+    assert "contextlib" in imported_modules
     assert "argparse" not in imported_modules
     assert "tomllib" not in imported_modules
     assert "asyncio" not in imported_modules
     assert "asyncio.run" not in source
-    assert "async def" not in source
-    assert "await " not in source
+    assert "create_task" not in source
+    assert "TaskGroup" not in source
+    assert "gather(" not in source
+    assert "new_event_loop" not in source
+    assert "run_until_complete" not in source
     assert "dependency_injector" not in source
     assert "injector" not in imported_modules
     assert mutable_globals == []

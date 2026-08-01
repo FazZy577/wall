@@ -1,5 +1,7 @@
-"""Synchronous composition root for the operational application pipeline."""
+"""Composition root and owned lifecycle for the operational pipeline."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 from application.interfaces.search_orchestrator import ISearchOrchestrator
@@ -43,6 +45,9 @@ from infrastructure.filters.rule_based_comparable_filter import (
 )
 from infrastructure.marketplaces.wallapop.adapter import (
     WallapopCandidateSearchAdapter,
+)
+from infrastructure.marketplaces.wallapop.playwright_client import (
+    WallapopPlaywrightClient,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
 from infrastructure.rankers.default_opportunity_ranker import (
@@ -162,3 +167,21 @@ def build_operational_runtime(
         plan_generator=plan_generator,
         search_orchestrator=search_orchestrator,
     )
+
+
+@asynccontextmanager
+async def open_operational_runtime(
+    config: AppConfig,
+) -> AsyncIterator[OperationalRuntime]:
+    """Open one owned marketplace client and yield its composed runtime."""
+    if not isinstance(config, AppConfig):
+        raise TypeError("config must be AppConfig")
+
+    async with WallapopPlaywrightClient(
+        timeout_ms=config.wallapop.timeout_ms,
+        max_pages=config.wallapop.max_pages,
+        request_delay=config.wallapop.request_delay,
+        headless=config.wallapop.headless,
+        debug_response_dir=None,
+    ) as client:
+        yield build_operational_runtime(config, client)
