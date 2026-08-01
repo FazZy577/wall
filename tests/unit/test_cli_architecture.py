@@ -1,9 +1,11 @@
 """Architecture guards for the initial CLI configuration boundary."""
 
 import ast
+import inspect
 from pathlib import Path
 
 from presentation.cli import config_loader
+from presentation.cli.composition import OperationalRuntime, build_operational_runtime
 from presentation.cli.config import AppConfig
 from presentation.cli.config_loader import AppConfigLoadError, load_app_config
 
@@ -103,9 +105,39 @@ def test_config_loader_stays_in_presentation_and_has_no_execution_dependencies()
     assert set(config_loader.__all__) == {"AppConfigLoadError", "load_app_config"}
 
 
+def test_composition_root_wires_layers_without_owning_external_lifecycle() -> None:
+    composition_path = SRC_ROOT / "presentation/cli/composition.py"
+    source = composition_path.read_text(encoding="utf-8")
+    imported_modules = _imports_from_file(composition_path)
+    tree = ast.parse(source)
+    mutable_globals = [
+        node
+        for node in tree.body
+        if isinstance(node, (ast.Assign, ast.AnnAssign))
+        and isinstance(node.value, (ast.Dict, ast.List, ast.Set))
+    ]
+
+    assert OperationalRuntime.__module__ == "presentation.cli.composition"
+    assert build_operational_runtime.__module__ == "presentation.cli.composition"
+    assert not inspect.iscoroutinefunction(build_operational_runtime)
+    assert any(module.startswith("domain.") for module in imported_modules)
+    assert any(module.startswith("application.") for module in imported_modules)
+    assert any(module.startswith("infrastructure.") for module in imported_modules)
+    assert "WallapopPlaywrightClient" not in source
+    assert "playwright" not in source.casefold()
+    assert "argparse" not in imported_modules
+    assert "tomllib" not in imported_modules
+    assert "asyncio" not in imported_modules
+    assert "asyncio.run" not in source
+    assert "async def" not in source
+    assert "await " not in source
+    assert "dependency_injector" not in source
+    assert "injector" not in imported_modules
+    assert mutable_globals == []
+
+
 def test_future_cli_modules_do_not_exist_yet() -> None:
     forbidden_paths = [
-        SRC_ROOT / "presentation/cli/composition.py",
         SRC_ROOT / "presentation/cli/main.py",
         SRC_ROOT / "presentation/cli/__main__.py",
         SRC_ROOT / "presentation/cli/terminal_report.py",
