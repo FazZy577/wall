@@ -4,7 +4,7 @@ import ast
 import inspect
 from pathlib import Path
 
-from presentation.cli import config_loader
+from presentation.cli import config_loader, json_report
 from presentation.cli.composition import (
     OperationalRuntime,
     build_operational_runtime,
@@ -12,6 +12,11 @@ from presentation.cli.composition import (
 )
 from presentation.cli.config import AppConfig
 from presentation.cli.config_loader import AppConfigLoadError, load_app_config
+from presentation.cli.json_report import (
+    JsonReportWriteError,
+    build_json_report,
+    write_json_report,
+)
 from presentation.cli.terminal_report import render_terminal_report
 
 PROJECT_ROOT = Path(__file__).parents[2]
@@ -179,11 +184,47 @@ def test_terminal_report_is_a_pure_presentation_boundary() -> None:
     assert "open(" not in source
 
 
+def test_json_report_is_a_safe_presentation_boundary() -> None:
+    report_path = SRC_ROOT / "presentation/cli/json_report.py"
+    source = report_path.read_text(encoding="utf-8")
+    imported_modules = _imports_from_file(report_path)
+
+    assert json_report.__name__ == "presentation.cli.json_report"
+    assert JsonReportWriteError.__module__ == "presentation.cli.json_report"
+    assert build_json_report.__module__ == "presentation.cli.json_report"
+    assert write_json_report.__module__ == "presentation.cli.json_report"
+    assert set(json_report.__all__) == {
+        "JsonValue",
+        "JsonReportWriteError",
+        "build_json_report",
+        "write_json_report",
+    }
+    assert any(module.startswith("application.") for module in imported_modules)
+    assert any(module.startswith("domain.") for module in imported_modules)
+    assert not any(
+        module == "infrastructure"
+        or module.startswith("infrastructure.")
+        or module == "src.infrastructure"
+        or module.startswith("src.infrastructure.")
+        for module in imported_modules
+    )
+    assert "playwright" not in source.casefold()
+    assert "presentation.cli.composition" not in imported_modules
+    assert "presentation.cli.config_loader" not in imported_modules
+    assert "argparse" not in imported_modules
+    assert "tomllib" not in imported_modules
+    assert "print(" not in source
+    assert "logging" not in imported_modules
+    assert "asyncio" not in imported_modules
+    assert "dataclasses.asdict" not in source
+    assert "vars(" not in source
+    assert "raw_listing" not in source
+
+
 def test_future_cli_modules_do_not_exist_yet() -> None:
     forbidden_paths = [
         SRC_ROOT / "presentation/cli/main.py",
         SRC_ROOT / "presentation/cli/__main__.py",
-        SRC_ROOT / "presentation/cli/json_report.py",
     ]
 
     assert not any(path.exists() for path in forbidden_paths)
