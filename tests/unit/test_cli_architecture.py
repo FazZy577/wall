@@ -17,6 +17,7 @@ from presentation.cli.json_report import (
     build_json_report,
     write_json_report,
 )
+from presentation.cli.main import main, run_scan
 from presentation.cli.terminal_report import render_terminal_report
 
 PROJECT_ROOT = Path(__file__).parents[2]
@@ -221,13 +222,53 @@ def test_json_report_is_a_safe_presentation_boundary() -> None:
     assert "raw_listing" not in source
 
 
-def test_future_cli_modules_do_not_exist_yet() -> None:
-    forbidden_paths = [
-        SRC_ROOT / "presentation/cli/main.py",
-        SRC_ROOT / "presentation/cli/__main__.py",
+def test_cli_main_is_the_single_operational_asyncio_boundary() -> None:
+    main_path = SRC_ROOT / "presentation/cli/main.py"
+    source = main_path.read_text(encoding="utf-8")
+    imported_modules = _imports_from_file(main_path)
+    asyncio_run_locations = [
+        path.relative_to(SRC_ROOT)
+        for path in SRC_ROOT.rglob("*.py")
+        if "asyncio.run(" in path.read_text(encoding="utf-8")
     ]
 
-    assert not any(path.exists() for path in forbidden_paths)
+    assert main.__module__ == "presentation.cli.main"
+    assert run_scan.__module__ == "presentation.cli.main"
+    assert inspect.iscoroutinefunction(run_scan)
+    assert not inspect.iscoroutinefunction(main)
+    assert "argparse" in imported_modules
+    assert "asyncio" in imported_modules
+    assert "logging" in imported_modules
+    assert "presentation.cli.config_loader" in imported_modules
+    assert "presentation.cli.composition" in imported_modules
+    assert "presentation.cli.terminal_report" in imported_modules
+    assert "presentation.cli.json_report" in imported_modules
+    assert any(module.startswith("application.") for module in imported_modules)
+    assert "WallapopPlaywrightClient" not in source
+    assert "DefaultOpportunityScanner" not in source
+    assert "DefaultLotOpportunityScanner" not in source
+    assert "DefaultSearchPlanGenerator" not in source
+    assert "DefaultSearchOrchestrator" not in source
+    assert "selling_fee" not in source
+    assert "net_profit_margin_percentage" not in source
+    assert "asyncio.run(" in source
+    assert asyncio_run_locations == [Path("presentation/cli/main.py")]
+
+
+def test_module_entry_point_only_delegates_to_main() -> None:
+    module_path = SRC_ROOT / "presentation/cli/__main__.py"
+    source = module_path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    imported_modules = _imports_from_file(module_path)
+
+    assert module_path.exists()
+    assert imported_modules == {"presentation.cli.main"}
+    assert "raise SystemExit(main())" in source
+    assert "asyncio" not in imported_modules
+    assert "asyncio.run" not in source
+    assert "playwright" not in source.casefold()
+    assert "argparse" not in imported_modules
+    assert not any(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) for node in tree.body)
 
 
 def test_no_console_script_is_registered_yet() -> None:
