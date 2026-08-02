@@ -9,7 +9,7 @@ import re
 import unicodedata
 from importlib.resources import files
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeAlias
 
 from rapidfuzz import fuzz
 
@@ -18,6 +18,8 @@ from domain.interfaces.game_detector import (
     IGameDetector,
     ListingText,
 )
+
+_ExactVariantPattern: TypeAlias = tuple[str, re.Pattern[str]]
 
 
 class FuzzyGameDetector(IGameDetector):
@@ -62,6 +64,7 @@ class FuzzyGameDetector(IGameDetector):
         """
         self.catalog_path = Path(catalog_path) if catalog_path is not None else None
         self.catalog = self._load_catalog()
+        self._game_variant_patterns = self._build_game_variant_patterns()
 
     def _load_catalog(self) -> list[dict[str, Any]]:
         """Load game catalog from JSON file.
@@ -105,7 +108,7 @@ class FuzzyGameDetector(IGameDetector):
         # Find game matches
         detected_games: list[DetectedGame] = []
 
-        for game in self.catalog:
+        for game_index, game in enumerate(self.catalog):
             # Only match games from detected platform (or all if unknown)
             game_platform = Platform(game["platform"])
             if detected_platform != Platform.UNKNOWN and game_platform != detected_platform:
@@ -115,7 +118,7 @@ class FuzzyGameDetector(IGameDetector):
             match = self._match_game(
                 combined_text,
                 game["canonical_name"],
-                game["aliases"],
+                self._game_variant_patterns[game_index],
                 game_platform,
             )
 
@@ -164,6 +167,27 @@ class FuzzyGameDetector(IGameDetector):
 
         return text.strip()
 
+    def _build_game_variant_patterns(
+        self,
+    ) -> tuple[tuple[_ExactVariantPattern, ...], ...]:
+        """Precompute immutable lexical patterns for the loaded catalog."""
+        game_patterns: list[tuple[_ExactVariantPattern, ...]] = []
+        for game in self.catalog:
+            normalized_variants = (
+                self._normalize_text(game["canonical_name"]),
+                *(self._normalize_text(alias) for alias in game["aliases"]),
+            )
+            game_patterns.append(
+                tuple(
+                    (
+                        variant,
+                        re.compile(rf"(?<!\w){re.escape(variant)}(?!\w)"),
+                    )
+                    for variant in normalized_variants
+                )
+            )
+        return tuple(game_patterns)
+
     def _detect_platform(self, normalized_text: str) -> Platform:
         """Detect gaming platform from text.
 
@@ -184,7 +208,7 @@ class FuzzyGameDetector(IGameDetector):
         self,
         text: str,
         canonical_name: str,
-        aliases: list[str],
+        variant_patterns: tuple[_ExactVariantPattern, ...],
         platform: Platform,
     ) -> DetectedGame | None:
         """Try to match a game against text.
@@ -192,7 +216,7 @@ class FuzzyGameDetector(IGameDetector):
         Args:
             text: Normalized text to search in
             canonical_name: Game's canonical name
-            aliases: List of known aliases
+            variant_patterns: Normalized names and aliases with lexical patterns
             platform: Game's platform
 
         Returns:
@@ -202,15 +226,10 @@ class FuzzyGameDetector(IGameDetector):
         best_match_text = ""
         best_method = DetectionMethod.FUZZY_MATCH
 
-        # Normalize canonical name and aliases
-        normalized_canonical = self._normalize_text(canonical_name)
-        normalized_aliases = [self._normalize_text(alias) for alias in aliases]
-
-        all_variants = [normalized_canonical] + normalized_aliases
-
-        for variant in all_variants:
-            # Check for exact substring match
-            if variant in text:
+        for variant, exact_pattern in variant_patterns:
+            # Exact matches must occupy complete lexical units. Catalog text is
+            # escaped when patterns are built and cannot become regex syntax.
+            if exact_pattern.search(text) is not None:
                 score = self.EXACT_MATCH_THRESHOLD
                 match_text = variant
                 method = DetectionMethod.EXACT_MATCH

@@ -5,6 +5,27 @@ import pytest
 from domain.interfaces.game_detector import DetectionMethod, ListingText, Platform
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 
+SHORT_ALIAS_CASES = (
+    ("bo6", "Call of Duty: Black Ops 6"),
+    ("mw3", "Call of Duty: Modern Warfare III"),
+    ("mw2", "Call of Duty: Modern Warfare II"),
+    ("gow", "God of War"),
+    ("hzd", "Horizon Zero Dawn"),
+    ("hfw", "Horizon Forbidden West"),
+    ("got", "Ghost of Tsushima"),
+    ("re2", "Resident Evil 2"),
+    ("re3", "Resident Evil 3"),
+    ("re8", "Resident Evil Village"),
+    ("ds3", "Dark Souls III"),
+    ("gts", "Gran Turismo Sport"),
+    ("gt7", "Gran Turismo 7"),
+    ("bf5", "Battlefield V"),
+    ("bfv", "Battlefield V"),
+    ("sf5", "Street Fighter V"),
+    ("sfv", "Street Fighter V"),
+    ("ow2", "Overwatch 2"),
+)
+
 
 @pytest.fixture
 def detector() -> FuzzyGameDetector:
@@ -289,3 +310,129 @@ class TestFuzzyGameDetector:
 
         assert len(games) >= 1
         assert games[0].platform == Platform.PS4
+
+    def test_embedded_got_in_agotado_does_not_create_ghost_of_tsushima(
+        self,
+        detector: FuzzyGameDetector,
+    ) -> None:
+        games = detector.detect_games(
+            ListingText(title="RDR2 PS4 agotado", description="")
+        )
+        names = [game.canonical_name for game in games]
+
+        assert "Red Dead Redemption 2" in names
+        assert "Ghost of Tsushima" not in names
+        assert all(game.matched_text != "got" for game in games)
+
+    @pytest.mark.parametrize(
+        "title",
+        [
+            "Ghost of Tsushima GOT PS4",
+            "GOT! PS4",
+            "vendo got para ps4",
+            "vendo GoT para PS4",
+            "vendo (GOT) para PS4",
+        ],
+    )
+    def test_isolated_got_alias_remains_an_exact_match(
+        self,
+        detector: FuzzyGameDetector,
+        title: str,
+    ) -> None:
+        games = detector.detect_games(ListingText(title=title, description=""))
+        ghost = next(
+            game for game in games if game.canonical_name == "Ghost of Tsushima"
+        )
+
+        assert ghost.matched_text in {"ghost of tsushima", "got"}
+        assert ghost.confidence == 1.0
+        assert ghost.detection_method is DetectionMethod.EXACT_MATCH
+
+    @pytest.mark.parametrize(("alias", "canonical_name"), SHORT_ALIAS_CASES)
+    def test_every_short_catalog_alias_matches_when_lexically_isolated(
+        self,
+        detector: FuzzyGameDetector,
+        alias: str,
+        canonical_name: str,
+    ) -> None:
+        games = detector.detect_games(
+            ListingText(title=f"vendo {alias} para ps4", description="")
+        )
+
+        match = next(game for game in games if game.canonical_name == canonical_name)
+        assert match.matched_text == alias
+        assert match.confidence == 1.0
+        assert match.detection_method is DetectionMethod.EXACT_MATCH
+
+    @pytest.mark.parametrize(("alias", "canonical_name"), SHORT_ALIAS_CASES)
+    def test_every_short_catalog_alias_is_rejected_inside_larger_token(
+        self,
+        detector: FuzzyGameDetector,
+        alias: str,
+        canonical_name: str,
+    ) -> None:
+        games = detector.detect_games(
+            ListingText(title=f"vendo x{alias}x para ps4", description="")
+        )
+
+        assert canonical_name not in {game.canonical_name for game in games}
+
+    def test_short_alias_inventory_matches_the_packaged_catalog(
+        self,
+        detector: FuzzyGameDetector,
+    ) -> None:
+        actual = []
+        for game in detector.catalog:
+            for alias in game["aliases"]:
+                normalized_alias = detector._normalize_text(alias)
+                if " " not in normalized_alias and len(normalized_alias) <= 3:
+                    actual.append((normalized_alias, game["canonical_name"]))
+
+        assert tuple(actual) == SHORT_ALIAS_CASES
+
+    def test_multiword_alias_and_canonical_name_keep_exact_semantics(
+        self,
+        detector: FuzzyGameDetector,
+    ) -> None:
+        alias_games = detector.detect_games(
+            ListingText(title="vendo red dead 2 para ps4", description="")
+        )
+        canonical_games = detector.detect_games(
+            ListingText(title="Ghost of Tsushima PS4", description="")
+        )
+
+        red_dead = next(
+            game
+            for game in alias_games
+            if game.canonical_name == "Red Dead Redemption 2"
+        )
+        ghost = next(
+            game
+            for game in canonical_games
+            if game.canonical_name == "Ghost of Tsushima"
+        )
+        assert red_dead.matched_text == "red dead 2"
+        assert red_dead.detection_method is DetectionMethod.EXACT_MATCH
+        assert ghost.matched_text == "ghost of tsushima"
+        assert ghost.detection_method is DetectionMethod.EXACT_MATCH
+
+    def test_title_and_description_still_combine_with_lexical_matching(
+        self,
+        detector: FuzzyGameDetector,
+    ) -> None:
+        games = detector.detect_games(
+            ListingText(title="RDR2 PS4", description="Incluye (GOT)!")
+        )
+        names = {game.canonical_name for game in games}
+
+        assert names == {"Red Dead Redemption 2", "Ghost of Tsushima"}
+
+    def test_precomputed_patterns_are_immutable_instance_state(
+        self,
+        detector: FuzzyGameDetector,
+    ) -> None:
+        assert isinstance(detector._game_variant_patterns, tuple)
+        assert all(
+            isinstance(patterns, tuple)
+            for patterns in detector._game_variant_patterns
+        )
