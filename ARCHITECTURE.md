@@ -126,6 +126,35 @@ contiene actualmente 50 juegos, todos PS4. `FuzzyGameDetector` aún carga el
 recurso por su propio camino histórico; no ha sido migrado a `IGameCatalog`.
 Esta duplicidad temporal de carga queda como limitación técnica.
 
+## P4 operational CLI
+
+Presentation es la capa exterior y contiene los modelos estrictos de
+configuración TOML, `load_app_config`, el composition root, los renderers, el
+writer JSON y los entry points `main`/`__main__`. El console script
+`wallapop-arbitrage` apunta a `presentation.cli.main:main`.
+
+```text
+User / console script / python -m presentation.cli
+        │
+        └── Presentation
+                ├── config_loader (único lector TOML)
+                ├── composition (único constructor y dueño del lifecycle)
+                ├── main (única frontera asyncio.run)
+                ├── terminal_report
+                └── json_report (informe, no persistencia histórica)
+                        │
+                        ├── Application use cases
+                        ├── Domain ports/entities
+                        └── Infrastructure adapters
+```
+
+La CLI no construye scanners directamente: `composition.py` inyecta los
+adaptadores concretos y abre/cierra `WallapopPlaywrightClient`. `main.py` solo
+traduce argumentos, ejecuta el generator y el orchestrator, cierra el runtime
+y renderiza sus resultados. No hay scheduler, persistencia, reintentos ni
+concurrencia. La configuración permanece sin I/O operativo y la salida JSON
+se escribe atómicamente como informe local.
+
 El ranking de oportunidades individuales tiene un único contrato,
 `IOpportunityRanker`, y una única implementación productiva,
 `DefaultOpportunityRanker`. `DefaultOpportunityScanner` recibe el puerto por

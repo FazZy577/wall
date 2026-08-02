@@ -85,8 +85,28 @@ Existe generación automática determinista de `SearchPlan`, sin IA. No utiliza
 LLM, embeddings, fuzzy matching para resolver targets ni `detection_aliases`
 como keywords. Todavía no están implementados aliases seguros de búsqueda,
 `CANONICAL_AND_ALIASES`, selección automática de todo el catálogo, generación
-con IA, persistencia, histórico, scheduler, notificaciones, CLI operativa,
-API/dashboard, demanda o liquidez.
+con IA, persistencia, histórico, scheduler, notificaciones,
+API/dashboard, demanda o liquidez. La CLI operativa quedó implementada en P4.4B.
+
+## P4.4B operational CLI
+
+La CLI operativa está cerrada funcionalmente. `pyproject.toml` registra el
+console script `wallapop-arbitrage = presentation.cli.main:main` y Hatchling
+empaqueta explícitamente `application`, `domain`, `infrastructure`,
+`presentation` y `shared` desde `src`, sin dejar el prefijo `src/` dentro del
+wheel. El mismo comando funciona como console script y como
+`python -m presentation.cli`.
+
+El flujo usa configuración TOML estricta, economía explícita por moneda,
+composition root con lifecycle real de Playwright, salida terminal y JSON
+atómico. `--confirm-live` es obligatorio. No se añadió persistencia histórica,
+scheduler, notificaciones, IA, aliases automáticos, API ni dashboard.
+
+El smoke test de CLI es `tests/e2e/test_cli_live.py`, marcado `live` y `e2e`,
+y requiere `RUN_LIVE_WALLAPOP_TESTS=1`. La validación normal continúa
+excluyendo tests live. La validación final de esta fase registra 1536 tests
+no-live pasando, 4 tests live excluidos, MyPy limpio en 79 archivos y 47
+incidencias Ruff históricas sin nuevas incidencias.
 
 ## P0 Wallapop Real Integration
 

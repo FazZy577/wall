@@ -2,6 +2,7 @@
 
 import ast
 import inspect
+import tomllib
 from pathlib import Path
 
 from presentation.cli import config_loader, json_report
@@ -271,7 +272,22 @@ def test_module_entry_point_only_delegates_to_main() -> None:
     assert not any(isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) for node in tree.body)
 
 
-def test_no_console_script_is_registered_yet() -> None:
-    pyproject_source = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+def test_only_operational_console_script_is_registered() -> None:
+    with (PROJECT_ROOT / "pyproject.toml").open("rb") as pyproject_file:
+        pyproject = tomllib.load(pyproject_file)
 
-    assert "[project.scripts]" not in pyproject_source
+    assert pyproject["project"]["scripts"] == {
+        "wallapop-arbitrage": "presentation.cli.main:main"
+    }
+
+
+def test_cli_does_not_introduce_persistence_or_scheduling() -> None:
+    cli_source = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (SRC_ROOT / "presentation/cli").glob("*.py")
+    ).casefold()
+
+    assert "sqlite" not in cli_source
+    assert "scheduler" not in cli_source
+    assert "apscheduler" not in cli_source
+    assert "cron" not in cli_source

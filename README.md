@@ -1,76 +1,71 @@
 # Wallapop Arbitrage Platform
 
-Platform for detecting arbitrage opportunities in second-hand marketplaces.
+Motor de análisis de oportunidades de videojuegos en Wallapop con una CLI
+operativa para ejecutar búsquedas configuradas. El flujo actual genera planes
+canónicos de búsqueda, deduplica candidatos, detecta juegos, valora
+comparables y calcula oportunidades individuales y de lotes.
 
-## Features (Planned)
+La CLI realiza consultas reales únicamente cuando se ejecuta `scan` con
+`--confirm-live`. No es todavía un sistema autónomo: no hay histórico,
+persistencia, scheduler, notificaciones, API ni dashboard.
 
-- Multi-marketplace support (Wallapop, Vinted, Milanuncios, etc.)
-- Automatic game detection in listings
-- Market price estimation
-- Opportunity ranking
-- Historical price tracking
+## Instalación mínima
 
-## Architecture
+Requisitos: Python 3.11+ y [uv](https://docs.astral.sh/uv/).
 
-Built using Clean Architecture principles:
-
-- **Domain Layer**: Core business logic, entities, and interfaces
-- **Application Layer**: Use cases and orchestration
-- **Infrastructure Layer**: External adapters (APIs, databases, etc.)
-
-## Setup
-
-### Requirements
-
-- Python 3.11+
-- [uv](https://github.com/astral-sh/uv) package manager
-
-### Installation
-
-```bash
-# Install dependencies
-uv sync
-
-# Install dev dependencies
-uv sync --extra dev
+```powershell
+py -m uv sync --extra dev
+py -m uv run playwright install chromium
 ```
 
-## Development
+La configuración de referencia está en [`config.example.toml`](config.example.toml).
 
-### Running tests
+## Uso principal
 
-```bash
-uv run pytest
+```powershell
+wallapop-arbitrage --help
+wallapop-arbitrage --version
+wallapop-arbitrage scan --config config.toml --confirm-live
 ```
 
-### Code quality
+La misma CLI puede ejecutarse como módulo:
 
-```bash
-# Format code
-uv run ruff format
-
-# Lint code
-uv run ruff check
-
-# Type checking
-uv run mypy src
+```powershell
+py -m uv run python -m presentation.cli scan --config config.toml --confirm-live
 ```
 
-## Project Structure
+Consulta [`OPERATIONAL_CLI.md`](OPERATIONAL_CLI.md) para el esquema TOML,
+salidas terminal/JSON, códigos de salida, seguridad y troubleshooting.
 
+La generación de consultas es automática pero determinista: no utiliza IA,
+LLM, embeddings ni aliases inventados.
+
+## Desarrollo
+
+```powershell
+py -m uv run pytest -m "not live"
+py -m uv run mypy src
+py -m uv run ruff check src tests examples
 ```
-src/
-├── domain/          # Core business logic
-├── application/     # Use cases
-├── infrastructure/  # External adapters
-└── shared/          # Shared utilities
 
-tests/
-├── unit/            # Unit tests
-├── integration/     # Integration tests
-└── e2e/             # End-to-end tests
+Los tests live son opt-in mediante `RUN_LIVE_WALLAPOP_TESTS=1`; no forman parte
+de la validación normal.
+
+## Arquitectura
+
+```text
+Domain → Application → Infrastructure
+                         ↑
+                    Presentation/CLI
 ```
 
-## License
+Presentation compone la configuración, el lifecycle de Playwright y los
+casos de uso. Domain y Application no dependen de Presentation. El detalle de
+capas se encuentra en [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-MIT
+## Estado
+
+El motor de análisis y la CLI operativa están implementados y cubiertos por
+tests offline. Quedan pendientes la persistencia histórica, la programación
+de ejecuciones, notificaciones, búsqueda de mercado completo, aliases seguros,
+liquidez, calibración y una futura API/dashboard.
