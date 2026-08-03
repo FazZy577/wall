@@ -85,6 +85,45 @@ _PLATFORM_FAMILY_PATTERNS: Final[tuple[tuple[re.Pattern[str], ...], ...]] = (
         )
     ),
 )
+_UNSUPPORTED_VARIANT_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:premium|special|ultimate|deluxe|gold|complete|anniversary|limited) edition\b",
+        r"\bedicion (?:premium|especial|ultimate|deluxe|gold|completa|aniversario|limitada)\b",
+        r"\bcollector(?:s| s)? edition\b",
+        r"\bedicion coleccionista\b",
+        r"\bsteelbook\b",
+        r"\bcaja metalica\b",
+        r"\bedicion metalica\b",
+        r"\bgoty\b",
+        r"\bgame of the year\b",
+        r"\b(?:incluye|incluido|incluida|con) (?:el )?dlcs?\b",
+        r"\bdlcs\b",
+        r"\bdlcs? incluid[oa]s?\b",
+        r"\bseason pass\b",
+        r"\bpase de temporada\b",
+        r"\bcontenido descargable incluido\b",
+        r"\bcodigos? sin usar\b",
+        r"\b(?:incluye|con) extras\b",
+        r"\bcontenido adicional\b",
+        r"\b(?:incluye|con) (?:una )?expansion\b",
+        r"\bexpansion incluid[ao]\b",
+        r"\bsin (?:el )?(?:mapa|manual|caratula|disco)\b",
+        r"\bsolo (?:el )?(?:disco|caja)\b",
+        r"\bdisco suelto\b",
+        r"\bcaja vacia\b",
+        r"\bcaja y manual sin juego\b",
+        r"\b(?:disc only|loose disc|box only|empty box)\b",
+        r"\b(?:without|no) (?:disc|manual|map|cover)\b",
+    )
+)
+_ADDITIONAL_CONTENT_NEGATION_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:no incluye|sin) (?:el )?(?:dlcs?|season pass|pase de temporada|contenido adicional|contenido descargable|extras|expansion)\b",
+        r"\b(?:dlcs?|season pass|pase de temporada|contenido adicional|contenido descargable|extras|expansion) no incluid[oa]s?\b",
+    )
+)
 
 
 class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
@@ -128,6 +167,12 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             return CandidateClassification(
                 CandidateDisposition.AMBIGUOUS,
                 CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+                (),
+            )
+        if self._has_unsupported_variant(normalized_text):
+            return CandidateClassification(
+                CandidateDisposition.AMBIGUOUS,
+                CandidateClassificationReason.UNSUPPORTED_EDITION,
                 (),
             )
         if not games:
@@ -182,6 +227,15 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             for family in _PLATFORM_FAMILY_PATTERNS
         )
         return families > 1
+
+    @staticmethod
+    def _has_unsupported_variant(text: str) -> bool:
+        positive_text = text
+        for pattern in _ADDITIONAL_CONTENT_NEGATION_PATTERNS:
+            positive_text = pattern.sub(" ", positive_text)
+        return any(
+            pattern.search(positive_text) for pattern in _UNSUPPORTED_VARIANT_PATTERNS
+        )
 
 
 __all__ = ("RuleBasedCandidateEligibilityPolicy",)

@@ -19,8 +19,73 @@ from domain.entities.detected_game import DetectedGame, DetectionMethod, Platfor
 from domain.interfaces.candidate_eligibility_policy import (
     ICandidateEligibilityPolicy,
 )
+from domain.interfaces.comparable_filter import ComparableFilterInput
 from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
     RuleBasedCandidateEligibilityPolicy,
+)
+from infrastructure.filters.rule_based_comparable_filter import (
+    RuleBasedComparableFilter,
+)
+
+UNSUPPORTED_VARIANT_CASES = (
+    ("GTA V Premium Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Edición Premium PS4", "Grand Theft Auto V"),
+    ("Red Dead Redemption 2 Special Edition PS4", "Red Dead Redemption 2"),
+    ("Red Dead Redemption 2 Edición Especial PS4", "Red Dead Redemption 2"),
+    ("GTA V Ultimate Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Deluxe Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Collector's Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Collector’s Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Collector Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Edición Coleccionista PS4", "Grand Theft Auto V"),
+    ("GTA V Gold Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Complete Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Anniversary Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Limited Edition PS4", "Grand Theft Auto V"),
+    ("GTA V Edición Limitada PS4", "Grand Theft Auto V"),
+    ("GTA V Steelbook PS4", "Grand Theft Auto V"),
+    ("GTA V caja metálica PS4", "Grand Theft Auto V"),
+    ("GTA V edición metálica PS4", "Grand Theft Auto V"),
+    ("GTA V GOTY PS4", "Grand Theft Auto V"),
+    ("GTA V Game of the Year PS4", "Grand Theft Auto V"),
+    ("GTA V PS4 incluye DLC", "Grand Theft Auto V"),
+    ("GTA V PS4 con DLC", "Grand Theft Auto V"),
+    ("GTA V PS4 DLCs", "Grand Theft Auto V"),
+    ("GTA V PS4 season pass", "Grand Theft Auto V"),
+    ("GTA V PS4 pase de temporada", "Grand Theft Auto V"),
+    ("GTA V PS4 contenido descargable incluido", "Grand Theft Auto V"),
+    ("GTA V PS4 códigos sin usar", "Grand Theft Auto V"),
+    ("GTA V PS4 con extras", "Grand Theft Auto V"),
+    ("GTA V PS4 contenido adicional", "Grand Theft Auto V"),
+    ("GTA V PS4 expansión incluida", "Grand Theft Auto V"),
+    ("GTA V PS4 sin mapa", "Grand Theft Auto V"),
+    ("GTA V PS4 sin manual", "Grand Theft Auto V"),
+    ("GTA V PS4 sin carátula", "Grand Theft Auto V"),
+    ("GTA V PS4 solo disco", "Grand Theft Auto V"),
+    ("GTA V PS4 disco suelto", "Grand Theft Auto V"),
+    ("GTA V PS4 solo caja", "Grand Theft Auto V"),
+    ("GTA V PS4 caja vacía", "Grand Theft Auto V"),
+    ("GTA V PS4 sin disco", "Grand Theft Auto V"),
+    ("GTA V PS4 caja y manual sin juego", "Grand Theft Auto V"),
+)
+
+SAFE_STANDARD_CASES = (
+    ("Grand Theft Auto V PS4", "Grand Theft Auto V"),
+    ("Red Dead Redemption 2 PS4", "Red Dead Redemption 2"),
+    ("GTA V PS4 Edición estándar", "Grand Theft Auto V"),
+    ("GTA V PS4 Standard Edition", "Grand Theft Auto V"),
+    ("GTA V PS4 juego completo", "Grand Theft Auto V"),
+    ("GTA V PS4 con caja", "Grand Theft Auto V"),
+    ("GTA V PS4 buen estado", "Grand Theft Auto V"),
+    ("GTA V PS4 usado como nuevo", "Grand Theft Auto V"),
+    ("GTA V PS4 Premium condition", "Grand Theft Auto V"),
+    ("GTA V PS4 especial para regalo", "Grand Theft Auto V"),
+    ("GTA V PS4 última unidad", "Grand Theft Auto V"),
+    ("GTA V PS4 deluxe estado", "Grand Theft Auto V"),
+    ("GTA V PS4 no incluye DLC", "Grand Theft Auto V"),
+    ("GTA V PS4 sin contenido adicional", "Grand Theft Auto V"),
+    ("GTA V PS4 DLC no incluido", "Grand Theft Auto V"),
+    ("GTA V PS4 DLC disponible por separado", "Grand Theft Auto V"),
 )
 
 
@@ -239,6 +304,149 @@ def test_pro_evolution_soccer_is_not_mistaken_for_console_pro(
         CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
         (game,),
     )
+
+
+@pytest.mark.parametrize(("title", "game_name"), UNSUPPORTED_VARIANT_CASES)
+def test_unsupported_variants_are_ambiguous_without_included_games(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    game_name: str,
+) -> None:
+    result = policy.classify(_listing(title), (_game(game_name),))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.UNSUPPORTED_EDITION,
+    )
+
+
+@pytest.mark.parametrize(("title", "game_name"), SAFE_STANDARD_CASES)
+def test_standard_and_contextually_similar_text_remains_eligible(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    game_name: str,
+) -> None:
+    game = _game(game_name)
+    result = policy.classify(_listing(title), (game,))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (game,),
+    )
+
+
+def test_hardware_and_multiplatform_keep_precedence_over_unsupported_edition(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    game = _game()
+    hardware = policy.classify(
+        _listing("PS4 Pro Blanca + GTA V Premium Edition"),
+        (game,),
+    )
+    multiplatform = policy.classify(
+        _listing("GTA V PS4 y PS5 Premium Edition"),
+        (game,),
+    )
+    accessory = policy.classify(
+        _listing("Mando PS4 + GTA V Premium Edition"),
+        (game,),
+    )
+
+    _assert_classification(
+        hardware,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+    )
+    _assert_classification(
+        multiplatform,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+    _assert_classification(
+        accessory,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.ACCESSORY_OR_CONTROLLER,
+    )
+
+
+@pytest.mark.parametrize(
+    "games",
+    [(), (_game(),), (_game(), _game("Red Dead Redemption 2"))],
+)
+def test_unsupported_variant_precedes_base_game_count_routing(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    games: tuple[DetectedGame, ...],
+) -> None:
+    result = policy.classify(_listing("GTA V Premium Edition PS4"), games)
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.UNSUPPORTED_EDITION,
+    )
+
+
+def test_unsupported_variant_in_description_is_rejected_symmetrically(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    game = _game()
+    candidate = policy.classify(
+        _listing("GTA V PS4", "Incluye DLC y contenido adicional"),
+        (game,),
+    )
+    comparable = RuleBasedComparableFilter().is_valid_comparable(
+        game,
+        ComparableFilterInput(
+            title="GTA V PS4",
+            description="Incluye DLC y contenido adicional",
+        ),
+    )
+
+    _assert_classification(
+        candidate,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.UNSUPPORTED_EDITION,
+    )
+    assert comparable is False
+
+
+@pytest.mark.parametrize(("title", "game_name"), UNSUPPORTED_VARIANT_CASES)
+def test_candidate_and_comparable_reject_unsupported_variants_symmetrically(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    game_name: str,
+) -> None:
+    game = _game(game_name)
+    candidate = policy.classify(_listing(title), (game,))
+    comparable = RuleBasedComparableFilter().is_valid_comparable(
+        game,
+        ComparableFilterInput(title=title, description=""),
+    )
+
+    assert candidate.disposition is CandidateDisposition.AMBIGUOUS
+    assert candidate.reason is CandidateClassificationReason.UNSUPPORTED_EDITION
+    assert candidate.included_games == ()
+    assert comparable is False
+
+
+def test_unsupported_variant_classification_is_deterministic_and_non_mutating(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    listing = _listing("GTA V Premium Edition PS4", "Incluye DLC")
+    game = _game()
+    listing_snapshot = dict(vars(listing))
+    game_snapshot = dict(vars(game))
+
+    first = policy.classify(listing, [game])
+    second = policy.classify(listing, [game])
+
+    assert first == second
+    assert first.included_games == ()
+    assert vars(listing) == listing_snapshot
+    assert vars(game) == game_snapshot
 
 
 @pytest.mark.parametrize(

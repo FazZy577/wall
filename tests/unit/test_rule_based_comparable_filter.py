@@ -87,8 +87,8 @@ class TestValidComparables:
     ) -> None:
         """Valid: Game listing with Spanish accents."""
         listing = ComparableFilterInput(
-            title="GTA V Edición Premium",
-            description="Incluye contenido adicional",
+            title="GTA V Edición estándar",
+            description="Juego usado en buen estado",
         )
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is True
 
@@ -519,23 +519,22 @@ class TestComplexScenarios:
     def test_steelbook_with_game(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
-        """Valid: Steelbook edition with game included."""
+        """Reject: Steelbook is not modeled as the standard game."""
         listing = ComparableFilterInput(
             title="GTA V Steelbook Edition PS4",
             description="Incluye el juego completo en disco",
         )
-        # Should be valid - steelbook but with game
-        assert filter_instance.is_valid_comparable(gta_v_game, listing) is True
+        assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
 
     def test_special_edition(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
-        """Valid: Special/Premium edition."""
+        """Reject: Premium edition is not modeled as the standard game."""
         listing = ComparableFilterInput(
             title="GTA V Premium Edition PS4",
             description="Incluye contenido adicional",
         )
-        assert filter_instance.is_valid_comparable(gta_v_game, listing) is True
+        assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
 
     def test_used_game(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
@@ -556,3 +555,87 @@ class TestComplexScenarios:
             description="Sin abrir, sellado de fábrica",
         )
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is True
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "GTA V Premium Edition PS4",
+        "GTA V Edición Premium PS4",
+        "GTA V Special Edition PS4",
+        "GTA V Edición Especial PS4",
+        "GTA V Ultimate Edition PS4",
+        "GTA V Deluxe Edition PS4",
+        "GTA V Collector's Edition PS4",
+        "GTA V Collector’s Edition PS4",
+        "GTA V Collector Edition PS4",
+        "GTA V Edición Coleccionista PS4",
+        "GTA V Gold Edition PS4",
+        "GTA V Complete Edition PS4",
+        "GTA V Anniversary Edition PS4",
+        "GTA V Limited Edition PS4",
+        "GTA V Edición Limitada PS4",
+        "GTA V Steelbook PS4 con disco",
+        "GTA V caja metálica PS4",
+        "GTA V edición metálica PS4",
+        "GTA V GOTY PS4",
+        "GTA V Game of the Year PS4",
+        "GTA V PS4 incluye DLC",
+        "GTA V PS4 con DLC",
+        "GTA V PS4 DLCs",
+        "GTA V PS4 season pass",
+        "GTA V PS4 pase de temporada",
+        "GTA V PS4 contenido descargable incluido",
+        "GTA V PS4 códigos sin usar",
+        "GTA V PS4 con extras",
+        "GTA V PS4 contenido adicional",
+        "GTA V PS4 expansión incluida",
+        "GTA V PS4 sin mapa",
+        "GTA V PS4 sin manual",
+        "GTA V PS4 sin carátula",
+        "GTA V PS4 solo disco",
+        "GTA V PS4 disco suelto",
+        "GTA V PS4 solo caja",
+        "GTA V PS4 caja vacía",
+        "GTA V PS4 sin disco",
+        "GTA V PS4 caja y manual sin juego",
+    ],
+)
+def test_unmodeled_editions_content_and_incomplete_copies_are_rejected(
+    filter_instance: RuleBasedComparableFilter,
+    gta_v_game: DetectedGame,
+    title: str,
+) -> None:
+    listing = ComparableFilterInput(title=title, description="")
+
+    assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "GTA V PS4",
+        "GTA V PS4 Edición estándar",
+        "GTA V PS4 Standard Edition",
+        "GTA V PS4 juego completo",
+        "GTA V PS4 con caja",
+        "GTA V PS4 buen estado",
+        "GTA V PS4 usado como nuevo",
+        "GTA V PS4 Premium condition",
+        "GTA V PS4 especial para regalo",
+        "GTA V PS4 última unidad",
+        "GTA V PS4 deluxe estado",
+        "GTA V PS4 no incluye DLC",
+        "GTA V PS4 sin contenido adicional",
+        "GTA V PS4 DLC no incluido",
+        "GTA V PS4 DLC disponible por separado",
+    ],
+)
+def test_standard_and_contextually_similar_listings_remain_comparable(
+    filter_instance: RuleBasedComparableFilter,
+    gta_v_game: DetectedGame,
+    title: str,
+) -> None:
+    listing = ComparableFilterInput(title=title, description="")
+
+    assert filter_instance.is_valid_comparable(gta_v_game, listing) is True

@@ -10,6 +10,46 @@ import unicodedata
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
 
+_UNSUPPORTED_VARIANT_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:premium|special|ultimate|deluxe|gold|complete|anniversary|limited) edition\b",
+        r"\bedicion (?:premium|especial|ultimate|deluxe|gold|completa|aniversario|limitada)\b",
+        r"\bcollector(?:s| s)? edition\b",
+        r"\bedicion coleccionista\b",
+        r"\bsteelbook\b",
+        r"\bcaja metalica\b",
+        r"\bedicion metalica\b",
+        r"\bgoty\b",
+        r"\bgame of the year\b",
+        r"\b(?:incluye|incluido|incluida|con) (?:el )?dlcs?\b",
+        r"\bdlcs\b",
+        r"\bdlcs? incluid[oa]s?\b",
+        r"\bseason pass\b",
+        r"\bpase de temporada\b",
+        r"\bcontenido descargable incluido\b",
+        r"\bcodigos? sin usar\b",
+        r"\b(?:incluye|con) extras\b",
+        r"\bcontenido adicional\b",
+        r"\b(?:incluye|con) (?:una )?expansion\b",
+        r"\bexpansion incluid[ao]\b",
+        r"\bsin (?:el )?(?:mapa|manual|caratula|disco)\b",
+        r"\bsolo (?:el )?(?:disco|caja)\b",
+        r"\bdisco suelto\b",
+        r"\bcaja vacia\b",
+        r"\bcaja y manual sin juego\b",
+        r"\b(?:disc only|loose disc|box only|empty box)\b",
+        r"\b(?:without|no) (?:disc|manual|map|cover)\b",
+    )
+)
+_ADDITIONAL_CONTENT_NEGATION_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:no incluye|sin) (?:el )?(?:dlcs?|season pass|pase de temporada|contenido adicional|contenido descargable|extras|expansion)\b",
+        r"\b(?:dlcs?|season pass|pase de temporada|contenido adicional|contenido descargable|extras|expansion) no incluid[oa]s?\b",
+    )
+)
+
 
 class RuleBasedComparableFilter(IComparableFilter):
     """Filters listings using deterministic rules.
@@ -126,32 +166,45 @@ class RuleBasedComparableFilter(IComparableFilter):
         # Normalize text for matching
         normalized_text = self._normalize_text(f"{listing.title} {listing.description}")
 
-        # Rule 1: Reject consoles (without clear game context)
+        # Rule 1: Reject unmodeled editions and incomplete physical variants
+        if self._has_unsupported_variant(normalized_text):
+            return False
+
+        # Rule 2: Reject consoles (without clear game context)
         if self._is_console_only(normalized_text):
             return False
 
-        # Rule 2: Reject controllers
+        # Rule 3: Reject controllers
         if self._contains_keywords(normalized_text, self.CONTROLLER_KEYWORDS):
             return False
 
-        # Rule 3: Reject accessories
+        # Rule 4: Reject accessories
         if self._contains_keywords(normalized_text, self.ACCESSORY_KEYWORDS):
             return False
 
-        # Rule 4: Reject accounts
+        # Rule 5: Reject accounts
         if self._contains_keywords(normalized_text, self.ACCOUNT_KEYWORDS):
             return False
 
-        # Rule 5: Reject empty boxes
+        # Rule 6: Reject empty boxes
         if self._is_empty_box(normalized_text):
             return False
 
-        # Rule 6: Reject bundles/lots
+        # Rule 7: Reject bundles/lots
         if self._contains_keywords(normalized_text, self.BUNDLE_KEYWORDS):
             return False
 
-        # Rule 7: Verify game match
+        # Rule 8: Verify game match
         return self._is_correct_game(target_game, listing)
+
+    @staticmethod
+    def _has_unsupported_variant(text: str) -> bool:
+        positive_text = text
+        for pattern in _ADDITIONAL_CONTENT_NEGATION_PATTERNS:
+            positive_text = pattern.sub(" ", positive_text)
+        return any(
+            pattern.search(positive_text) for pattern in _UNSUPPORTED_VARIANT_PATTERNS
+        )
 
     def _normalize_text(self, text: str) -> str:
         """Normalize text for matching.
