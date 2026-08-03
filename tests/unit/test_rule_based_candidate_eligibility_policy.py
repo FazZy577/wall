@@ -110,9 +110,13 @@ def _game(
     name: str = "Grand Theft Auto V",
     platform: Platform = Platform.PS4,
 ) -> DetectedGame:
+    matched_text = {
+        "Grand Theft Auto V": "GTA V",
+        "Red Dead Redemption 2": "RDR2",
+    }.get(name.strip(), name)
     return DetectedGame(
         canonical_name=name,
-        matched_text=name,
+        matched_text=matched_text,
         platform=platform,
         confidence=1.0,
         detection_method=DetectionMethod.EXACT_MATCH,
@@ -258,8 +262,8 @@ def test_hardware_precedes_accessory_and_multiplatform(
     [
         "Grand Theft Auto V PS4",
         "Juego PS4 Grand Theft Auto V",
-        "RDR2 para PlayStation 4",
-        "Disco PS4",
+        "GTA V para PlayStation 4",
+        "Disco GTA V PS4",
         "GRAND THEFT AUTO V ps4",
         "Juego físico: GTA V, para PlayStation 4",
     ],
@@ -582,7 +586,8 @@ def test_multiple_games_are_lot_in_original_order(
     count: int,
 ) -> None:
     games = tuple(_game(f"Game {index}") for index in range(count))
-    result = policy.classify(_listing("Lote de juegos PS4"), games)
+    title = "Lote " + " y ".join(game.matched_text for game in games) + " PS4"
+    result = policy.classify(_listing(title), games)
     _assert_classification(
         result,
         CandidateDisposition.ELIGIBLE_LOT,
@@ -601,6 +606,222 @@ def test_same_input_is_deterministic(
     listing = _listing("Lote GTA V y Red Dead Redemption 2 PS4")
     games = (_game(), _game("Red Dead Redemption 2"))
     assert policy.classify(listing, games) == policy.classify(listing, games)
+
+
+def test_contextual_filter_required_regression_title_and_exchange(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    rdr2 = _game("Red Dead Redemption 2")
+    ghost = _game("Ghost of Tsushima")
+
+    result = policy.classify(
+        _listing("Red Dead Redemption 2 PS4", "Cambio por Ghost of Tsushima"),
+        (rdr2, ghost),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (rdr2,),
+    )
+
+
+def test_contextual_filter_required_regression_alias_and_lot(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game()
+    rdr2 = _game("Red Dead Redemption 2")
+
+    alias_result = policy.classify(_listing("RDR2 PS4 agotado"), (rdr2,))
+    lot_result = policy.classify(
+        _listing("Lote GTA V y Red Dead Redemption 2 PS4"),
+        (gta, rdr2),
+    )
+
+    _assert_classification(
+        alias_result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (rdr2,),
+    )
+    _assert_classification(
+        lot_result,
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        (gta, rdr2),
+    )
+
+
+def test_contextual_filter_required_regression_description_lot(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game()
+    rdr2 = _game("Red Dead Redemption 2")
+    ghost = _game("Ghost of Tsushima")
+
+    result = policy.classify(
+        _listing(
+            "Lote PS4",
+            "Incluye GTA V y Red Dead Redemption 2.\n"
+            "También vendo Ghost of Tsushima por separado.",
+        ),
+        (gta, rdr2, ghost),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        (gta, rdr2),
+    )
+
+
+def test_contextual_filter_required_regression_only_desired_game_is_ignored(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    ghost = _game("Ghost of Tsushima")
+    result = policy.classify(_listing("Busco Ghost of Tsushima PS4"), (ghost,))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+@pytest.mark.parametrize(
+    ("title", "description"),
+    [
+        ("Cambio por Ghost of Tsushima", ""),
+        ("Busco Ghost of Tsushima", ""),
+        ("Acepto cambio por Ghost of Tsushima", ""),
+        ("Compatible con Ghost of Tsushima", ""),
+        ("También vendo Ghost of Tsushima", ""),
+        ("Vendo Ghost of Tsushima por separado", ""),
+        ("Ghost of Tsushima disponible por separado", ""),
+        ("Juego", "No incluye Ghost of Tsushima"),
+        ("Juego", "Ghost of Tsushima no incluido"),
+        ("Referencia a Ghost of Tsushima", ""),
+        ("Parecido a Ghost of Tsushima", ""),
+        ("Acepto Ghost of Tsushima a cambio", ""),
+    ],
+)
+def test_contextual_references_are_not_included(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    description: str,
+) -> None:
+    ghost = _game("Ghost of Tsushima")
+    result = policy.classify(_listing(title, description), (ghost,))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+def test_exchange_keeps_offered_game_and_drops_requested_game(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    rdr2 = _game("Red Dead Redemption 2")
+    ghost = _game("Ghost of Tsushima")
+    result = policy.classify(
+        _listing("Cambio RDR2 por Ghost of Tsushima"),
+        (rdr2, ghost),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (rdr2,),
+    )
+
+
+def test_contextual_prefix_scopes_over_a_list_of_references(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    ghost = _game("Ghost of Tsushima")
+    rdr2 = _game("Red Dead Redemption 2")
+
+    result = policy.classify(
+        _listing("Busco Ghost of Tsushima y RDR2 PS4"),
+        (ghost, rdr2),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+def test_neutral_description_is_individual_but_multiple_games_are_ambiguous(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game()
+    rdr2 = _game("Red Dead Redemption 2")
+    individual = policy.classify(_listing("Juego PS4", "GTA V"), (gta,))
+    ambiguous = policy.classify(
+        _listing("Juego PS4", "GTA V, RDR2"),
+        (gta, rdr2),
+    )
+
+    _assert_classification(
+        individual,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (gta,),
+    )
+    _assert_classification(
+        ambiguous,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+def test_unlocalizable_fuzzy_detection_is_conservative(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    fuzzy_game = DetectedGame(
+        canonical_name="Ghost of Tsushima",
+        matched_text="ghost of tsushima",
+        platform=Platform.PS4,
+        confidence=0.8,
+        detection_method=DetectionMethod.FUZZY_MATCH,
+    )
+    result = policy.classify(_listing("Juego PS4 desconocido"), (fuzzy_game,))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+def test_contextual_filter_preserves_order_identity_and_inputs(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game()
+    rdr2 = _game("Red Dead Redemption 2")
+    ghost = _game("Ghost of Tsushima")
+    listing = _listing(
+        "Lote GTA V y Red Dead Redemption 2",
+        "También vendo Ghost of Tsushima por separado",
+        raw_listing={"secret": object()},
+    )
+    games = [gta, rdr2, ghost]
+    snapshot = dict(vars(listing))
+
+    result = policy.classify(listing, games)
+
+    assert result.included_games == (gta, rdr2)
+    assert result.included_games[0] is gta
+    assert result.included_games[1] is rdr2
+    assert games == [gta, rdr2, ghost]
+    assert vars(listing) == snapshot
 
 
 def test_implementation_has_no_forbidden_dependencies_or_io() -> None:

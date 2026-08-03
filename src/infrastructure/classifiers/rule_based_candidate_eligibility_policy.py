@@ -125,6 +125,82 @@ _ADDITIONAL_CONTENT_NEGATION_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tupl
     )
 )
 
+# Context is evaluated in short, independently normalised clauses.  These
+# expressions deliberately cover only unambiguous marketplace wording; they
+# are not intended to be a general natural-language parser.
+_CLAUSE_SEPARATOR_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(?:\n|[.,;:/()|•·+]|\s+-\s+)"
+)
+_POSITIVE_LOT_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\binclu(?:ye|yen|ido|ida|idos|idas)\b",
+        r"\bcontiene\b",
+        r"\bcon\s+los\s+juegos\b",
+        r"\blote\b",
+        r"\bpack\s+de\s+juegos\b",
+        r"\bjuegos\s+incluidos\b",
+        r"\bvendo\s+juntos\b",
+        r"\bse\s+vende\s+todo\s+junto\b",
+        r"\bambos\s+juegos\b",
+        r"\blos\s+siguientes\s+juegos\b",
+    )
+)
+_CONTEXT_PREFIX_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:busco|buscando|me\s+interesa)\s*$",
+        r"\bcompatible\s+con\s*$",
+        r"\b(?:tambien\s+vendo|vendo\s+por\s+separado|disponible\s+por\s+separado)\s*$",
+        r"\b(?:no\s+incluye|no\s+viene\s+con)\s*$",
+        r"\b(?:referencia\s+a|parecido\s+a)\s*$",
+        r"\b(?:acepto\s+cambio\s+por|cambiaria\s+por|se\s+cambia\s+por|cambio\s+por)\s*$",
+        r"\b(?:acepto|aceptaria)\s*$",
+        r"\bcambio(?:\s+[a-z0-9]+){0,8}\s+por\s*$",
+    )
+)
+_CONTEXT_SUFFIX_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:no\s+incluido|no\s+incluida|no\s+viene\s+con)$",
+        r"\b(?:vendido\s+por\s+separado|disponible\s+por\s+separado|por\s+separado)$",
+        r"\ba\s+cambio$",
+    )
+)
+_CONTEXT_SCOPE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\b(?:busco|buscando|me\s+interesa|compatible\s+con|referencia\s+a|parecido\s+a)\b",
+        r"\b(?:tambien\s+vendo|vendo\s+por\s+separado|disponible\s+por\s+separado|no\s+incluye|no\s+viene\s+con)\b",
+        r"\b(?:cambio|cambiaria|se\s+cambia)(?:\s+[a-z0-9]+){0,8}\s+por\b",
+    )
+)
+
+
+def _normalise_clauses(text: str) -> tuple[str, ...]:
+    """Return independently normalised clauses without joining boundaries."""
+    return tuple(
+        clause
+        for raw_clause in _CLAUSE_SEPARATOR_PATTERN.split(text)
+        if (clause := RuleBasedCandidateEligibilityPolicy._normalize_text(raw_clause))
+    )
+
+
+def _is_contextual_occurrence(clause: str, start: int, end: int) -> bool:
+    before = clause[:start].rstrip()
+    after = clause[end:].strip()
+    if any(pattern.search(before) for pattern in _CONTEXT_PREFIX_PATTERNS):
+        return True
+    if any(pattern.match(after) for pattern in _CONTEXT_SUFFIX_PATTERNS):
+        return True
+    for pattern in _CONTEXT_SCOPE_PATTERNS:
+        marker = pattern.search(before)
+        if marker is not None:
+            tail = before[marker.end() :]
+            if not any(positive.search(tail) for positive in _POSITIVE_LOT_PATTERNS):
+                return True
+    return False
+
 
 class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
     """Classify candidates using conservative, deterministic text rules."""
@@ -181,17 +257,122 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
                 CandidateClassificationReason.NO_INCLUDED_GAME,
                 (),
             )
-        if len(games) == 1:
+        self._validate_game_identities(games)
+
+        included_games, has_unresolved, has_contextual = self._included_games(
+            listing.title,
+            listing.description,
+            games,
+        )
+        if not included_games:
+            reason = CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY
+            disposition = (
+                CandidateDisposition.IGNORED
+                if has_contextual and not has_unresolved
+                else CandidateDisposition.AMBIGUOUS
+            )
+            return CandidateClassification(disposition, reason, ())
+        if len(included_games) == 1:
             return CandidateClassification(
                 CandidateDisposition.ELIGIBLE_INDIVIDUAL,
                 CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
-                games,
+                included_games,
             )
         return CandidateClassification(
             CandidateDisposition.ELIGIBLE_LOT,
             CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
-            games,
+            included_games,
         )
+
+    @staticmethod
+    def _validate_game_identities(games: tuple[DetectedGame, ...]) -> None:
+        identities: set[tuple[str, object]] = set()
+        for game in games:
+            identity = (" ".join(game.canonical_name.strip().casefold().split()), game.platform)
+            if identity in identities:
+                raise ValueError("detected_games contains duplicate game identity")
+            identities.add(identity)
+
+    @classmethod
+    def _included_games(
+        cls,
+        title: str,
+        description: str,
+        games: tuple[DetectedGame, ...],
+    ) -> tuple[tuple[DetectedGame, ...], bool, bool]:
+        title_clauses = _normalise_clauses(title)
+        description_clauses = _normalise_clauses(description)
+        positive_lot = any(
+            pattern.search(clause)
+            for pattern in _POSITIVE_LOT_PATTERNS
+            for clause in (*title_clauses, *description_clauses)
+        )
+
+        reliable_title: set[int] = set()
+        reliable_description: set[int] = set()
+        contextual_indices: set[int] = set()
+        unresolved_indices: set[int] = set()
+
+        for index, game in enumerate(games):
+            title_occurrences = cls._locate_game(game, title_clauses, "title")
+            description_occurrences = cls._locate_game(
+                game,
+                description_clauses,
+                "description",
+            )
+            all_occurrences = (*title_occurrences, *description_occurrences)
+            if not all_occurrences:
+                # A fuzzy detector may not provide a literal span that can be
+                # located safely.  Do not invent inclusion context for it.
+                unresolved_indices.add(index)
+                continue
+
+            has_reliable = False
+            for source, clause, start, end in all_occurrences:
+                if _is_contextual_occurrence(clause, start, end):
+                    contextual_indices.add(index)
+                else:
+                    has_reliable = True
+                    if source == "title":
+                        reliable_title.add(index)
+                    else:
+                        reliable_description.add(index)
+            if not has_reliable:
+                contextual_indices.add(index)
+
+        if reliable_title:
+            included_indices = set(reliable_title)
+            if positive_lot:
+                included_indices.update(reliable_description)
+        elif positive_lot or len(reliable_description) == 1:
+            included_indices = set(reliable_description)
+        else:
+            included_indices = set()
+
+        included = tuple(game for index, game in enumerate(games) if index in included_indices)
+        return included, bool(unresolved_indices), bool(contextual_indices)
+
+    @classmethod
+    def _locate_game(
+        cls,
+        game: DetectedGame,
+        clauses: tuple[str, ...],
+        source: str,
+    ) -> tuple[tuple[str, str, int, int], ...]:
+        variants: list[str] = []
+        for value in (game.matched_text, game.canonical_name):
+            normalized = cls._normalize_text(value)
+            if normalized and normalized not in variants:
+                variants.append(normalized)
+        occurrences: list[tuple[str, str, int, int]] = []
+        for clause in clauses:
+            for variant in variants:
+                pattern = re.compile(rf"(?<![a-z0-9]){re.escape(variant)}(?![a-z0-9])")
+                occurrences.extend(
+                    (source, clause, match.start(), match.end())
+                    for match in pattern.finditer(clause)
+                )
+        return tuple(occurrences)
 
     @staticmethod
     def _normalize_text(text: str) -> str:
