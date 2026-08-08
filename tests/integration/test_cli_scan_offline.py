@@ -176,7 +176,7 @@ async def test_scan_command_runs_full_offline_pipeline_and_writes_both_outputs(
     assert lifecycle == {"opened": True, "closed": True}
     assert "SEARCH PLAN GENERATION" in captured.out
     assert "SEARCH EXECUTION" in captured.out
-    assert report["schema_version"] == 1
+    assert report["schema_version"] == 2
     assert report["generation"]["queries"][0]["keywords"] == _GTA_QUERY
     assert report["individual_opportunities"][0]["currency"] == "EUR"
     assert isinstance(report["individual_opportunities"][0]["purchase_price"], str)

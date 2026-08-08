@@ -29,13 +29,21 @@ from application.interfaces.search_orchestrator import (
     CandidateRoutingFailureKind,
     SearchQueryFailure,
 )
+from domain.entities.candidate_classification import (
+    CandidateClassificationReason,
+    CandidateDisposition,
+)
 from presentation.cli import json_report
 from presentation.cli.json_report import (
     JsonReportWriteError,
     build_json_report,
     write_json_report,
 )
-from tests.unit.test_cli_terminal_report import _empty_report_data, _report_data
+from tests.unit.test_cli_terminal_report import (
+    _empty_report_data,
+    _report_data,
+    _routing_record,
+)
 
 
 @pytest.mark.unit
@@ -43,13 +51,15 @@ def test_build_json_report_has_stable_schema_and_explicit_values() -> None:
     data = _report_data()
     report = build_json_report(data.generation, data.execution)
 
-    assert report["schema_version"] == 1
+    assert report["schema_version"] == 2
     assert set(report) == {
         "schema_version",
         "generation",
         "execution",
         "individual_opportunities",
         "lot_results",
+        "ignored_candidates",
+        "ambiguous_candidates",
         "failures",
         "summary",
     }
@@ -91,6 +101,8 @@ def test_empty_report_is_valid_json_and_build_is_deterministic_without_mutation(
     assert first == second
     assert first["individual_opportunities"] == []
     assert first["lot_results"] == []
+    assert first["ignored_candidates"] == []
+    assert first["ambiguous_candidates"] == []
     assert first["failures"] == {
         "queries": [],
         "items": [],
@@ -99,6 +111,100 @@ def test_empty_report_is_valid_json_and_build_is_deterministic_without_mutation(
         "lots": [],
     }
     assert execution == before
+
+
+@pytest.mark.unit
+def test_expected_candidates_are_explicit_safe_ordered_and_not_failures() -> None:
+    generation, base_execution = _empty_report_data()
+    ignored = (
+        _routing_record(
+            "ignored-hardware",
+            "PS4 Negra\ncon mando Ñ",
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+        ),
+        _routing_record(
+            "ignored-no-game",
+            "Anuncio no relacionado",
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+        ),
+    )
+    ambiguous = (
+        _routing_record(
+            "ambiguous-platform",
+            "GTA V PS4 y PS5",
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+        ),
+        _routing_record(
+            "ambiguous-edition",
+            "GTA V Premium Edition PS4",
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.UNSUPPORTED_EDITION,
+        ),
+    )
+    execution = replace(
+        base_execution,
+        total_items_received=4,
+        valid_candidates_received=4,
+        unique_candidates=4,
+        ignored_candidates=ignored,
+        ambiguous_candidates=ambiguous,
+    )
+
+    first = build_json_report(generation, execution)
+    second = build_json_report(generation, execution)
+
+    assert first == second
+    assert first["ignored_candidates"] == [
+        {
+            "listing_id": "ignored-hardware",
+            "listing_title": "PS4 Negra con mando Ñ",
+            "disposition": "ignored",
+            "reason": "unsupported_hardware",
+        },
+        {
+            "listing_id": "ignored-no-game",
+            "listing_title": "Anuncio no relacionado",
+            "disposition": "ignored",
+            "reason": "no_included_game",
+        },
+    ]
+    assert first["ambiguous_candidates"] == [
+        {
+            "listing_id": "ambiguous-platform",
+            "listing_title": "GTA V PS4 y PS5",
+            "disposition": "ambiguous",
+            "reason": "ambiguous_multiplatform",
+        },
+        {
+            "listing_id": "ambiguous-edition",
+            "listing_title": "GTA V Premium Edition PS4",
+            "disposition": "ambiguous",
+            "reason": "unsupported_edition",
+        },
+    ]
+    assert first["execution"]["candidates"]["ignored"] == 2  # type: ignore[index]
+    assert first["execution"]["candidates"]["ambiguous"] == 2  # type: ignore[index]
+    assert first["summary"]["ignored_candidates"] == 2  # type: ignore[index]
+    assert first["summary"]["ambiguous_candidates"] == 2  # type: ignore[index]
+    assert first["summary"]["structured_failures"] == 0  # type: ignore[index]
+    assert first["failures"] == {
+        "queries": [],
+        "items": [],
+        "routing": [],
+        "individual_pipeline": [],
+        "lots": [],
+    }
+    encoded = json.dumps(first, ensure_ascii=False, allow_nan=False)
+    for forbidden in (
+        "raw_listing",
+        "detected_games",
+        "included_games",
+        "purchase_price",
+    ):
+        assert forbidden not in encoded
 
 
 @pytest.mark.unit

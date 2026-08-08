@@ -22,6 +22,7 @@ from application.interfaces.opportunity_scanner import FailureInfo
 from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
+    CandidateRoutingRecord,
     SearchOrchestrationResult,
     SearchQueryFailure,
 )
@@ -204,6 +205,17 @@ def _routing_failure_mapping(failure: CandidateRoutingFailure) -> dict[str, Json
     }
 
 
+def _candidate_routing_mapping(
+    record: CandidateRoutingRecord,
+) -> dict[str, JsonValue]:
+    return {
+        "listing_id": record.listing_id,
+        "listing_title": _one_line(record.listing_title),
+        "disposition": record.disposition.value,
+        "reason": record.reason.value,
+    }
+
+
 def _scan_failure_mapping(failure: FailureInfo) -> dict[str, JsonValue]:
     return {
         "listing_id": failure.listing_id,
@@ -283,6 +295,15 @@ def build_json_report(
         [_opportunity_mapping(opportunity) for opportunity in individual_opportunities]
     )
     lot_json = _json_list([_lot_mapping(result) for result in execution.lot_results])
+    ignored_candidates_json = _json_list(
+        [_candidate_routing_mapping(record) for record in execution.ignored_candidates]
+    )
+    ambiguous_candidates_json = _json_list(
+        [
+            _candidate_routing_mapping(record)
+            for record in execution.ambiguous_candidates
+        ]
+    )
     query_failures_json = _json_list(
         [_query_failure_mapping(failure) for failure in execution.query_failures]
     )
@@ -297,7 +318,7 @@ def build_json_report(
     )
     lot_failures_json = _json_list(lot_failures)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "generation": {
             "targets_received": generation.targets_received,
             "queries_generated": generation.queries_generated,
@@ -320,10 +341,14 @@ def build_json_report(
                 "individual": execution.individual_candidates,
                 "lots": execution.lot_candidates,
                 "undetected": execution.undetected_candidates,
+                "ignored": len(execution.ignored_candidates),
+                "ambiguous": len(execution.ambiguous_candidates),
             },
         },
         "individual_opportunities": individual_json,
         "lot_results": lot_json,
+        "ignored_candidates": ignored_candidates_json,
+        "ambiguous_candidates": ambiguous_candidates_json,
         "failures": {
             "queries": query_failures_json,
             "items": item_failures_json,
@@ -337,6 +362,8 @@ def build_json_report(
             "unique_candidates": execution.unique_candidates,
             "individual_opportunities": len(individual_opportunities),
             "lot_results": len(execution.lot_results),
+            "ignored_candidates": len(execution.ignored_candidates),
+            "ambiguous_candidates": len(execution.ambiguous_candidates),
             "structured_failures": structured_failure_count,
             "recommendations": {
                 "individual": cast(JsonValue, individual_counts),

@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import logging
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +15,9 @@ import pytest
 import presentation.cli.main as cli_main
 from application.interfaces.candidate_search import SearchQuery
 from application.interfaces.search_orchestrator import (
+    CandidateRoutingFailure,
+    CandidateRoutingFailureKind,
+    CandidateRoutingRecord,
     SearchOrchestrationResult,
     SearchPlan,
     SearchQueryFailure,
@@ -22,6 +26,10 @@ from application.interfaces.search_plan_generator import (
     SearchPlanGenerationResult,
     SearchPlanLimitExceededError,
     UnknownGameSearchTargetError,
+)
+from domain.entities.candidate_classification import (
+    CandidateClassificationReason,
+    CandidateDisposition,
 )
 from domain.entities.detected_game import Platform
 from infrastructure.marketplaces.wallapop.playwright_client import (
@@ -103,6 +111,56 @@ def _execution(
         undetected_candidates=0,
         processing_time=0.1,
         created_at=_NOW,
+    )
+
+
+def _routing_record(
+    listing_id: str,
+    disposition: CandidateDisposition,
+) -> CandidateRoutingRecord:
+    reason = (
+        CandidateClassificationReason.UNSUPPORTED_HARDWARE
+        if disposition is CandidateDisposition.IGNORED
+        else CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM
+    )
+    return CandidateRoutingRecord(
+        listing_id=listing_id,
+        listing_title=f"Candidate {listing_id}",
+        disposition=disposition,
+        reason=reason,
+    )
+
+
+def _classified_execution(
+    ignored: tuple[CandidateRoutingRecord, ...],
+    ambiguous: tuple[CandidateRoutingRecord, ...],
+    *,
+    technical_failure: bool,
+) -> SearchOrchestrationResult:
+    routing_failures = (
+        (
+            CandidateRoutingFailure(
+                listing_id="technical-failure",
+                kind=CandidateRoutingFailureKind.GAME_DETECTION_ERROR,
+                reason="Game detection failed",
+                error_type="RuntimeError",
+                error_message="controlled failure",
+            ),
+        )
+        if technical_failure
+        else ()
+    )
+    undetected_candidates = int(technical_failure)
+    unique_candidates = len(ignored) + len(ambiguous) + undetected_candidates
+    return replace(
+        _execution(),
+        routing_failures=routing_failures,
+        total_items_received=unique_candidates,
+        valid_candidates_received=unique_candidates,
+        unique_candidates=unique_candidates,
+        undetected_candidates=undetected_candidates,
+        ignored_candidates=ignored,
+        ambiguous_candidates=ambiguous,
     )
 
 
@@ -402,6 +460,45 @@ async def test_empty_partial_and_total_marketplace_results_have_distinct_codes(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("ignored_count", "ambiguous_count", "technical_failure", "expected_code"),
+    [
+        (1, 0, False, 0),
+        (0, 1, False, 0),
+        (2, 2, False, 0),
+        (1, 0, True, 1),
+        (0, 1, True, 1),
+    ],
+)
+async def test_expected_classifications_do_not_change_failure_exit_semantics(
+    monkeypatch: pytest.MonkeyPatch,
+    ignored_count: int,
+    ambiguous_count: int,
+    technical_failure: bool,
+    expected_code: int,
+) -> None:
+    ignored = tuple(
+        _routing_record(f"ignored-{index}", CandidateDisposition.IGNORED)
+        for index in range(ignored_count)
+    )
+    ambiguous = tuple(
+        _routing_record(f"ambiguous-{index}", CandidateDisposition.AMBIGUOUS)
+        for index in range(ambiguous_count)
+    )
+    execution = _classified_execution(
+        ignored,
+        ambiguous,
+        technical_failure=technical_failure,
+    )
+    _patch_run(monkeypatch, orchestrator=_Orchestrator(execution))
+
+    code = await cli_main.run_scan(Path("config.toml"), confirm_live=True)
+
+    assert code == expected_code
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_outputs_run_once_after_runtime_closes_and_preserve_overwrite(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -425,7 +522,7 @@ async def test_outputs_run_once_after_runtime_closes_and_preserve_overwrite(
     def build(generation: object, execution: object) -> dict[str, object]:
         assert lifecycle["closed"] is True
         calls.append("build")
-        return {"schema_version": 1}
+        return {"schema_version": 2}
 
     def write(report: object, path: Path, *, overwrite: bool) -> None:
         assert lifecycle["closed"] is True

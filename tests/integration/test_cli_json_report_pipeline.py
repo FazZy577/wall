@@ -58,11 +58,17 @@ class _FakeMarketplaceSearch(IMarketplaceSearch):
         return " ".join(keywords.strip().casefold().split())
 
 
-def _raw(listing_id: str, title: str, price: str) -> dict[str, Any]:
+def _raw(
+    listing_id: str,
+    title: str,
+    price: str,
+    *,
+    description: str = "offline game listing",
+) -> dict[str, Any]:
     return {
         "id": listing_id,
         "title": title,
-        "description": "offline game listing",
+        "description": description,
         "price": price,
         "currency": "EUR",
         "web_slug": listing_id,
@@ -123,6 +129,15 @@ def _config() -> AppConfig:
 def _responses() -> dict[str, Sequence[dict[str, Any]]]:
     return {
         _CANDIDATE_QUERY: (
+            _raw(
+                "json-hardware",
+                "PS4 Negra + 3 Juegos + 1 mando",
+                "40.00",
+                description="Incluye Red Dead Redemption 2",
+            ),
+            _raw("json-platform", "GTA V PS4 y PS5", "10.00"),
+            _raw("json-edition", "GTA V Premium Edition PS4", "10.00"),
+            _raw("json-no-game", "Anuncio no relacionado", "5.00"),
             _raw("json-individual", "GTA V PS4 juego individual", "5.00"),
             _raw("json-lot", "Lote GTA V RDR2 PS4", "20.00"),
         ),
@@ -163,12 +178,36 @@ async def test_json_report_pipeline_is_offline_and_serializable(tmp_path: Path) 
     write_json_report(report, output, overwrite=False)
     loaded = json.loads(output.read_text(encoding="utf-8"))
 
-    assert loaded["schema_version"] == 1
+    assert loaded["schema_version"] == 2
     assert loaded["generation"]["queries"]
     keywords = [query["keywords"] for query in loaded["generation"]["queries"]]
     assert "Grand Theft Auto V PS4" in keywords
     assert loaded["individual_opportunities"]
     assert loaded["lot_results"]
+    assert [record["listing_id"] for record in loaded["ignored_candidates"]] == [
+        "json-hardware",
+        "json-no-game",
+    ]
+    assert [record["reason"] for record in loaded["ignored_candidates"]] == [
+        "unsupported_hardware",
+        "no_included_game",
+    ]
+    assert [
+        record["listing_id"] for record in loaded["ambiguous_candidates"]
+    ] == ["json-platform", "json-edition"]
+    assert [record["reason"] for record in loaded["ambiguous_candidates"]] == [
+        "ambiguous_multiplatform",
+        "unsupported_edition",
+    ]
+    assert loaded["execution"]["candidates"]["ignored"] == 2
+    assert loaded["execution"]["candidates"]["ambiguous"] == 2
+    assert loaded["summary"]["ignored_candidates"] == 2
+    assert loaded["summary"]["ambiguous_candidates"] == 2
+    assert loaded["failures"]["routing"] == []
+    assert loaded["summary"]["structured_failures"] == sum(
+        len(failures) for failures in loaded["failures"].values()
+    )
+    assert execution.routing_failures == ()
     assert all(
         isinstance(opportunity["purchase_price"], str)
         for opportunity in loaded["individual_opportunities"]

@@ -12,6 +12,7 @@ from application.interfaces.opportunity_scanner import FailureInfo
 from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
+    CandidateRoutingRecord,
     SearchOrchestrationResult,
     SearchQueryFailure,
 )
@@ -104,6 +105,8 @@ def _render_execution(
             f"Individual candidates: {execution.individual_candidates}",
             f"Lot candidates: {execution.lot_candidates}",
             f"Undetected candidates: {execution.undetected_candidates}",
+            f"Ignored candidates: {len(execution.ignored_candidates)}",
+            f"Ambiguous candidates: {len(execution.ambiguous_candidates)}",
             f"Processing time: {execution.processing_time:.6f} seconds",
         )
     )
@@ -227,6 +230,26 @@ def _render_lots(
     for position, result in enumerate(execution.lot_results, 1):
         _render_lot_result(lines, result, position)
     return list(execution.lot_results)
+
+
+def _render_candidate_records(
+    lines: list[str],
+    heading: str,
+    empty_message: str,
+    records: tuple[CandidateRoutingRecord, ...],
+) -> None:
+    lines.append(heading)
+    if not records:
+        lines.append(empty_message)
+        return
+    for position, record in enumerate(records, 1):
+        lines.extend(
+            (
+                f"{position}. {_one_line(record.listing_title)}",
+                f"   Listing ID: {_one_line(record.listing_id)}",
+                f"   Reason: {record.reason.value}",
+            )
+        )
 
 
 def _append_verbose_error(
@@ -407,6 +430,8 @@ def _render_summary(
             f"Unique candidates: {execution.unique_candidates}",
             f"Individual opportunities: {len(individual_opportunities)}",
             f"Lot results: {len(lot_results)}",
+            f"Ignored candidates: {len(execution.ignored_candidates)}",
+            f"Ambiguous candidates: {len(execution.ambiguous_candidates)}",
             f"Structured failures: {total_failures}",
             "Individual recommendations: "
             f"BUY={individual_counts[0]}, MAYBE={individual_counts[1]}, "
@@ -439,6 +464,20 @@ def render_terminal_report(
     individual_opportunities = _render_individuals(lines, execution)
     lines.append("")
     lot_results = _render_lots(lines, execution)
+    lines.append("")
+    _render_candidate_records(
+        lines,
+        "IGNORED CANDIDATES",
+        "No ignored candidates.",
+        execution.ignored_candidates,
+    )
+    lines.append("")
+    _render_candidate_records(
+        lines,
+        "AMBIGUOUS CANDIDATES",
+        "No ambiguous candidates.",
+        execution.ambiguous_candidates,
+    )
     lines.append("")
     total_failures = _render_failures(lines, execution, verbose)
     lines.append("")

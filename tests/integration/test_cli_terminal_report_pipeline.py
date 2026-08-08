@@ -56,11 +56,17 @@ class _FakeMarketplaceSearch(IMarketplaceSearch):
         return " ".join(keywords.strip().casefold().split())
 
 
-def _raw(listing_id: str, title: str, price: str) -> dict[str, Any]:
+def _raw(
+    listing_id: str,
+    title: str,
+    price: str,
+    *,
+    description: str = "offline game listing",
+) -> dict[str, Any]:
     return {
         "id": listing_id,
         "title": title,
-        "description": "offline game listing",
+        "description": description,
         "price": price,
         "currency": "EUR",
         "web_slug": listing_id,
@@ -112,6 +118,19 @@ def _config() -> AppConfig:
 def _responses() -> dict[str, Sequence[dict[str, Any]]]:
     return {
         _CANDIDATE_QUERY: (
+            _raw(
+                "renderer-hardware",
+                "PS4 Negra + 3 Juegos + 1 mando",
+                "40.00",
+                description="Incluye Red Dead Redemption 2",
+            ),
+            _raw("renderer-platform", "GTA V PS4 y PS5", "10.00"),
+            _raw(
+                "renderer-edition",
+                "GTA V Premium Edition PS4",
+                "10.00",
+            ),
+            _raw("renderer-no-game", "Anuncio no relacionado", "5.00"),
             _raw("renderer-individual", "GTA V PS4 juego individual", "5.00"),
             _raw("renderer-lot", "Lote GTA V RDR2 PS4", "20.00"),
         ),
@@ -145,11 +164,32 @@ async def test_terminal_renderer_composes_with_full_offline_pipeline() -> None:
     assert "SEARCH EXECUTION" in report
     assert "INDIVIDUAL OPPORTUNITIES" in report
     assert "LOT OPPORTUNITIES" in report
+    assert "IGNORED CANDIDATES" in report
+    assert "AMBIGUOUS CANDIDATES" in report
     assert "FAILURES" in report
     assert "SUMMARY" in report
     assert _CANDIDATE_QUERY in report
     assert "renderer-individual" in report
     assert "renderer-lot" in report
+    assert "Ignored candidates: 2" in report
+    assert "Ambiguous candidates: 2" in report
+    assert "renderer-hardware" in report
+    assert "unsupported_hardware" in report
+    assert "renderer-no-game" in report
+    assert "no_included_game" in report
+    assert "renderer-platform" in report
+    assert "ambiguous_multiplatform" in report
+    assert "renderer-edition" in report
+    assert "unsupported_edition" in report
+    assert execution.routing_failures == ()
+    assert [record.listing_id for record in execution.ignored_candidates] == [
+        "renderer-hardware",
+        "renderer-no-game",
+    ]
+    assert [record.listing_id for record in execution.ambiguous_candidates] == [
+        "renderer-platform",
+        "renderer-edition",
+    ]
     assert "EUR" in report
     assert "must-not-be-rendered" not in report
     assert "traceback" not in report.casefold()

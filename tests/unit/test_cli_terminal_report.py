@@ -1,5 +1,6 @@
 """Tests for the deterministic and pure terminal renderer."""
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import NamedTuple
@@ -25,11 +26,16 @@ from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
     CandidateRoutingFailureKind,
+    CandidateRoutingRecord,
     SearchOrchestrationResult,
     SearchPlan,
     SearchQueryFailure,
 )
 from application.interfaces.search_plan_generator import SearchPlanGenerationResult
+from domain.entities.candidate_classification import (
+    CandidateClassificationReason,
+    CandidateDisposition,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.entities.game_valuation import GameValuation
@@ -299,6 +305,20 @@ def _empty_report_data() -> tuple[SearchPlanGenerationResult, SearchOrchestratio
     return generation, execution
 
 
+def _routing_record(
+    listing_id: str,
+    listing_title: str,
+    disposition: CandidateDisposition,
+    reason: CandidateClassificationReason,
+) -> CandidateRoutingRecord:
+    return CandidateRoutingRecord(
+        listing_id=listing_id,
+        listing_title=listing_title,
+        disposition=disposition,
+        reason=reason,
+    )
+
+
 @pytest.mark.unit
 def test_renderer_returns_stable_report_with_all_sections_and_fields() -> None:
     data = _report_data()
@@ -309,6 +329,8 @@ def test_renderer_returns_stable_report_with_all_sections_and_fields() -> None:
         "SEARCH EXECUTION",
         "INDIVIDUAL OPPORTUNITIES",
         "LOT OPPORTUNITIES",
+        "IGNORED CANDIDATES",
+        "AMBIGUOUS CANDIDATES",
         "FAILURES",
         "SUMMARY",
     ]
@@ -363,9 +385,73 @@ def test_empty_results_keep_every_section_and_do_not_create_metrics() -> None:
     assert "No queries." in report
     assert "No individual opportunities." in report
     assert "No lot results." in report
+    assert "No ignored candidates." in report
+    assert "No ambiguous candidates." in report
+    assert report.count("Ignored candidates: 0") == 2
+    assert report.count("Ambiguous candidates: 0") == 2
     assert "No failures." in report
     assert "Structured failures: 0" in report
     assert "Total queries: 0" in report
+
+
+@pytest.mark.unit
+def test_expected_candidate_records_are_safe_ordered_and_not_failures() -> None:
+    data = _report_data()
+    ignored = (
+        _routing_record(
+            "ignored-hardware",
+            "PS4 Negra\x1b[31m\ncon mando Ñ",
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+        ),
+        _routing_record(
+            "ignored-no-game",
+            "Anuncio no relacionado",
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+        ),
+    )
+    ambiguous = (
+        _routing_record(
+            "ambiguous-platform",
+            "GTA V PS4 y PS5",
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+        ),
+        _routing_record(
+            "ambiguous-edition",
+            "GTA V Premium Edition PS4",
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.UNSUPPORTED_EDITION,
+        ),
+    )
+    execution = replace(
+        data.execution,
+        total_items_received=6,
+        valid_candidates_received=6,
+        unique_candidates=6,
+        ignored_candidates=ignored,
+        ambiguous_candidates=ambiguous,
+    )
+
+    first = render_terminal_report(data.generation, execution)
+    second = render_terminal_report(data.generation, execution)
+
+    assert first == second
+    assert first.count("Ignored candidates: 2") == 2
+    assert first.count("Ambiguous candidates: 2") == 2
+    assert first.index("ignored-hardware") < first.index("ignored-no-game")
+    assert first.index("ambiguous-platform") < first.index("ambiguous-edition")
+    assert "PS4 Negra [31m con mando Ñ" in first
+    assert "unsupported_hardware" in first
+    assert "no_included_game" in first
+    assert "ambiguous_multiplatform" in first
+    assert "unsupported_edition" in first
+    assert "Routing failures: 0" in first
+    assert "Structured failures: 0" in first
+    assert "candidate-1" in first
+    assert "lot-1" in first
+    assert "\x1b" not in first
 
 
 @pytest.mark.unit
