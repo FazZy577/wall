@@ -92,40 +92,9 @@ class TestFuzzyGameDetector:
         # Combined
         assert detector._normalize_text("  GTA  V!!!  ") == "gta v"
 
-    def test_detect_platform_ps4(self, detector: FuzzyGameDetector) -> None:
-        """Test PS4 platform detection."""
-        text = detector._normalize_text("Lote PS4 GTA V")
-        assert detector._detect_platform(text) == Platform.PS4
-
-        text = detector._normalize_text("PlayStation 4 games")
-        assert detector._detect_platform(text) == Platform.PS4
-
-    def test_detect_platform_ps5(self, detector: FuzzyGameDetector) -> None:
-        """Test PS5 platform detection."""
-        text = detector._normalize_text("Juegos PS5")
-        assert detector._detect_platform(text) == Platform.PS5
-
-    def test_detect_platform_xbox(self, detector: FuzzyGameDetector) -> None:
-        """Test Xbox platform detection."""
-        text = detector._normalize_text("Xbox One games")
-        assert detector._detect_platform(text) == Platform.XBOX_ONE
-
-        text = detector._normalize_text("Xbox Series X")
-        assert detector._detect_platform(text) == Platform.XBOX_SERIES
-
-    def test_detect_platform_switch(self, detector: FuzzyGameDetector) -> None:
-        """Test Nintendo Switch platform detection."""
-        text = detector._normalize_text("Nintendo Switch lote")
-        assert detector._detect_platform(text) == Platform.SWITCH
-
-    def test_detect_platform_unknown(self, detector: FuzzyGameDetector) -> None:
-        """Test unknown platform."""
-        text = detector._normalize_text("Videojuegos varios")
-        assert detector._detect_platform(text) == Platform.UNKNOWN
-
     def test_detect_gta_v_exact(self, detector: FuzzyGameDetector) -> None:
         """Test GTA V detection - exact match."""
-        listing = ListingText(title="GTA V", description="")
+        listing = ListingText(title="GTA V PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -134,7 +103,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_gta_5_variant(self, detector: FuzzyGameDetector) -> None:
         """Test GTA 5 detection - variant."""
-        listing = ListingText(title="GTA 5", description="")
+        listing = ListingText(title="GTA 5 PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -143,7 +112,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_gta_5_no_space(self, detector: FuzzyGameDetector) -> None:
         """Test GTA5 detection - no space."""
-        listing = ListingText(title="GTA5", description="")
+        listing = ListingText(title="GTA5 PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -152,7 +121,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_grand_theft_auto(self, detector: FuzzyGameDetector) -> None:
         """Test full name detection."""
-        listing = ListingText(title="Grand Theft Auto", description="")
+        listing = ListingText(title="Grand Theft Auto PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) >= 1
@@ -162,7 +131,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_rdr2(self, detector: FuzzyGameDetector) -> None:
         """Test RDR2 detection."""
-        listing = ListingText(title="RDR2", description="")
+        listing = ListingText(title="RDR2 PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -171,7 +140,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_red_dead_redemption_ii(self, detector: FuzzyGameDetector) -> None:
         """Test Red Dead Redemption II detection."""
-        listing = ListingText(title="Red Dead Redemption II", description="")
+        listing = ListingText(title="Red Dead Redemption II PS4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -180,7 +149,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_fifa_24(self, detector: FuzzyGameDetector) -> None:
         """Test FIFA 24 detection."""
-        listing = ListingText(title="FIFA24", description="")
+        listing = ListingText(title="FIFA24 PS4", description="")
         games = detector.detect_games(listing)
 
         # Should detect FIFA 24 (may also detect similar FIFAs with lower confidence)
@@ -191,7 +160,7 @@ class TestFuzzyGameDetector:
 
     def test_detect_fc_24(self, detector: FuzzyGameDetector) -> None:
         """Test FC 24 detection."""
-        listing = ListingText(title="FC 24", description="")
+        listing = ListingText(title="FC 24 PS4", description="")
         games = detector.detect_games(listing)
 
         # Should detect FC 24 (may also detect FC 25 with lower confidence)
@@ -272,7 +241,7 @@ class TestFuzzyGameDetector:
     def test_no_duplicates(self, detector: FuzzyGameDetector) -> None:
         """Test that same game isn't detected twice."""
         listing = ListingText(
-            title="GTA V GTA 5 Grand Theft Auto V",
+            title="GTA V GTA 5 Grand Theft Auto V PS4",
             description="",
         )
         games = detector.detect_games(listing)
@@ -283,7 +252,7 @@ class TestFuzzyGameDetector:
 
     def test_detection_method_exact(self, detector: FuzzyGameDetector) -> None:
         """Test that exact matches have EXACT_MATCH method."""
-        listing = ListingText(title="gta v", description="")
+        listing = ListingText(title="gta v ps4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -291,7 +260,7 @@ class TestFuzzyGameDetector:
 
     def test_detection_method_alias(self, detector: FuzzyGameDetector) -> None:
         """Test that alias matches have ALIAS_MATCH method."""
-        listing = ListingText(title="gta 5", description="")
+        listing = ListingText(title="gta 5 ps4", description="")
         games = detector.detect_games(listing)
 
         assert len(games) == 1
@@ -550,7 +519,7 @@ class TestInjectedGameCatalog:
         assert first == second
         assert catalog.list_games_calls == 1
 
-    def test_historical_name_only_deduplication_remains_for_p4_6d(self) -> None:
+    def test_repeated_identity_is_deduplicated_with_game_identity(self) -> None:
         entries = (
             GameCatalogEntry("Shared Game", Platform.PS4, ("shared game",)),
             GameCatalogEntry("Shared Game", Platform.PS5, ("shared game",)),
@@ -558,7 +527,7 @@ class TestInjectedGameCatalog:
         detector = FuzzyGameDetector(_InMemoryGameCatalog(entries))
 
         games = detector.detect_games(
-            ListingText(title="Shared Game", description="")
+            ListingText(title="Shared Game PS4 + Shared Game PS4", description="")
         )
 
         assert len(games) == 1
@@ -578,3 +547,432 @@ class TestInjectedGameCatalog:
         assert "importlib.resources" not in imported_modules
         assert "game_catalog.json" not in source
         assert ".open(" not in source
+
+
+def _multiplatform_catalog() -> _InMemoryGameCatalog:
+    catalog_rows = (
+        (
+            "Grand Theft Auto V",
+            ("gta v", "gta 5"),
+            (
+                Platform.PS3,
+                Platform.PS4,
+                Platform.PS5,
+                Platform.XBOX_360,
+                Platform.XBOX_ONE,
+            ),
+        ),
+        (
+            "Red Dead Redemption 2",
+            ("rdr2", "red dead 2"),
+            (
+                Platform.PS4,
+                Platform.PS5,
+                Platform.XBOX_ONE,
+                Platform.XBOX_SERIES,
+            ),
+        ),
+        (
+            "Halo Test",
+            ("halo test",),
+            (
+                Platform.XBOX,
+                Platform.XBOX_360,
+                Platform.XBOX_ONE,
+                Platform.XBOX_SERIES,
+            ),
+        ),
+        (
+            "Zelda Test",
+            ("zelda test",),
+            (
+                Platform.GAMECUBE,
+                Platform.WII,
+                Platform.WII_U,
+                Platform.SWITCH,
+            ),
+        ),
+        (
+            "Portable Test",
+            ("portable test",),
+            (
+                Platform.NINTENDO_DS,
+                Platform.NINTENDO_3DS,
+                Platform.PSP,
+                Platform.PS_VITA,
+            ),
+        ),
+        ("Legacy Test", ("legacy test",), (Platform.PS3,)),
+    )
+    return _InMemoryGameCatalog(
+        tuple(
+            GameCatalogEntry(name, platform, aliases)
+            for name, aliases, platforms in catalog_rows
+            for platform in platforms
+        )
+    )
+
+
+@pytest.mark.unit
+class TestMultiplatformDefectRegressions:
+    def test_two_local_game_platform_pairs_do_not_share_a_global_platform(
+        self,
+    ) -> None:
+        detector = FuzzyGameDetector(_multiplatform_catalog())
+
+        games = detector.detect_games(
+            ListingText(title="GTA V PS4 + RDR2 PS5", description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4),
+            ("Red Dead Redemption 2", Platform.PS5),
+        ]
+
+    def test_same_game_on_two_platforms_keeps_both_identities(self) -> None:
+        detector = FuzzyGameDetector(_multiplatform_catalog())
+
+        games = detector.detect_games(
+            ListingText(title="GTA V PS4 + GTA V PS5", description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4),
+            ("Grand Theft Auto V", Platform.PS5),
+        ]
+
+    def test_unrecognized_text_platform_does_not_fall_back_to_catalog_platform(
+        self,
+    ) -> None:
+        catalog = _InMemoryGameCatalog(
+            (
+                GameCatalogEntry(
+                    "Grand Theft Auto V",
+                    Platform.PS4,
+                    ("gta v",),
+                ),
+            )
+        )
+        detector = FuzzyGameDetector(catalog)
+
+        games = detector.detect_games(
+            ListingText(title="Lote PS3: GTA V", description="")
+        )
+
+        assert games == []
+
+    def test_text_without_platform_does_not_select_by_catalog_order(self) -> None:
+        detector = FuzzyGameDetector(_multiplatform_catalog())
+
+        games = detector.detect_games(ListingText(title="GTA V", description=""))
+
+        assert games == []
+
+
+@pytest.mark.unit
+class TestDeterministicMultiplatformAssociation:
+    @pytest.mark.parametrize(
+        ("title", "platform"),
+        [
+            ("GTA V PS3", Platform.PS3),
+            ("GTA V PS4", Platform.PS4),
+            ("GTA V PS5", Platform.PS5),
+            ("GTA V Xbox 360", Platform.XBOX_360),
+            ("GTA V Xbox One", Platform.XBOX_ONE),
+        ],
+    )
+    def test_same_game_resolves_to_its_local_platform(
+        self,
+        title: str,
+        platform: Platform,
+    ) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", platform)
+        ]
+
+    @pytest.mark.parametrize(
+        ("title", "canonical_name", "platform"),
+        [
+            ("Halo Test Xbox original", "Halo Test", Platform.XBOX),
+            ("Halo Test Xbox 360", "Halo Test", Platform.XBOX_360),
+            ("Halo Test Xbox One", "Halo Test", Platform.XBOX_ONE),
+            ("Halo Test Xbox Series X", "Halo Test", Platform.XBOX_SERIES),
+            ("Zelda Test GameCube", "Zelda Test", Platform.GAMECUBE),
+            ("Zelda Test Wii", "Zelda Test", Platform.WII),
+            ("Zelda Test Wii U", "Zelda Test", Platform.WII_U),
+            ("Zelda Test Switch", "Zelda Test", Platform.SWITCH),
+            ("Portable Test Nintendo DS", "Portable Test", Platform.NINTENDO_DS),
+            ("Portable Test 3DS", "Portable Test", Platform.NINTENDO_3DS),
+            ("Portable Test PSP", "Portable Test", Platform.PSP),
+            ("Portable Test PS Vita", "Portable Test", Platform.PS_VITA),
+        ],
+    )
+    def test_every_multiplatform_family_is_associated_to_a_game(
+        self,
+        title: str,
+        canonical_name: str,
+        platform: Platform,
+    ) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            (canonical_name, platform)
+        ]
+
+    @pytest.mark.parametrize(
+        ("title", "expected"),
+        [
+            (
+                "GTA V PS4 + RDR2 PS5",
+                [
+                    ("Grand Theft Auto V", Platform.PS4),
+                    ("Red Dead Redemption 2", Platform.PS5),
+                ],
+            ),
+            (
+                "GTA V PS5 + RDR2 PS4",
+                [
+                    ("Grand Theft Auto V", Platform.PS5),
+                    ("Red Dead Redemption 2", Platform.PS4),
+                ],
+            ),
+            (
+                "GTA V PS4 RDR2 PS5",
+                [
+                    ("Grand Theft Auto V", Platform.PS4),
+                    ("Red Dead Redemption 2", Platform.PS5),
+                ],
+            ),
+        ],
+    )
+    def test_multiple_pairs_preserve_local_textual_order(
+        self,
+        title: str,
+        expected: list[tuple[str, Platform]],
+    ) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == expected
+
+    def test_three_occurrences_of_same_game_keep_three_platforms(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(
+                title="GTA V PS3 + GTA V PS4 + GTA V PS5",
+                description="",
+            )
+        )
+
+        assert [game.platform for game in games] == [
+            Platform.PS3,
+            Platform.PS4,
+            Platform.PS5,
+        ]
+
+    def test_unique_section_platform_is_inherited_after_colon_and_comma(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="Lote PS3: GTA V, Legacy Test", description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS3),
+            ("Legacy Test", Platform.PS3),
+        ]
+
+    def test_unique_title_platform_is_inherited_by_description(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="Lote PS4", description="GTA V\nRDR2")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4),
+            ("Red Dead Redemption 2", Platform.PS4),
+        ]
+
+    def test_unique_description_platform_can_qualify_title_game(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="GTA V", description="Version PS5")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS5)
+        ]
+
+    def test_two_games_share_one_unambiguous_platform(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="GTA V y RDR2 PS4", description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4),
+            ("Red Dead Redemption 2", Platform.PS4),
+        ]
+
+    @pytest.mark.parametrize(
+        "title",
+        [
+            "GTA V PS4 y PS5",
+            "GTA V PS5 y PS4",
+        ],
+    )
+    def test_one_game_with_two_product_platforms_is_ambiguous(
+        self,
+        title: str,
+    ) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        )
+
+        assert games == []
+
+    @pytest.mark.parametrize(
+        "title",
+        [
+            "PS4 GTA V RDR2 PS5",
+            "GTA V PS4 PS5 RDR2",
+        ],
+    )
+    def test_crossed_platform_positions_are_ambiguous(self, title: str) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        )
+
+        assert games == []
+
+    def test_compatibility_platform_does_not_override_product_platform(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(
+                title="GTA V PS4 compatible con PS5",
+                description="",
+            )
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4)
+        ]
+
+    @pytest.mark.parametrize(
+        "title",
+        [
+            "GTA V compatible con PS5",
+            "GTA V compatibilidad con PS5",
+            "GTA V funciona en PS5",
+            "GTA V retrocompatible con PS5",
+        ],
+    )
+    def test_compatibility_only_does_not_create_product_platform(
+        self,
+        title: str,
+    ) -> None:
+        assert FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title=title, description="")
+        ) == []
+
+    def test_title_product_platform_wins_over_description_compatibility(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="GTA V PS4", description="Compatible con PS5")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Grand Theft Auto V", Platform.PS4)
+        ]
+
+    def test_fuzzy_match_requires_one_resolvable_platform(self) -> None:
+        detector = FuzzyGameDetector(_multiplatform_catalog())
+
+        games = detector.detect_games(
+            ListingText(title="Grand Thef Auto V PS4", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].canonical_name == "Grand Theft Auto V"
+        assert games[0].platform is Platform.PS4
+        assert games[0].detection_method is DetectionMethod.FUZZY_MATCH
+        assert 0.8 <= games[0].confidence < 1.0
+
+    def test_fuzzy_match_abstains_with_multiple_platforms(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(
+                title="Grand Thef Auto V PS4 PS5",
+                description="",
+            )
+        )
+
+        assert games == []
+
+    @pytest.mark.parametrize("reverse_catalog", [False, True])
+    def test_shared_alias_collision_does_not_select_catalog_order(
+        self,
+        reverse_catalog: bool,
+    ) -> None:
+        entries: tuple[GameCatalogEntry, ...] = (
+            GameCatalogEntry("Alpha Game", Platform.PS4, ("shared alias",)),
+            GameCatalogEntry("Beta Game", Platform.PS4, ("shared alias",)),
+        )
+        if reverse_catalog:
+            entries = tuple(reversed(entries))
+        detector = FuzzyGameDetector(_InMemoryGameCatalog(entries))
+
+        assert detector.detect_games(
+            ListingText(title="shared alias PS4", description="")
+        ) == []
+
+    def test_canonical_exact_name_wins_over_colliding_alias(self) -> None:
+        entries = (
+            GameCatalogEntry("Shared Alias", Platform.PS4, ()),
+            GameCatalogEntry("Beta Game", Platform.PS4, ("shared alias",)),
+        )
+        games = FuzzyGameDetector(_InMemoryGameCatalog(entries)).detect_games(
+            ListingText(title="Shared Alias PS4", description="")
+        )
+
+        assert [(game.canonical_name, game.platform) for game in games] == [
+            ("Shared Alias", Platform.PS4)
+        ]
+
+    def test_exact_match_replaces_fuzzy_match_for_same_identity(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(
+                title="Grand Thef Auto V PS4",
+                description="GTA V",
+            )
+        )
+
+        assert len(games) == 1
+        assert games[0].matched_text == "gta v"
+        assert games[0].confidence == 1.0
+        assert games[0].detection_method is DetectionMethod.EXACT_MATCH
+
+    def test_exact_detection_preserves_quality_and_matched_text(self) -> None:
+        games = FuzzyGameDetector(_multiplatform_catalog()).detect_games(
+            ListingText(title="vendo gta 5 para PS5", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].matched_text == "gta 5"
+        assert games[0].confidence == 1.0
+        assert games[0].detection_method is DetectionMethod.EXACT_MATCH
+
+    def test_detection_order_is_deterministic(self) -> None:
+        detector = FuzzyGameDetector(_multiplatform_catalog())
+        listing = ListingText(
+            title="RDR2 PS5 + GTA V PS4 + Halo Test Xbox One",
+            description="",
+        )
+
+        first = detector.detect_games(listing)
+        second = detector.detect_games(listing)
+
+        assert first == second
+        assert [game.canonical_name for game in first] == [
+            "Red Dead Redemption 2",
+            "Grand Theft Auto V",
+            "Halo Test",
+        ]
