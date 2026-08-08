@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.interfaces.game_detector import ListingText
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 
 
@@ -17,7 +18,7 @@ def main() -> None:
     """Demonstrate game detection on sample listings."""
 
     # Initialize detector
-    detector = FuzzyGameDetector()
+    detector = FuzzyGameDetector(PackagedGameCatalog())
 
     # Example listings
     examples = [

@@ -4,16 +4,15 @@ This detector uses string similarity matching against a game catalog
 to identify games in listing text.
 """
 
-import json
 import re
 import unicodedata
-from importlib.resources import files
-from pathlib import Path
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 from rapidfuzz import fuzz
 
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
+from domain.entities.game_catalog_entry import GameCatalogEntry
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import (
     IGameDetector,
     ListingText,
@@ -55,38 +54,17 @@ class FuzzyGameDetector(IGameDetector):
         ],
     }
 
-    def __init__(self, catalog_path: Path | str | None = None) -> None:
-        """Initialize detector with game catalog.
+    def __init__(self, game_catalog: IGameCatalog) -> None:
+        """Initialize the detector from the canonical game-catalog port.
 
         Args:
-            catalog_path: Optional explicit game catalog JSON file. By default,
-                the catalog packaged with the detector is used.
+            game_catalog: Validated canonical game catalog.
         """
-        self.catalog_path = Path(catalog_path) if catalog_path is not None else None
-        self.catalog = self._load_catalog()
+        if not isinstance(game_catalog, IGameCatalog):
+            raise TypeError("game_catalog must be IGameCatalog")
+        self.game_catalog = game_catalog
+        self._catalog_entries: tuple[GameCatalogEntry, ...] = game_catalog.list_games()
         self._game_variant_patterns = self._build_game_variant_patterns()
-
-    def _load_catalog(self) -> list[dict[str, Any]]:
-        """Load game catalog from JSON file.
-
-        Returns:
-            List of game dictionaries
-
-        Raises:
-            FileNotFoundError: If catalog file doesn't exist
-            json.JSONDecodeError: If catalog is invalid JSON
-        """
-        if self.catalog_path is not None:
-            if not self.catalog_path.exists():
-                raise FileNotFoundError(f"Game catalog not found: {self.catalog_path}")
-            with self.catalog_path.open(encoding="utf-8") as f:
-                catalog: list[dict[str, Any]] = json.load(f)
-                return catalog
-
-        catalog_resource = files("infrastructure.detectors.resources").joinpath("game_catalog.json")
-        with catalog_resource.open(encoding="utf-8") as f:
-            resource_catalog: list[dict[str, Any]] = json.load(f)
-            return resource_catalog
 
     def detect_games(self, listing_text: ListingText) -> list[DetectedGame]:
         """Detect games in listing text using fuzzy matching.
@@ -108,16 +86,16 @@ class FuzzyGameDetector(IGameDetector):
         # Find game matches
         detected_games: list[DetectedGame] = []
 
-        for game_index, game in enumerate(self.catalog):
+        for game_index, game in enumerate(self._catalog_entries):
             # Only match games from detected platform (or all if unknown)
-            game_platform = Platform(game["platform"])
+            game_platform = game.platform
             if detected_platform != Platform.UNKNOWN and game_platform != detected_platform:
                 continue
 
             # Try to match this game
             match = self._match_game(
                 combined_text,
-                game["canonical_name"],
+                game.canonical_name,
                 self._game_variant_patterns[game_index],
                 game_platform,
             )
@@ -172,10 +150,13 @@ class FuzzyGameDetector(IGameDetector):
     ) -> tuple[tuple[_ExactVariantPattern, ...], ...]:
         """Precompute immutable lexical patterns for the loaded catalog."""
         game_patterns: list[tuple[_ExactVariantPattern, ...]] = []
-        for game in self.catalog:
+        for game in self._catalog_entries:
             normalized_variants = (
-                self._normalize_text(game["canonical_name"]),
-                *(self._normalize_text(alias) for alias in game["aliases"]),
+                self._normalize_text(game.canonical_name),
+                *(
+                    self._normalize_text(alias)
+                    for alias in game.detection_aliases
+                ),
             )
             game_patterns.append(
                 tuple(

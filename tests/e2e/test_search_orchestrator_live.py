@@ -23,6 +23,7 @@ from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
     RuleBasedCandidateEligibilityPolicy,
 )
@@ -86,8 +87,9 @@ async def test_search_orchestrator_live_smoke() -> None:
         headless=False,
     )
     marketplace_search = _BoundedMarketplaceSearch(client, limit=10)
-    candidate_detector = FuzzyGameDetector()
-    comparable_detector = FuzzyGameDetector()
+    catalog = PackagedGameCatalog()
+    candidate_detector = FuzzyGameDetector(catalog)
+    comparable_detector = FuzzyGameDetector(catalog)
     price_collector = WallapopPriceCollector(
         marketplace_search=marketplace_search,
         game_detector=comparable_detector,

@@ -3,6 +3,7 @@
 import pytest
 
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -36,7 +37,7 @@ async def test_real_price_estimation_pipeline() -> None:
     client = WallapopPlaywrightClient(max_pages=2, request_delay=0, headless=False)
     collector = WallapopPriceCollector(
         marketplace_search=client,
-        game_detector=FuzzyGameDetector(),
+        game_detector=FuzzyGameDetector(PackagedGameCatalog()),
         comparable_filter=RuleBasedComparableFilter(),
     )
 

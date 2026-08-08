@@ -305,7 +305,7 @@ def test_domain_does_not_import_application_or_infrastructure() -> None:
     assert forbidden == []
 
 
-def test_game_catalog_boundary_respects_layers_without_detector_migration() -> None:
+def test_game_catalog_boundary_is_shared_with_detector_without_resource_loading() -> None:
     entry_path = SRC_ROOT / "domain/entities/game_catalog_entry.py"
     port_path = SRC_ROOT / "domain/interfaces/game_catalog.py"
     domain_source = "\n".join(
@@ -330,7 +330,11 @@ def test_game_catalog_boundary_respects_layers_without_detector_migration() -> N
     assert "importlib.resources" not in domain_source
     assert "PackagedGameCatalog" not in application_source
     assert "PackagedGameCatalog" not in detector_source
-    assert "IGameCatalog" not in detector_source
+    assert "IGameCatalog" in detector_source
+    assert "GameCatalogEntry" in detector_source
+    assert "import json" not in detector_source
+    assert "importlib.resources" not in detector_source
+    assert "game_catalog.json" not in detector_source
 
 
 def test_search_plan_generator_contract_respects_application_boundary() -> None:

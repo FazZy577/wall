@@ -1,9 +1,19 @@
 """Unit tests for FuzzyGameDetector."""
 
+import ast
+import inspect
+from pathlib import Path
+
 import pytest
 
+from domain.entities.game_catalog_entry import GameCatalogEntry
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import DetectionMethod, ListingText, Platform
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
+
+PROJECT_ROOT = Path(__file__).parents[2]
+DETECTOR_PATH = PROJECT_ROOT / "src/infrastructure/detectors/fuzzy_game_detector.py"
 
 SHORT_ALIAS_CASES = (
     ("bo6", "Call of Duty: Black Ops 6"),
@@ -27,10 +37,20 @@ SHORT_ALIAS_CASES = (
 )
 
 
+class _InMemoryGameCatalog(IGameCatalog):
+    def __init__(self, entries: tuple[GameCatalogEntry, ...]) -> None:
+        self.entries = entries
+        self.list_games_calls = 0
+
+    def list_games(self) -> tuple[GameCatalogEntry, ...]:
+        self.list_games_calls += 1
+        return self.entries
+
+
 @pytest.fixture
 def detector() -> FuzzyGameDetector:
     """Create detector instance with default catalog."""
-    return FuzzyGameDetector()
+    return FuzzyGameDetector(PackagedGameCatalog())
 
 
 @pytest.mark.unit
@@ -39,8 +59,7 @@ class TestFuzzyGameDetector:
 
     def test_detector_initialization(self, detector: FuzzyGameDetector) -> None:
         """Test that detector initializes and loads catalog."""
-        assert detector.catalog is not None
-        assert len(detector.catalog) > 0
+        assert detector.game_catalog.list_games()
 
     def test_packaged_catalog_is_independent_of_working_directory(
         self,
@@ -50,7 +69,7 @@ class TestFuzzyGameDetector:
         """Load and use the packaged catalog from an unrelated directory."""
         monkeypatch.chdir(tmp_path)
 
-        detector = FuzzyGameDetector()
+        detector = FuzzyGameDetector(PackagedGameCatalog())
         games = detector.detect_games(ListingText(title="GTA V PS4", description=""))
 
         assert games
@@ -382,11 +401,11 @@ class TestFuzzyGameDetector:
         detector: FuzzyGameDetector,
     ) -> None:
         actual = []
-        for game in detector.catalog:
-            for alias in game["aliases"]:
+        for game in detector.game_catalog.list_games():
+            for alias in game.detection_aliases:
                 normalized_alias = detector._normalize_text(alias)
                 if " " not in normalized_alias and len(normalized_alias) <= 3:
-                    actual.append((normalized_alias, game["canonical_name"]))
+                    actual.append((normalized_alias, game.canonical_name))
 
         assert tuple(actual) == SHORT_ALIAS_CASES
 
@@ -436,3 +455,126 @@ class TestFuzzyGameDetector:
             isinstance(patterns, tuple)
             for patterns in detector._game_variant_patterns
         )
+
+
+@pytest.mark.unit
+class TestInjectedGameCatalog:
+    def test_detector_requires_a_game_catalog(self) -> None:
+        with pytest.raises(TypeError):
+            inspect.signature(FuzzyGameDetector).bind()
+        with pytest.raises(TypeError, match="game_catalog must be IGameCatalog"):
+            FuzzyGameDetector(object())  # type: ignore[arg-type]
+
+    def test_synthetic_game_is_detected_from_injected_catalog(self) -> None:
+        entry = GameCatalogEntry(
+            canonical_name="Synthetic Test Game",
+            platform=Platform.PS4,
+            detection_aliases=("synthetic test",),
+        )
+        catalog = _InMemoryGameCatalog((entry,))
+        detector = FuzzyGameDetector(catalog)
+
+        games = detector.detect_games(
+            ListingText(title="Synthetic Test Game PS4", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].canonical_name == entry.canonical_name
+        assert games[0].platform is entry.platform
+        assert games[0].confidence == 1.0
+        assert games[0].detection_method is DetectionMethod.EXACT_MATCH
+        assert catalog.list_games_calls == 1
+
+    def test_synthetic_game_is_absent_from_empty_injected_catalog(self) -> None:
+        detector = FuzzyGameDetector(_InMemoryGameCatalog(()))
+
+        games = detector.detect_games(
+            ListingText(title="Synthetic Test Game PS4", description="")
+        )
+
+        assert games == []
+
+    def test_detection_aliases_come_from_canonical_entry(self) -> None:
+        entry = GameCatalogEntry(
+            canonical_name="Synthetic Test Game",
+            platform=Platform.PS4,
+            detection_aliases=("laboratory alias",),
+        )
+        detector = FuzzyGameDetector(_InMemoryGameCatalog((entry,)))
+
+        games = detector.detect_games(
+            ListingText(title="laboratory alias PS4", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].matched_text == "laboratory alias"
+        assert games[0].detection_method is DetectionMethod.EXACT_MATCH
+
+    def test_fuzzy_fallback_still_uses_injected_entry(self) -> None:
+        entry = GameCatalogEntry(
+            canonical_name="Synthetic Test Game",
+            platform=Platform.PS4,
+            detection_aliases=("synthetic adventure",),
+        )
+        detector = FuzzyGameDetector(_InMemoryGameCatalog((entry,)))
+
+        games = detector.detect_games(
+            ListingText(title="synthetic adventur PS4", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].canonical_name == entry.canonical_name
+        assert games[0].detection_method is DetectionMethod.FUZZY_MATCH
+        assert 0.8 <= games[0].confidence < 1.0
+
+    def test_detector_does_not_mutate_entries_or_aliases(self) -> None:
+        entry = GameCatalogEntry(
+            canonical_name="Synthetic Test Game",
+            platform=Platform.PS4,
+            detection_aliases=("synthetic test", "test game"),
+        )
+        entries = (entry,)
+        catalog = _InMemoryGameCatalog(entries)
+        detector = FuzzyGameDetector(catalog)
+
+        first = detector.detect_games(
+            ListingText(title="synthetic test PS4", description="")
+        )
+        second = detector.detect_games(
+            ListingText(title="synthetic test PS4", description="")
+        )
+
+        assert catalog.entries is entries
+        assert catalog.entries[0] is entry
+        assert entry.detection_aliases == ("synthetic test", "test game")
+        assert first == second
+        assert catalog.list_games_calls == 1
+
+    def test_historical_name_only_deduplication_remains_for_p4_6d(self) -> None:
+        entries = (
+            GameCatalogEntry("Shared Game", Platform.PS4, ("shared game",)),
+            GameCatalogEntry("Shared Game", Platform.PS5, ("shared game",)),
+        )
+        detector = FuzzyGameDetector(_InMemoryGameCatalog(entries))
+
+        games = detector.detect_games(
+            ListingText(title="Shared Game", description="")
+        )
+
+        assert len(games) == 1
+        assert games[0].platform is Platform.PS4
+
+    def test_detector_source_has_no_catalog_resource_loading(self) -> None:
+        source = DETECTOR_PATH.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        imported_modules = {
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.Import, ast.ImportFrom))
+            for alias in node.names
+        }
+
+        assert "json" not in imported_modules
+        assert "importlib.resources" not in imported_modules
+        assert "game_catalog.json" not in source
+        assert ".open(" not in source

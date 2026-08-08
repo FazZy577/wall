@@ -168,8 +168,9 @@ def _marketplace_responses() -> dict[str, Sequence[dict[str, Any]]]:
 
 def _build_orchestrator(
     marketplace_search: IMarketplaceSearch,
+    catalog: PackagedGameCatalog,
 ) -> DefaultSearchOrchestrator:
-    detector = FuzzyGameDetector()
+    detector = FuzzyGameDetector(catalog)
     collector = WallapopPriceCollector(
         marketplace_search=marketplace_search,
         game_detector=detector,
@@ -313,7 +314,7 @@ async def main() -> None:
     generation = generator.generate(_generation_request())
 
     marketplace_search = _OfflineMarketplaceSearch(_marketplace_responses())
-    orchestrator = _build_orchestrator(marketplace_search)
+    orchestrator = _build_orchestrator(marketplace_search, catalog)
     execution = await orchestrator.execute(generation.plan)
 
     _print_generation_report(generation)

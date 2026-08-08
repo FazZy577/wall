@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 from infrastructure.filters.rule_based_comparable_filter import RuleBasedComparableFilter
@@ -42,7 +43,7 @@ async def main() -> None:
 
     # Initialize components
     wallapop_client = WallapopPlaywrightClient()
-    game_detector = FuzzyGameDetector()
+    game_detector = FuzzyGameDetector(PackagedGameCatalog())
     comparable_filter = RuleBasedComparableFilter()
 
     # Create price collector

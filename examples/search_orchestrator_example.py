@@ -28,6 +28,7 @@ from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
     RuleBasedCandidateEligibilityPolicy,
 )
@@ -148,8 +149,9 @@ def _candidate_responses() -> dict[str, Sequence[dict[str, Any]]]:
 def _build_orchestrator() -> DefaultSearchOrchestrator:
     """Wire production components to the deterministic offline port."""
     marketplace_search = _OfflineMarketplaceSearch(_candidate_responses())
-    candidate_detector = FuzzyGameDetector()
-    comparable_detector = FuzzyGameDetector()
+    catalog = PackagedGameCatalog()
+    candidate_detector = FuzzyGameDetector(catalog)
+    comparable_detector = FuzzyGameDetector(catalog)
     price_collector = WallapopPriceCollector(
         marketplace_search=marketplace_search,
         game_detector=comparable_detector,

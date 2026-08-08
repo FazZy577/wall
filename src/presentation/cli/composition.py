@@ -88,7 +88,7 @@ def build_operational_runtime(
 
     catalog = PackagedGameCatalog()
     plan_generator = DefaultSearchPlanGenerator(catalog)
-    game_detector = FuzzyGameDetector()
+    game_detector = FuzzyGameDetector(catalog)
     comparable_filter = RuleBasedComparableFilter()
     price_collector = WallapopPriceCollector(
         marketplace_search=marketplace_search,

@@ -23,13 +23,17 @@ from domain.entities.candidate_classification import (
     CandidateClassificationReason,
 )
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.detected_game import Platform
+from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import ArbitrageOpportunity
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
 from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
     RuleBasedCandidateEligibilityPolicy,
 )
@@ -130,6 +134,14 @@ class _RecordingGameDetector(IGameDetector):
         return self._delegate.detect_games(listing_text)
 
 
+class _InMemoryGameCatalog(IGameCatalog):
+    def __init__(self, entries: tuple[GameCatalogEntry, ...]) -> None:
+        self._entries = entries
+
+    def list_games(self) -> tuple[GameCatalogEntry, ...]:
+        return self._entries
+
+
 @dataclass(frozen=True)
 class _Pipeline:
     orchestrator: DefaultSearchOrchestrator
@@ -228,13 +240,15 @@ def _build_pipeline(
     responses: Mapping[str, Sequence[dict[str, Any]]],
     *,
     failing_keywords: Iterable[str] = (),
+    game_catalog: IGameCatalog | None = None,
 ) -> _Pipeline:
     marketplace = _FakeMarketplaceSearch(
         responses,
         failing_keywords=failing_keywords,
     )
-    candidate_detector = _RecordingGameDetector(FuzzyGameDetector())
-    comparable_detector = FuzzyGameDetector()
+    catalog = PackagedGameCatalog() if game_catalog is None else game_catalog
+    candidate_detector = _RecordingGameDetector(FuzzyGameDetector(catalog))
+    comparable_detector = FuzzyGameDetector(catalog)
     collector = WallapopPriceCollector(
         marketplace,
         comparable_detector,
@@ -343,6 +357,53 @@ async def test_complete_individual_pipeline_uses_all_productive_components() -> 
     assert _executed_keywords(pipeline) == ["individual candidates", "gta v"]
     assert pipeline.marketplace.calls[0].max_results == _MAX_RESULTS
     assert pipeline.marketplace.calls[1].max_results == 100
+
+
+@pytest.mark.asyncio
+async def test_complete_pipeline_uses_injected_catalog_for_detection() -> None:
+    catalog = _InMemoryGameCatalog(
+        (
+            GameCatalogEntry(
+                canonical_name="Synthetic Test Game",
+                platform=Platform.PS4,
+                detection_aliases=("synthetic test",),
+            ),
+        )
+    )
+    comparables = [
+        _raw_listing(
+            f"synthetic-comparable-{index}",
+            "Synthetic Test Game PS4",
+            price,
+        )
+        for index, price in enumerate(("18", "19", "20", "21", "22") * 4)
+    ]
+    pipeline = _build_pipeline(
+        {
+            "synthetic candidates": [
+                _individual_candidate(
+                    listing_id="candidate-synthetic",
+                    title="Synthetic Test Game PS4",
+                )
+            ],
+            "synthetic test game": comparables,
+        },
+        game_catalog=catalog,
+    )
+
+    result = await pipeline.orchestrator.execute(
+        SearchPlan((_query("synthetic candidates"),))
+    )
+
+    assert result.individual_result is not None
+    assert result.individual_result.successful == 1
+    opportunity = result.individual_result.opportunities[0]
+    assert opportunity.game.canonical_name == "Synthetic Test Game"
+    assert opportunity.game.platform is Platform.PS4
+    assert _executed_keywords(pipeline) == [
+        "synthetic candidates",
+        "synthetic test game",
+    ]
 
 
 @pytest.mark.asyncio

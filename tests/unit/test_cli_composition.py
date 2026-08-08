@@ -31,6 +31,7 @@ from infrastructure.collectors.wallapop_price_collector import (
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
+from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 from infrastructure.marketplaces.wallapop.adapter import (
     WallapopCandidateSearchAdapter,
 )
@@ -224,6 +225,14 @@ def test_generator_uses_a_fresh_packaged_catalog() -> None:
     assert isinstance(first_generator.game_catalog, PackagedGameCatalog)
     assert first_generator.game_catalog is not second_generator.game_catalog
     assert len(first_generator.game_catalog.list_games()) == 50
+
+
+def test_generator_and_detector_share_one_canonical_catalog_instance() -> None:
+    _, generator, orchestrator, _ = _concrete_runtime()
+    detector = cast(FuzzyGameDetector, orchestrator.game_detector)
+
+    assert detector.game_catalog is generator.game_catalog
+    assert isinstance(detector.game_catalog, PackagedGameCatalog)
 
 
 def test_candidate_and_comparable_search_share_the_injected_marketplace() -> None:

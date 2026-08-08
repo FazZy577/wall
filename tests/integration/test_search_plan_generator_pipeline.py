@@ -202,7 +202,7 @@ def _build_pipeline(
     catalog = PackagedGameCatalog()
     generator = DefaultSearchPlanGenerator(catalog)
     marketplace = _FakeMarketplaceSearch(responses)
-    detector = FuzzyGameDetector()
+    detector = FuzzyGameDetector(catalog)
     collector = WallapopPriceCollector(
         marketplace,
         detector,
