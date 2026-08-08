@@ -19,6 +19,9 @@ from application.use_cases.default_opportunity_scanner import (
 from application.use_cases.default_search_orchestrator import (
     DefaultSearchOrchestrator,
 )
+from domain.entities.candidate_classification import (
+    CandidateClassificationReason,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import ArbitrageOpportunity
@@ -26,6 +29,9 @@ from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
+)
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
 )
 from infrastructure.collectors.wallapop_price_collector import (
     WallapopPriceCollector,
@@ -206,11 +212,13 @@ def _responses_with_comparables(
     *,
     gta_comparables: Sequence[dict[str, Any]] | None = None,
 ) -> dict[str, Sequence[dict[str, Any]]]:
+    rdr2_comparables = _rdr2_comparables()
     responses: dict[str, Sequence[dict[str, Any]]] = {
         "gta v": _gta_comparables()
         if gta_comparables is None
         else gta_comparables,
-        "rdr2": _rdr2_comparables(),
+        "rdr2": rdr2_comparables,
+        "red dead redemption 2 ps4": rdr2_comparables,
     }
     responses.update(candidate_responses)
     return responses
@@ -260,6 +268,7 @@ def _build_pipeline(
     orchestrator = DefaultSearchOrchestrator(
         candidate_search=WallapopCandidateSearchAdapter(marketplace),
         game_detector=candidate_detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
         opportunity_scanner=individual_scanner,
         lot_opportunity_scanner=lot_scanner,
     )
@@ -382,6 +391,74 @@ async def test_complete_lot_pipeline_keeps_lot_results_separate() -> None:
     ) == (0, 1, 0)
     assert _executed_keywords(pipeline) == ["lot candidates", "gta v", "rdr2"]
     assert len(pipeline.candidate_detector.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_real_policy_routes_expected_outcomes_without_false_lots() -> None:
+    candidates = [
+        _raw_listing(
+            "routing-hardware",
+            "PS4 Negra + 3 Juegos + 1 mando",
+            "40",
+            description="Incluye Red Dead Redemption 2",
+        ),
+        _raw_listing("routing-multiplatform", "GTA V PS4 y PS5", "10"),
+        _raw_listing("routing-edition", "GTA V Premium Edition PS4", "10"),
+        _raw_listing(
+            "routing-contextual",
+            "Red Dead Redemption 2 PS4",
+            "8",
+            description="Cambio por Ghost of Tsushima",
+        ),
+        _raw_listing(
+            "routing-lot",
+            "Lote GTA V y Red Dead Redemption 2 PS4",
+            "12",
+        ),
+        _raw_listing("routing-no-game", "Título no relacionado con juegos", "5"),
+        _raw_listing("routing-rdr2-alias", "RDR2 PS4 agotado", "9"),
+    ]
+    pipeline = _build_pipeline(
+        _responses_with_comparables({"routing candidates": candidates})
+    )
+
+    result = await pipeline.orchestrator.execute(
+        SearchPlan((_query("routing candidates"),))
+    )
+
+    assert [record.listing_id for record in result.ignored_candidates] == [
+        "routing-hardware",
+        "routing-no-game",
+    ]
+    assert [record.reason for record in result.ignored_candidates] == [
+        CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+        CandidateClassificationReason.NO_INCLUDED_GAME,
+    ]
+    assert [record.listing_id for record in result.ambiguous_candidates] == [
+        "routing-multiplatform",
+        "routing-edition",
+    ]
+    assert [record.reason for record in result.ambiguous_candidates] == [
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+        CandidateClassificationReason.UNSUPPORTED_EDITION,
+    ]
+    assert result.routing_failures == ()
+    assert result.individual_candidates == 2
+    assert result.lot_candidates == 1
+    assert result.undetected_candidates == 0
+    assert result.individual_result is not None
+    assert result.individual_result.failures == []
+    assert [
+        opportunity.listing.listing_id
+        for opportunity in result.individual_result.opportunities
+    ] == ["routing-contextual", "routing-rdr2-alias"]
+    assert all(
+        opportunity.game.canonical_name == "Red Dead Redemption 2"
+        for opportunity in result.individual_result.opportunities
+    )
+    assert [lot.listing.listing_id for lot in result.lot_results] == [
+        "routing-lot"
+    ]
 
 
 @pytest.mark.asyncio

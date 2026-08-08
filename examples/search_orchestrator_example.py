@@ -28,6 +28,9 @@ from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
+)
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -180,6 +183,7 @@ def _build_orchestrator() -> DefaultSearchOrchestrator:
     return DefaultSearchOrchestrator(
         candidate_search=WallapopCandidateSearchAdapter(marketplace_search),
         game_detector=candidate_detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
         opportunity_scanner=individual_scanner,
         lot_opportunity_scanner=lot_scanner,
     )

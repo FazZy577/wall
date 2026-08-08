@@ -23,6 +23,9 @@ from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
+)
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -117,6 +120,7 @@ async def test_search_orchestrator_live_smoke() -> None:
     orchestrator = DefaultSearchOrchestrator(
         candidate_search=WallapopCandidateSearchAdapter(marketplace_search),
         game_detector=candidate_detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
         opportunity_scanner=opportunity_scanner,
         lot_opportunity_scanner=lot_scanner,
     )
@@ -143,6 +147,8 @@ async def test_search_orchestrator_live_smoke() -> None:
             result.individual_candidates
             + result.lot_candidates
             + result.undetected_candidates
+            + len(result.ignored_candidates)
+            + len(result.ambiguous_candidates)
             == result.unique_candidates
         )
         assert any(

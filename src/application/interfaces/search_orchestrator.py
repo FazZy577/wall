@@ -12,6 +12,11 @@ from application.interfaces.candidate_search import (
 )
 from application.interfaces.lot_opportunity_scanner import LotScanResult
 from application.interfaces.opportunity_scanner import ScanResult
+from domain.entities.candidate_classification import (
+    CandidateClassification,
+    CandidateClassificationReason,
+    CandidateDisposition,
+)
 from domain.listing_id import validate_listing_id
 
 
@@ -81,6 +86,7 @@ class CandidateRoutingFailureKind(StrEnum):
 
     GAME_DETECTION_ERROR = "game_detection_error"
     NO_GAME_DETECTED = "no_game_detected"
+    CANDIDATE_CLASSIFICATION_ERROR = "candidate_classification_error"
     INDIVIDUAL_SCANNER_ERROR = "individual_scanner_error"
     LOT_SCANNER_ERROR = "lot_scanner_error"
 
@@ -113,6 +119,33 @@ class CandidateRoutingFailure:
 
 
 @dataclass(frozen=True)
+class CandidateRoutingRecord:
+    """Safe record for an expected ignored or ambiguous candidate."""
+
+    listing_id: str
+    listing_title: str
+    disposition: CandidateDisposition
+    reason: CandidateClassificationReason
+
+    def __post_init__(self) -> None:
+        validate_listing_id(self.listing_id)
+        _require_non_empty_string("listing_title", self.listing_title)
+        if not isinstance(self.disposition, CandidateDisposition):
+            raise TypeError("disposition must be CandidateDisposition")
+        if not isinstance(self.reason, CandidateClassificationReason):
+            raise TypeError("reason must be CandidateClassificationReason")
+
+        if self.disposition not in {
+            CandidateDisposition.IGNORED,
+            CandidateDisposition.AMBIGUOUS,
+        }:
+            raise ValueError(
+                "CandidateRoutingRecord only accepts IGNORED or AMBIGUOUS"
+            )
+        CandidateClassification(self.disposition, self.reason, ())
+
+
+@dataclass(frozen=True)
 class SearchOrchestrationResult:
     """Aggregate existing scanner results and orchestration-level failures."""
 
@@ -133,16 +166,22 @@ class SearchOrchestrationResult:
     undetected_candidates: int
     processing_time: float
     created_at: datetime
+    ignored_candidates: tuple[CandidateRoutingRecord, ...] = ()
+    ambiguous_candidates: tuple[CandidateRoutingRecord, ...] = ()
 
     def __post_init__(self) -> None:
         lot_results = tuple(self.lot_results)
         query_failures = tuple(self.query_failures)
         item_failures = tuple(self.item_failures)
         routing_failures = tuple(self.routing_failures)
+        ignored_candidates = tuple(self.ignored_candidates)
+        ambiguous_candidates = tuple(self.ambiguous_candidates)
         object.__setattr__(self, "lot_results", lot_results)
         object.__setattr__(self, "query_failures", query_failures)
         object.__setattr__(self, "item_failures", item_failures)
         object.__setattr__(self, "routing_failures", routing_failures)
+        object.__setattr__(self, "ignored_candidates", ignored_candidates)
+        object.__setattr__(self, "ambiguous_candidates", ambiguous_candidates)
 
         if self.individual_result is not None and not isinstance(
             self.individual_result, ScanResult
@@ -168,6 +207,32 @@ class SearchOrchestrationResult:
         ):
             raise TypeError(
                 "routing_failures must contain only CandidateRoutingFailure"
+            )
+        if any(
+            not isinstance(record, CandidateRoutingRecord)
+            for record in ignored_candidates
+        ):
+            raise TypeError(
+                "ignored_candidates must contain only CandidateRoutingRecord"
+            )
+        if any(
+            not isinstance(record, CandidateRoutingRecord)
+            for record in ambiguous_candidates
+        ):
+            raise TypeError(
+                "ambiguous_candidates must contain only CandidateRoutingRecord"
+            )
+        if any(
+            record.disposition is not CandidateDisposition.IGNORED
+            for record in ignored_candidates
+        ):
+            raise ValueError("ignored_candidates must contain only IGNORED records")
+        if any(
+            record.disposition is not CandidateDisposition.AMBIGUOUS
+            for record in ambiguous_candidates
+        ):
+            raise ValueError(
+                "ambiguous_candidates must contain only AMBIGUOUS records"
             )
 
         counter_names = (
@@ -205,11 +270,14 @@ class SearchOrchestrationResult:
             self.individual_candidates
             + self.lot_candidates
             + self.undetected_candidates
+            + len(ignored_candidates)
+            + len(ambiguous_candidates)
             != self.unique_candidates
         ):
             raise ValueError(
                 "individual_candidates + lot_candidates + undetected_candidates "
-                "must equal unique_candidates"
+                "+ ignored_candidates + ambiguous_candidates must equal "
+                "unique_candidates"
             )
 
         if isinstance(self.processing_time, bool) or not isinstance(

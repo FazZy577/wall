@@ -31,8 +31,16 @@ from application.interfaces.search_orchestrator import (
 from application.use_cases.default_search_orchestrator import (
     DefaultSearchOrchestrator,
 )
+from domain.entities.candidate_classification import (
+    CandidateClassification,
+    CandidateClassificationReason,
+    CandidateDisposition,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
+from domain.interfaces.candidate_eligibility_policy import (
+    ICandidateEligibilityPolicy,
+)
 from domain.interfaces.game_detector import IGameDetector, ListingText
 
 
@@ -114,11 +122,38 @@ def _lot_result(listing: CandidateListing) -> LotScanResult:
     )
 
 
+def _classify_by_count(
+    listing: CandidateListing,
+    detected_games: tuple[DetectedGame, ...],
+) -> CandidateClassification:
+    del listing
+    games = tuple(detected_games)
+    if not games:
+        return CandidateClassification(
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+            (),
+        )
+    if len(games) == 1:
+        return CandidateClassification(
+            CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+            CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+            games,
+        )
+    return CandidateClassification(
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        games,
+    )
+
+
 @pytest.fixture
 def orchestrator() -> tuple[DefaultSearchOrchestrator, dict[str, Mock]]:
     candidate_search = Mock(spec=ICandidateSearch)
     candidate_search.search_candidates = AsyncMock()
     game_detector = Mock(spec=IGameDetector)
+    eligibility_policy = Mock(spec=ICandidateEligibilityPolicy)
+    eligibility_policy.classify.side_effect = _classify_by_count
     opportunity_scanner = Mock(spec=IOpportunityScanner)
     opportunity_scanner.scan_detected_multiple = AsyncMock(return_value=_scan_result())
     lot_scanner = Mock(spec=ILotOpportunityScanner)
@@ -126,6 +161,7 @@ def orchestrator() -> tuple[DefaultSearchOrchestrator, dict[str, Mock]]:
     dependencies = {
         "search": candidate_search,
         "detector": game_detector,
+        "policy": eligibility_policy,
         "individual": opportunity_scanner,
         "lot": lot_scanner,
     }
@@ -133,6 +169,7 @@ def orchestrator() -> tuple[DefaultSearchOrchestrator, dict[str, Mock]]:
         DefaultSearchOrchestrator(
             candidate_search,
             game_detector,
+            eligibility_policy,
             opportunity_scanner,
             lot_scanner,
         ),
@@ -440,7 +477,7 @@ async def test_candidate_state_is_local_to_each_execute(
 
 
 @pytest.mark.asyncio
-async def test_detection_routes_zero_one_many_and_preserves_duplicate_games(
+async def test_policy_routes_zero_one_many_using_included_games(
     orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
 ) -> None:
     service, dependencies = orchestrator
@@ -448,14 +485,15 @@ async def test_detection_routes_zero_one_many_and_preserves_duplicate_games(
     zero = _candidate("zero")
     individual = _candidate("individual")
     lot = _candidate("lot")
-    repeated_game = _game()
+    individual_game = _game()
+    lot_games = (_game(), _game("RDR2"))
     dependencies["search"].search_candidates.return_value = _search_result(
         query, (zero, individual, lot)
     )
     dependencies["detector"].detect_games.side_effect = [
         [],
-        [repeated_game],
-        [repeated_game, repeated_game],
+        [individual_game],
+        list(lot_games),
     ]
     lot_result = _lot_result(lot)
     dependencies["lot"].scan_detected_lot.return_value = lot_result
@@ -469,15 +507,146 @@ async def test_detection_routes_zero_one_many_and_preserves_duplicate_games(
     lot_input = dependencies["lot"].scan_detected_lot.await_args.args[0]
     assert individual_batch[0].listing is individual
     assert lot_input.listing is lot
-    assert lot_input.detected_games == (repeated_game, repeated_game)
-    assert [failure.kind for failure in result.routing_failures] == [
-        CandidateRoutingFailureKind.NO_GAME_DETECTED
-    ]
+    assert individual_batch[0].detected_games == (individual_game,)
+    assert lot_input.detected_games == lot_games
+    assert result.routing_failures == ()
+    assert [record.listing_id for record in result.ignored_candidates] == ["zero"]
+    assert result.ignored_candidates[0].reason is (
+        CandidateClassificationReason.NO_INCLUDED_GAME
+    )
     assert (
         result.individual_candidates,
         result.lot_candidates,
         result.undetected_candidates,
-    ) == (1, 1, 1)
+    ) == (1, 1, 0)
+
+
+@pytest.mark.asyncio
+async def test_policy_receives_original_candidate_and_preliminary_games_once(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    candidate = _candidate("candidate")
+    preliminary_games = (_game("RDR2"), _game("Ghost of Tsushima"))
+    included_game = preliminary_games[0]
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (candidate, candidate),
+    )
+    dependencies["detector"].detect_games.return_value = list(preliminary_games)
+    dependencies["policy"].classify.return_value = CandidateClassification(
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (included_game,),
+    )
+    dependencies["policy"].classify.side_effect = None
+
+    await service.execute(SearchPlan((query,)))
+
+    dependencies["policy"].classify.assert_called_once_with(
+        candidate,
+        preliminary_games,
+    )
+    batch = dependencies["individual"].scan_detected_multiple.await_args.args[0]
+    assert batch[0].listing is candidate
+    assert batch[0].detected_games == (included_game,)
+    dependencies["lot"].scan_detected_lot.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_ignored_and_ambiguous_are_recorded_without_scanner_failures(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    ignored = _candidate("ignored", title="Consola PS4")
+    ambiguous = _candidate("ambiguous", title="GTA V PS4 y PS5")
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (ignored, ambiguous),
+    )
+    dependencies["detector"].detect_games.return_value = [_game()]
+    dependencies["policy"].classify.side_effect = [
+        CandidateClassification(
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+            (),
+        ),
+        CandidateClassification(
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+            (),
+        ),
+    ]
+
+    result = await service.execute(SearchPlan((query,)))
+
+    assert [record.listing_id for record in result.ignored_candidates] == [
+        "ignored"
+    ]
+    assert [record.listing_id for record in result.ambiguous_candidates] == [
+        "ambiguous"
+    ]
+    assert result.routing_failures == ()
+    assert result.undetected_candidates == 0
+    dependencies["individual"].scan_detected_multiple.assert_not_awaited()
+    dependencies["lot"].scan_detected_lot.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_policy_failure_is_isolated_and_later_candidate_continues(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    failed = _candidate("failed")
+    successful = _candidate("successful")
+    game = _game()
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (failed, successful),
+    )
+    dependencies["detector"].detect_games.return_value = [game]
+    dependencies["policy"].classify.side_effect = [
+        RuntimeError("classification failed"),
+        CandidateClassification(
+            CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+            CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+            (game,),
+        ),
+    ]
+
+    result = await service.execute(SearchPlan((query,)))
+
+    assert len(result.routing_failures) == 1
+    failure = result.routing_failures[0]
+    assert failure.listing_id == "failed"
+    assert failure.kind is (
+        CandidateRoutingFailureKind.CANDIDATE_CLASSIFICATION_ERROR
+    )
+    assert failure.reason == "Candidate classification failed"
+    assert failure.error_type == "RuntimeError"
+    assert result.undetected_candidates == 1
+    batch = dependencies["individual"].scan_detected_multiple.await_args.args[0]
+    assert [candidate.listing for candidate in batch] == [successful]
+
+
+@pytest.mark.asyncio
+async def test_policy_cancellation_propagates(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (_candidate("candidate"),),
+    )
+    dependencies["detector"].detect_games.return_value = [_game()]
+    dependencies["policy"].classify.side_effect = asyncio.CancelledError()
+
+    with pytest.raises(asyncio.CancelledError):
+        await service.execute(SearchPlan((query,)))
 
 
 @pytest.mark.asyncio
@@ -784,13 +953,19 @@ async def test_mixed_result_counters_separation_timestamps_and_tuples(
         result.individual_candidates,
         result.lot_candidates,
         result.undetected_candidates,
-    ) == (1, 1, 1)
+    ) == (1, 1, 0)
+    assert [record.listing_id for record in result.ignored_candidates] == [
+        "undetected"
+    ]
+    assert result.ambiguous_candidates == ()
     assert result.individual_result is scan_result
     assert result.lot_results == (lot_result,)
     assert isinstance(result.lot_results, tuple)
     assert isinstance(result.query_failures, tuple)
     assert isinstance(result.item_failures, tuple)
     assert isinstance(result.routing_failures, tuple)
+    assert isinstance(result.ignored_candidates, tuple)
+    assert isinstance(result.ambiguous_candidates, tuple)
     assert result.processing_time >= 0
     assert result.created_at.tzinfo is UTC
 
@@ -813,6 +988,7 @@ async def test_orchestrator_does_not_close_dependencies_or_expose_ranker(
     assert list(inspect.signature(DefaultSearchOrchestrator).parameters) == [
         "candidate_search",
         "game_detector",
+        "candidate_eligibility_policy",
         "opportunity_scanner",
         "lot_opportunity_scanner",
     ]

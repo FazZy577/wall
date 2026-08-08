@@ -15,6 +15,7 @@ from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
     CandidateRoutingFailureKind,
+    CandidateRoutingRecord,
     ISearchOrchestrator,
     SearchOrchestrationResult,
     SearchPlan,
@@ -41,6 +42,7 @@ from domain.entities.detected_game import Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.resale_economics import EconomicBreakdown, ResaleEconomicPolicy
 from domain.interfaces.arbitrage_opportunity_detector import IArbitrageOpportunityDetector
+from domain.interfaces.candidate_eligibility_policy import ICandidateEligibilityPolicy
 from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import IGameDetector
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
@@ -223,11 +225,13 @@ def test_search_orchestrator_injects_only_application_and_domain_ports() -> None
     assert list(parameters) == [
         "candidate_search",
         "game_detector",
+        "candidate_eligibility_policy",
         "opportunity_scanner",
         "lot_opportunity_scanner",
     ]
     assert hints["candidate_search"] is ICandidateSearch
     assert hints["game_detector"] is IGameDetector
+    assert hints["candidate_eligibility_policy"] is ICandidateEligibilityPolicy
     assert hints["opportunity_scanner"] is IOpportunityScanner
     assert hints["lot_opportunity_scanner"] is ILotOpportunityScanner
     assert all(
@@ -259,6 +263,7 @@ def test_search_orchestrator_contract_symbols_have_one_definition_and_reuse_exis
         "CandidateItemFailureRecord",
         "CandidateRoutingFailure",
         "CandidateRoutingFailureKind",
+        "CandidateRoutingRecord",
         "SearchOrchestrationResult",
         "ISearchOrchestrator",
     }
@@ -279,6 +284,9 @@ def test_search_orchestrator_contract_symbols_have_one_definition_and_reuse_exis
         "application.interfaces.search_orchestrator"
     )
     assert CandidateRoutingFailureKind.__module__ == (
+        "application.interfaces.search_orchestrator"
+    )
+    assert CandidateRoutingRecord.__module__ == (
         "application.interfaces.search_orchestrator"
     )
     assert SearchQueryFailure.__module__ == (

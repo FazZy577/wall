@@ -22,6 +22,9 @@ from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
 from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
+)
 from infrastructure.collectors.wallapop_price_collector import (
     WallapopPriceCollector,
 )
@@ -240,6 +243,17 @@ def test_candidate_and_comparable_search_share_the_injected_marketplace() -> Non
         orchestrator.lot_opportunity_scanner.price_collector
         is individual_scanner.price_collector
     )
+
+
+def test_candidate_eligibility_policy_is_composed_once_without_lifecycle() -> None:
+    _, _, orchestrator, marketplace = _concrete_runtime()
+    policy = orchestrator.candidate_eligibility_policy
+
+    assert isinstance(policy, RuleBasedCandidateEligibilityPolicy)
+    assert not hasattr(policy, "open")
+    assert not hasattr(policy, "close")
+    assert marketplace.open_calls == 0
+    assert marketplace.close_calls == 0
 
 
 def test_economic_configuration_is_translated_exactly_for_each_currency() -> None:

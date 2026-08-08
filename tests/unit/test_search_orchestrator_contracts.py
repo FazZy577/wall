@@ -18,10 +18,15 @@ from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
     CandidateRoutingFailureKind,
+    CandidateRoutingRecord,
     ISearchOrchestrator,
     SearchOrchestrationResult,
     SearchPlan,
     SearchQueryFailure,
+)
+from domain.entities.candidate_classification import (
+    CandidateClassificationReason,
+    CandidateDisposition,
 )
 from domain.entities.candidate_listing import CandidateListing
 
@@ -177,6 +182,7 @@ def test_candidate_item_failure_record_rejects_invalid_context() -> None:
     [
         (CandidateRoutingFailureKind.NO_GAME_DETECTED, "candidate-1"),
         (CandidateRoutingFailureKind.GAME_DETECTION_ERROR, "candidate-1"),
+        (CandidateRoutingFailureKind.CANDIDATE_CLASSIFICATION_ERROR, "candidate-1"),
         (CandidateRoutingFailureKind.LOT_SCANNER_ERROR, "candidate-1"),
         (CandidateRoutingFailureKind.INDIVIDUAL_SCANNER_ERROR, None),
     ],
@@ -213,6 +219,7 @@ def test_individual_batch_failure_does_not_invent_listing_id() -> None:
     [
         (CandidateRoutingFailureKind.NO_GAME_DETECTED, None),
         (CandidateRoutingFailureKind.GAME_DETECTION_ERROR, None),
+        (CandidateRoutingFailureKind.CANDIDATE_CLASSIFICATION_ERROR, None),
         (CandidateRoutingFailureKind.LOT_SCANNER_ERROR, None),
         (CandidateRoutingFailureKind.INDIVIDUAL_SCANNER_ERROR, "candidate-1"),
     ],
@@ -257,6 +264,129 @@ def test_candidate_routing_failure_is_frozen() -> None:
         failure.reason = "changed"  # type: ignore[misc]
 
 
+@pytest.mark.parametrize(
+    ("disposition", "reason"),
+    [
+        (
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+        ),
+        (
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+        ),
+    ],
+)
+def test_candidate_routing_record_accepts_expected_classifications(
+    disposition: CandidateDisposition,
+    reason: CandidateClassificationReason,
+) -> None:
+    record = CandidateRoutingRecord(
+        "candidate-1",
+        "Candidate title",
+        disposition,
+        reason,
+    )
+
+    assert record.listing_id == "candidate-1"
+    assert record.listing_title == "Candidate title"
+    assert record.disposition is disposition
+    assert record.reason is reason
+    with pytest.raises(FrozenInstanceError):
+        record.listing_title = "Changed"  # type: ignore[misc]
+
+
+@pytest.mark.parametrize(
+    ("listing_id", "listing_title"),
+    [("", "Title"), ("candidate-1", "")],
+)
+def test_candidate_routing_record_rejects_empty_identity_context(
+    listing_id: str,
+    listing_title: str,
+) -> None:
+    with pytest.raises(ValueError):
+        CandidateRoutingRecord(
+            listing_id,
+            listing_title,
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+        )
+
+
+def test_candidate_routing_record_rejects_wrong_enum_types() -> None:
+    with pytest.raises(TypeError, match="disposition"):
+        CandidateRoutingRecord(
+            "candidate-1",
+            "Title",
+            "ignored",  # type: ignore[arg-type]
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+        )
+    with pytest.raises(TypeError, match="reason"):
+        CandidateRoutingRecord(
+            "candidate-1",
+            "Title",
+            CandidateDisposition.IGNORED,
+            "no included game",  # type: ignore[arg-type]
+        )
+
+
+@pytest.mark.parametrize(
+    ("disposition", "reason"),
+    [
+        (
+            CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+            CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        ),
+        (
+            CandidateDisposition.ELIGIBLE_LOT,
+            CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        ),
+        (
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+        ),
+        (
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.NO_INCLUDED_GAME,
+        ),
+    ],
+)
+def test_candidate_routing_record_rejects_incompatible_semantics(
+    disposition: CandidateDisposition,
+    reason: CandidateClassificationReason,
+) -> None:
+    with pytest.raises(ValueError):
+        CandidateRoutingRecord(
+            "candidate-1",
+            "Title",
+            disposition,
+            reason,
+        )
+
+
+def test_candidate_routing_record_contains_only_safe_scalar_context() -> None:
+    field_names = {field.name for field in fields(CandidateRoutingRecord)}
+
+    assert field_names == {
+        "listing_id",
+        "listing_title",
+        "disposition",
+        "reason",
+    }
+    assert not field_names.intersection(
+        {
+            "listing",
+            "raw_listing",
+            "description",
+            "price",
+            "detected_games",
+            "included_games",
+            "exception",
+            "economic_breakdown",
+        }
+    )
+
+
 def test_empty_search_orchestration_result_is_valid() -> None:
     result = _empty_result()
 
@@ -264,6 +394,8 @@ def test_empty_search_orchestration_result_is_valid() -> None:
     assert result.lot_results == ()
     assert result.total_queries == 0
     assert result.unique_candidates == 0
+    assert result.ignored_candidates == ()
+    assert result.ambiguous_candidates == ()
 
 
 def test_result_snapshots_collections_without_copying_existing_results() -> None:
@@ -369,6 +501,52 @@ def test_result_rejects_inconsistent_routing_counters() -> None:
             valid_candidates_received=1,
             unique_candidates=1,
         )
+
+
+def test_result_counts_expected_classifications_as_terminal_routes() -> None:
+    ignored = CandidateRoutingRecord(
+        "ignored",
+        "Ignored candidate",
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.NO_INCLUDED_GAME,
+    )
+    ambiguous = CandidateRoutingRecord(
+        "ambiguous",
+        "Ambiguous candidate",
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+    result = replace(
+        _empty_result(),
+        valid_candidates_received=2,
+        unique_candidates=2,
+        ignored_candidates=[ignored],  # type: ignore[arg-type]
+        ambiguous_candidates=[ambiguous],  # type: ignore[arg-type]
+    )
+
+    assert result.ignored_candidates == (ignored,)
+    assert result.ambiguous_candidates == (ambiguous,)
+
+
+def test_result_rejects_records_in_the_wrong_collection() -> None:
+    ignored = CandidateRoutingRecord(
+        "ignored",
+        "Ignored candidate",
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.NO_INCLUDED_GAME,
+    )
+    ambiguous = CandidateRoutingRecord(
+        "ambiguous",
+        "Ambiguous candidate",
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+    with pytest.raises(ValueError, match="ignored_candidates"):
+        replace(_empty_result(), ignored_candidates=(ambiguous,))
+    with pytest.raises(ValueError, match="ambiguous_candidates"):
+        replace(_empty_result(), ambiguous_candidates=(ignored,))
 
 
 @pytest.mark.parametrize("processing_time", [-1.0, float("nan"), float("inf")])

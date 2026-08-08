@@ -23,12 +23,20 @@ from application.interfaces.search_orchestrator import (
     CandidateItemFailureRecord,
     CandidateRoutingFailure,
     CandidateRoutingFailureKind,
+    CandidateRoutingRecord,
     ISearchOrchestrator,
     SearchOrchestrationResult,
     SearchPlan,
     SearchQueryFailure,
 )
+from domain.entities.candidate_classification import (
+    CandidateClassification,
+    CandidateDisposition,
+)
 from domain.entities.candidate_listing import CandidateListing
+from domain.interfaces.candidate_eligibility_policy import (
+    ICandidateEligibilityPolicy,
+)
 from domain.interfaces.game_detector import IGameDetector, ListingText
 
 logger = logging.getLogger(__name__)
@@ -49,11 +57,13 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
         self,
         candidate_search: ICandidateSearch,
         game_detector: IGameDetector,
+        candidate_eligibility_policy: ICandidateEligibilityPolicy,
         opportunity_scanner: IOpportunityScanner,
         lot_opportunity_scanner: ILotOpportunityScanner,
     ) -> None:
         self.candidate_search = candidate_search
         self.game_detector = game_detector
+        self.candidate_eligibility_policy = candidate_eligibility_policy
         self.opportunity_scanner = opportunity_scanner
         self.lot_opportunity_scanner = lot_opportunity_scanner
 
@@ -145,6 +155,8 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
         individual_candidates: list[DetectedCandidate] = []
         lot_candidates: list[DetectedCandidate] = []
         routing_failures: list[CandidateRoutingFailure] = []
+        ignored_candidates: list[CandidateRoutingRecord] = []
+        ambiguous_candidates: list[CandidateRoutingRecord] = []
         undetected_candidates = 0
 
         for listing in unique_candidates:
@@ -175,21 +187,65 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                 )
                 continue
 
-            if not detected_candidate.detected_games:
+            try:
+                classification = self.candidate_eligibility_policy.classify(
+                    listing,
+                    detected_candidate.detected_games,
+                )
+                if not isinstance(classification, CandidateClassification):
+                    raise TypeError(
+                        "candidate eligibility policy returned an invalid classification"
+                    )
+            except Exception as error:
                 routing_failures.append(
-                    CandidateRoutingFailure(
+                    self._routing_failure(
                         listing_id=listing.listing_id,
-                        kind=CandidateRoutingFailureKind.NO_GAME_DETECTED,
-                        reason="No game detected",
-                        error_type=None,
-                        error_message=None,
+                        kind=CandidateRoutingFailureKind.CANDIDATE_CLASSIFICATION_ERROR,
+                        reason="Candidate classification failed",
+                        error=error,
                     )
                 )
                 undetected_candidates += 1
-            elif len(detected_candidate.detected_games) == 1:
-                individual_candidates.append(detected_candidate)
+                logger.warning(
+                    "Candidate classification failed: type=%s",
+                    type(error).__name__,
+                )
+                continue
+
+            if classification.disposition is CandidateDisposition.IGNORED:
+                ignored_candidates.append(
+                    CandidateRoutingRecord(
+                        listing_id=listing.listing_id,
+                        listing_title=listing.title,
+                        disposition=classification.disposition,
+                        reason=classification.reason,
+                    )
+                )
+            elif classification.disposition is CandidateDisposition.AMBIGUOUS:
+                ambiguous_candidates.append(
+                    CandidateRoutingRecord(
+                        listing_id=listing.listing_id,
+                        listing_title=listing.title,
+                        disposition=classification.disposition,
+                        reason=classification.reason,
+                    )
+                )
+            elif classification.disposition is CandidateDisposition.ELIGIBLE_INDIVIDUAL:
+                individual_candidates.append(
+                    DetectedCandidate(
+                        listing=listing,
+                        detected_games=classification.included_games,
+                    )
+                )
+            elif classification.disposition is CandidateDisposition.ELIGIBLE_LOT:
+                lot_candidates.append(
+                    DetectedCandidate(
+                        listing=listing,
+                        detected_games=classification.included_games,
+                    )
+                )
             else:
-                lot_candidates.append(detected_candidate)
+                raise AssertionError("unsupported candidate disposition")
 
         individual_result = await self._scan_individual_candidates(
             individual_candidates,
@@ -224,6 +280,8 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
             undetected_candidates=undetected_candidates,
             processing_time=processing_time,
             created_at=datetime.now(UTC),
+            ignored_candidates=tuple(ignored_candidates),
+            ambiguous_candidates=tuple(ambiguous_candidates),
         )
 
     @staticmethod

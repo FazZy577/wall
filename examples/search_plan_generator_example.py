@@ -34,6 +34,9 @@ from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
 from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
+)
 from infrastructure.collectors.wallapop_price_collector import (
     WallapopPriceCollector,
 )
@@ -200,6 +203,7 @@ def _build_orchestrator(
     return DefaultSearchOrchestrator(
         candidate_search=WallapopCandidateSearchAdapter(marketplace_search),
         game_detector=detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
         opportunity_scanner=individual_scanner,
         lot_opportunity_scanner=lot_scanner,
     )
