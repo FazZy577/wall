@@ -59,7 +59,7 @@ class PackagedGameCatalog(IGameCatalog):
                 raw_catalog: object = json.load(catalog_file)
                 return raw_catalog
 
-        catalog_resource = files("infrastructure.detectors.resources").joinpath(
+        catalog_resource = files("infrastructure.catalogs.resources").joinpath(
             "game_catalog.json"
         )
         with catalog_resource.open(encoding="utf-8") as catalog_file:

@@ -1,0 +1,421 @@
+{
+  "platform": "PS4",
+  "games": [
+    {
+      "canonical_name": "Grand Theft Auto V",
+      "aliases": [
+        "gta 5",
+        "gta v",
+        "gtav",
+        "gta5",
+        "grand theft auto v",
+        "grand theft auto 5"
+      ]
+    },
+    {
+      "canonical_name": "Red Dead Redemption 2",
+      "aliases": [
+        "rdr2",
+        "rdr 2",
+        "red dead 2",
+        "red dead redemption 2",
+        "red dead redemption ii"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports FC 24",
+      "aliases": [
+        "fc 24",
+        "fc24",
+        "fifa 24",
+        "fifa24",
+        "ea fc 24",
+        "ea sports fc 24"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports FC 25",
+      "aliases": [
+        "fc 25",
+        "fc25",
+        "fifa 25",
+        "fifa25",
+        "ea fc 25",
+        "ea sports fc 25"
+      ]
+    },
+    {
+      "canonical_name": "FIFA 23",
+      "aliases": [
+        "fifa 23",
+        "fifa23",
+        "fifa 2023"
+      ]
+    },
+    {
+      "canonical_name": "FIFA 22",
+      "aliases": [
+        "fifa 22",
+        "fifa22",
+        "fifa 2022"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 6",
+      "aliases": [
+        "cod bo6",
+        "cod black ops 6",
+        "black ops 6",
+        "bo6",
+        "call of duty black ops 6"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare III",
+      "aliases": [
+        "cod mw3",
+        "cod mw iii",
+        "modern warfare 3",
+        "modern warfare iii",
+        "mw3",
+        "call of duty mw3"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare II",
+      "aliases": [
+        "cod mw2",
+        "cod mw ii",
+        "modern warfare 2",
+        "modern warfare ii",
+        "mw2",
+        "call of duty mw2"
+      ]
+    },
+    {
+      "canonical_name": "The Last of Us Part II",
+      "aliases": [
+        "tlou 2",
+        "tlou2",
+        "the last of us 2",
+        "the last of us part 2",
+        "the last of us part ii",
+        "last of us 2"
+      ]
+    },
+    {
+      "canonical_name": "The Last of Us Remastered",
+      "aliases": [
+        "tlou",
+        "the last of us",
+        "last of us",
+        "tlou remastered"
+      ]
+    },
+    {
+      "canonical_name": "God of War",
+      "aliases": [
+        "god of war",
+        "gow",
+        "god of war 2018"
+      ]
+    },
+    {
+      "canonical_name": "God of War Ragnarök",
+      "aliases": [
+        "god of war ragnarok",
+        "gow ragnarok",
+        "ragnarok",
+        "god of war ragnarök"
+      ]
+    },
+    {
+      "canonical_name": "Spider-Man",
+      "aliases": [
+        "spider man",
+        "spiderman",
+        "spider-man",
+        "marvel spider man",
+        "marvels spider man"
+      ]
+    },
+    {
+      "canonical_name": "Spider-Man: Miles Morales",
+      "aliases": [
+        "spider man miles morales",
+        "spiderman miles morales",
+        "miles morales",
+        "spider-man miles morales"
+      ]
+    },
+    {
+      "canonical_name": "Uncharted 4: A Thief's End",
+      "aliases": [
+        "uncharted 4",
+        "uncharted iv",
+        "uncharted 4 a thiefs end"
+      ]
+    },
+    {
+      "canonical_name": "Uncharted: The Lost Legacy",
+      "aliases": [
+        "uncharted lost legacy",
+        "uncharted the lost legacy"
+      ]
+    },
+    {
+      "canonical_name": "Horizon Zero Dawn",
+      "aliases": [
+        "horizon zero dawn",
+        "hzd",
+        "horizon"
+      ]
+    },
+    {
+      "canonical_name": "Horizon Forbidden West",
+      "aliases": [
+        "horizon forbidden west",
+        "hfw",
+        "forbidden west"
+      ]
+    },
+    {
+      "canonical_name": "Bloodborne",
+      "aliases": [
+        "bloodborne",
+        "blood borne"
+      ]
+    },
+    {
+      "canonical_name": "Ghost of Tsushima",
+      "aliases": [
+        "ghost of tsushima",
+        "tsushima",
+        "got"
+      ]
+    },
+    {
+      "canonical_name": "Days Gone",
+      "aliases": [
+        "days gone",
+        "daysgone"
+      ]
+    },
+    {
+      "canonical_name": "Death Stranding",
+      "aliases": [
+        "death stranding",
+        "deathstranding"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil 2",
+      "aliases": [
+        "resident evil 2",
+        "re2",
+        "resident evil 2 remake"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil 3",
+      "aliases": [
+        "resident evil 3",
+        "re3",
+        "resident evil 3 remake"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil Village",
+      "aliases": [
+        "resident evil village",
+        "re8",
+        "resident evil 8",
+        "re village"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Valhalla",
+      "aliases": [
+        "assassins creed valhalla",
+        "ac valhalla",
+        "valhalla"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Odyssey",
+      "aliases": [
+        "assassins creed odyssey",
+        "ac odyssey",
+        "odyssey"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Origins",
+      "aliases": [
+        "assassins creed origins",
+        "ac origins",
+        "origins"
+      ]
+    },
+    {
+      "canonical_name": "Cyberpunk 2077",
+      "aliases": [
+        "cyberpunk 2077",
+        "cyberpunk",
+        "cp2077"
+      ]
+    },
+    {
+      "canonical_name": "The Witcher 3: Wild Hunt",
+      "aliases": [
+        "witcher 3",
+        "the witcher 3",
+        "witcher 3 wild hunt"
+      ]
+    },
+    {
+      "canonical_name": "Dark Souls III",
+      "aliases": [
+        "dark souls 3",
+        "dark souls iii",
+        "ds3"
+      ]
+    },
+    {
+      "canonical_name": "Sekiro: Shadows Die Twice",
+      "aliases": [
+        "sekiro",
+        "sekiro shadows die twice"
+      ]
+    },
+    {
+      "canonical_name": "Elden Ring",
+      "aliases": [
+        "elden ring",
+        "eldenring"
+      ]
+    },
+    {
+      "canonical_name": "Gran Turismo Sport",
+      "aliases": [
+        "gran turismo sport",
+        "gt sport",
+        "gts"
+      ]
+    },
+    {
+      "canonical_name": "Gran Turismo 7",
+      "aliases": [
+        "gran turismo 7",
+        "gt7",
+        "gt 7"
+      ]
+    },
+    {
+      "canonical_name": "Battlefield 2042",
+      "aliases": [
+        "battlefield 2042",
+        "bf 2042",
+        "bf2042"
+      ]
+    },
+    {
+      "canonical_name": "Battlefield V",
+      "aliases": [
+        "battlefield v",
+        "battlefield 5",
+        "bf5",
+        "bfv"
+      ]
+    },
+    {
+      "canonical_name": "Mortal Kombat 11",
+      "aliases": [
+        "mortal kombat 11",
+        "mk11",
+        "mk 11"
+      ]
+    },
+    {
+      "canonical_name": "Street Fighter V",
+      "aliases": [
+        "street fighter v",
+        "street fighter 5",
+        "sf5",
+        "sfv"
+      ]
+    },
+    {
+      "canonical_name": "Tekken 7",
+      "aliases": [
+        "tekken 7",
+        "tekken vii"
+      ]
+    },
+    {
+      "canonical_name": "NBA 2K24",
+      "aliases": [
+        "nba 2k24",
+        "nba2k24",
+        "nba 2k 24"
+      ]
+    },
+    {
+      "canonical_name": "NBA 2K23",
+      "aliases": [
+        "nba 2k23",
+        "nba2k23",
+        "nba 2k 23"
+      ]
+    },
+    {
+      "canonical_name": "Fallout 4",
+      "aliases": [
+        "fallout 4",
+        "fallout iv"
+      ]
+    },
+    {
+      "canonical_name": "Skyrim",
+      "aliases": [
+        "skyrim",
+        "elder scrolls skyrim",
+        "the elder scrolls v skyrim"
+      ]
+    },
+    {
+      "canonical_name": "Minecraft",
+      "aliases": [
+        "minecraft"
+      ]
+    },
+    {
+      "canonical_name": "Rocket League",
+      "aliases": [
+        "rocket league",
+        "rocketleague"
+      ]
+    },
+    {
+      "canonical_name": "Fortnite",
+      "aliases": [
+        "fortnite"
+      ]
+    },
+    {
+      "canonical_name": "Apex Legends",
+      "aliases": [
+        "apex legends",
+        "apex"
+      ]
+    },
+    {
+      "canonical_name": "Overwatch 2",
+      "aliases": [
+        "overwatch 2",
+        "overwatch ii",
+        "ow2"
+      ]
+    }
+  ]
+}
