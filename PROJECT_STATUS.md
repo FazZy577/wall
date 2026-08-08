@@ -108,6 +108,38 @@ excluyendo tests live. La validación final de esta fase registra 1536 tests
 no-live pasando, 4 tests live excluidos, MyPy limpio en 79 archivos y 47
 incidencias Ruff históricas sin nuevas incidencias.
 
+## P4.5J routing quality
+
+P4.5 incorpora una frontera explícita de elegibilidad antes de los scanners.
+`FuzzyGameDetector` aplica límites léxicos a nombres y aliases;
+`RuleBasedCandidateEligibilityPolicy` clasifica cada candidato mediante el
+contrato canónico `CandidateClassification` y entrega exclusivamente
+`included_games` al flujo individual o de lotes. La política distingue juegos
+físicamente incluidos de referencias contextuales, hardware, accesorios,
+copias incompletas, ediciones no modeladas y menciones multiplataforma.
+
+Cada candidato único termina exactamente en scanner individual, scanner de
+lote, `ignored`, `ambiguous` o fallo técnico de routing. `ignored` y
+`ambiguous` son resultados esperados, no fallos; se muestran por separado en
+terminal y en JSON `schema_version = 2`. El destino JSON se valida antes de
+abrir el runtime y vuelve a validarse en el writer atómico. Se mantiene como
+riesgo residual medio de filesystem la ventana TOCTOU con
+`overwrite=False`.
+
+La validación de cierre registra 1958 tests no-live pasando, 4 live pasando,
+MyPy limpio en 83 archivos y las mismas 47 incidencias Ruff históricas. El
+scan manual conservador (un target PS4, una query, dos resultados y una página)
+terminó con código 0, produjo una oportunidad individual y aisló una edición
+no soportada como `ambiguous`, sin fallos estructurados. El JSON generado fue
+schema v2, coherente y sin datos raw; el artefacto temporal se eliminó tras la
+inspección.
+
+Esta frontera evita contaminar una futura persistencia histórica con anuncios
+que no representan el producto valorado. No se ha implementado SQLite ni
+persistencia. El catálogo productivo continúa limitado a 50 juegos PS4; las
+menciones de otras plataformas solo se reconocen para routing seguro. P4.6,
+soporte multiplataforma real, es el siguiente milestone.
+
 ## P0 Wallapop Real Integration
 
 - **HTTP client**: retained as legacy/experimental. It targets the obsolete

@@ -3,7 +3,10 @@
 Motor de análisis de oportunidades de videojuegos en Wallapop con una CLI
 operativa para ejecutar búsquedas configuradas. El flujo actual genera planes
 canónicos de búsqueda, deduplica candidatos, detecta juegos, valora
-comparables y calcula oportunidades individuales y de lotes.
+comparables y calcula oportunidades individuales y de lotes. Antes de enviar
+un candidato a los scanners, una política de elegibilidad separa juegos
+incluidos de referencias contextuales y clasifica hardware, accesorios,
+ediciones no modeladas y menciones multiplataforma inseguras.
 
 La CLI realiza consultas reales únicamente cuando se ejecuta `scan` con
 `--confirm-live`. No es todavía un sistema autónomo: no hay histórico,
@@ -66,6 +69,9 @@ capas se encuentra en [`ARCHITECTURE.md`](ARCHITECTURE.md).
 ## Estado
 
 El motor de análisis y la CLI operativa están implementados y cubiertos por
-tests offline. Quedan pendientes la persistencia histórica, la programación
-de ejecuciones, notificaciones, búsqueda de mercado completo, aliases seguros,
-liquidez, calibración y una futura API/dashboard.
+tests offline. Los candidatos `ignored` y `ambiguous` son resultados esperados
+del routing y se muestran separados de los fallos técnicos en terminal y JSON
+schema v2. El catálogo productivo sigue limitado a PS4; P4.6 abordará el soporte
+multiplataforma real. Quedan pendientes la persistencia histórica, la
+programación de ejecuciones, notificaciones, búsqueda de mercado completo,
+aliases seguros, liquidez, calibración y una futura API/dashboard.

@@ -79,6 +79,27 @@ compartir una instancia de `WallapopPlaywrightClient` entre
 loop y no usa `asyncio.run()`. No hay persistencia, reintentos, aliases
 automáticos ni concurrencia.
 
+El routing productivo incluye `ICandidateEligibilityPolicy` entre la detección
+preliminar y los scanners. `CandidateClassification` devuelve una disposición,
+un motivo estable y `included_games`: solo estos juegos confirmados llegan a
+`scan_detected_multiple()` o `scan_detected_lot()`. Hardware, accesorios y
+referencias contextuales se ignoran; las menciones multiplataforma y ediciones
+no modeladas quedan ambiguas. `ignored` y `ambiguous` son resultados terminales
+esperados, no fallos técnicos. Los fallos del detector, de la política o de los
+scanners permanecen en `routing_failures` y no detienen los candidatos
+posteriores.
+
+```text
+CandidateListing
+        -> FuzzyGameDetector (detecciones preliminares con límites léxicos)
+        -> ICandidateEligibilityPolicy
+        -> CandidateClassification
+                -> eligible individual -> individual scanner
+                -> eligible lot        -> lot scanner
+                -> ignored             -> resultado esperado
+                -> ambiguous           -> resultado esperado
+```
+
 Los scanners son async de extremo a extremo porque el collector realiza I/O
 async. Application usa `await` directo y nunca inicia ni cierra el event loop;
 esa responsabilidad pertenece al entry point. El procesamiento continúa
@@ -154,6 +175,19 @@ traduce argumentos, ejecuta el generator y el orchestrator, cierra el runtime
 y renderiza sus resultados. No hay scheduler, persistencia, reintentos ni
 concurrencia. La configuración permanece sin I/O operativo y la salida JSON
 se escribe atómicamente como informe local.
+
+El informe operativo usa JSON `schema_version = 2` e incluye colecciones y
+contadores separados para candidatos `ignored` y `ambiguous`; ninguno se
+mezcla con `failures`. Antes de abrir el runtime, la CLI valida el destino JSON
+evidente (padre existente, target no directorio y política de overwrite). El
+writer repite la validación y conserva el reemplazo atómico. Sigue existiendo
+una ventana TOCTOU entre el preflight y `os.replace()` cuando
+`overwrite=False`; es un riesgo residual de filesystem, no persistencia.
+
+La política reconoce menciones de PS5, Xbox o Nintendo solo para evitar un
+routing inseguro. Eso no equivale a poder valorar esas plataformas: el recurso
+productivo contiene actualmente 50 entradas, todas PS4. El soporte
+multiplataforma real queda para P4.6.
 
 El ranking de oportunidades individuales tiene un único contrato,
 `IOpportunityRanker`, y una única implementación productiva,

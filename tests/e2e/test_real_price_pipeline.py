@@ -51,7 +51,10 @@ async def test_real_price_estimation_pipeline() -> None:
         assert comparables
         assert len(comparables) <= 3
 
-        dataset = DefaultPriceDatasetBuilder(source="wallapop-live").build(comparables)
+        dataset = DefaultPriceDatasetBuilder(source="wallapop-live").build(
+            comparables,
+            comparables[0].currency,
+        )
         assert dataset.sample_size > 0
 
         statistics_calculator = DefaultPriceStatistics()
@@ -68,7 +71,7 @@ async def test_real_price_estimation_pipeline() -> None:
         )
 
         assert estimate.estimated_price > 0
-        assert estimate.currency in DefaultPriceDatasetBuilder.VALID_CURRENCIES
+        assert estimate.currency == comparables[0].currency
         assert 0 <= estimate.confidence_score <= 1
 
     assert not client.is_open

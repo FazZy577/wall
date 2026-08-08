@@ -44,6 +44,7 @@ UNSUPPORTED_VARIANT_CASES = (
     ("GTA V Limited Edition PS4", "Grand Theft Auto V"),
     ("GTA V Edición Limitada PS4", "Grand Theft Auto V"),
     ("GTA V Steelbook PS4", "Grand Theft Auto V"),
+    ("RDR2 Steelbook + DLC", "Red Dead Redemption 2"),
     ("GTA V caja metálica PS4", "Grand Theft Auto V"),
     ("GTA V edición metálica PS4", "Grand Theft Auto V"),
     ("GTA V GOTY PS4", "Grand Theft Auto V"),

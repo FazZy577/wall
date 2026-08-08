@@ -66,15 +66,29 @@ warnings.
 ## Salidas
 
 La salida terminal contiene las secciones de generación, ejecución,
-oportunidades individuales, resultados de lotes, fallos y resumen. El renderer
-no recalcula economía ni ranking.
+oportunidades individuales, resultados de lotes, candidatos ignorados,
+candidatos ambiguos, fallos y resumen. `ignored` significa que la política ha
+identificado un anuncio que no debe valorarse (por ejemplo hardware, accesorio
+o referencia contextual). `ambiguous` significa que no puede asumirse con
+seguridad la identidad valorable (por ejemplo múltiples plataformas o una
+edición no modelada). Ambos son resultados esperados, no fallos técnicos. El
+renderer sanea texto externo y no recalcula economía ni ranking.
 
 Si `output.json_path` está configurado, se genera un informe JSON con esquema
-versión `1`. Los importes `Decimal` se representan como strings, las URLs se
+versión `2`. Incluye `ignored_candidates` y `ambiguous_candidates` con sus
+contadores, incluso como arrays vacíos, separados de `failures`. Los importes
+`Decimal` se representan como strings, las URLs se
 limpian de query y fragmentos, y no se incluyen `raw_listing`, cookies,
 headers, tokens ni tracebacks. El writer serializa completamente en memoria y
 reemplaza el destino mediante un archivo temporal del mismo directorio y
 `os.replace()`. No crea el directorio padre.
+
+Si existe destino JSON, el orden operativo es: cargar configuración, ejecutar
+el preflight, abrir el runtime, escanear, cerrar el runtime, construir el
+informe y escribirlo. El preflight rechaza antes de abrir Playwright un padre
+inexistente, un target que sea directorio o un target existente cuando
+`overwrite=false`. El writer revalida porque el filesystem puede cambiar entre
+ambos pasos. Si JSON está deshabilitado no se ejecuta preflight.
 
 El JSON es un informe de ejecución, no persistencia histórica.
 
@@ -82,14 +96,14 @@ El JSON es un informe de ejecución, no persistencia histórica.
 
 | Código | Significado |
 |---:|---|
-| 0 | Éxito o búsqueda vacía válida |
+| 0 | Éxito o búsqueda vacía válida; `ignored`/`ambiguous` sin fallo técnico |
 | 1 | Resultado parcial con fallos y datos utilizables |
 | 2 | Argumentos inválidos o falta `--confirm-live` |
 | 3 | Configuración inválida o ilegible |
 | 4 | Target de juego desconocido |
 | 5 | Límite del plan excedido |
 | 6 | Fallo total del marketplace/lifecycle |
-| 7 | Error escribiendo el informe JSON |
+| 7 | Fallo de preflight o escritura del informe JSON |
 | 70 | Error interno inesperado |
 | 130 | Cancelación o `KeyboardInterrupt` |
 
@@ -120,6 +134,18 @@ La CLI no guarda cookies, headers, respuestas de depuración ni perfiles
 Playwright. No incorpora IA, aliases automáticos, persistencia, scheduler,
 reintentos, concurrencia, notificaciones, histórico, liquidez, API o
 dashboard. Solo se ejecutan los targets y consultas definidos por el operador.
+
+Los aliases de detección se reconocen con límites léxicos; no se usan para
+generar consultas. La política de elegibilidad evita valorar hardware,
+accesorios, copias incompletas y referencias contextuales, y mantiene como
+ambiguas las ediciones no soportadas o menciones multiplataforma. Reconocer
+estas menciones para seguridad de routing no implica soporte de valoración:
+el catálogo productivo actual solo contiene PS4. P4.6 es el siguiente milestone
+para soporte multiplataforma real.
+
+Riesgo residual: con `overwrite=false`, otro proceso podría crear el target
+entre el preflight y el `os.replace()` final. Esta ventana TOCTOU se clasifica
+como riesgo medio de filesystem y no bloquea P4.5.
 
 Si falla la configuración, comprueba que el TOML tiene todas las secciones y
 que los importes económicos son strings. Si falla Chromium, ejecuta de nuevo
