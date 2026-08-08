@@ -11,9 +11,14 @@ from domain.entities.candidate_classification import (
     CandidateDisposition,
 )
 from domain.entities.candidate_listing import CandidateListing
-from domain.entities.detected_game import DetectedGame
+from domain.entities.detected_game import DetectedGame, Platform
+from domain.entities.game_identity import GameIdentity
 from domain.interfaces.candidate_eligibility_policy import (
     ICandidateEligibilityPolicy,
+)
+from infrastructure.matching.platform_lexical_matcher import (
+    PlatformLexicalMatcher,
+    PlatformMention,
 )
 
 _EXPLICIT_HARDWARE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
@@ -25,20 +30,15 @@ _EXPLICIT_HARDWARE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
     )
 )
 
-_PLATFORM_PRODUCT = (
-    r"(?:ps4|playstation 4|ps5|playstation 5|xbox one|xbox series"
-    r"(?: x| s)?|nintendo switch)"
+_HARDWARE_UNIT_SIGNAL: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:500|512)\s*(?:gb|go)\b|\b(?:1|2|4)\s*tb\b|"
+    r"\b(?:negra|negro|blanca|blanco)\b|"
+    r"\b(?:con\s+)?(?:\d+\s+)?juegos\b"
 )
-_HARDWARE_TITLE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
-    re.compile(pattern)
-    for pattern in (
-        rf"\b{_PLATFORM_PRODUCT}\s+slim\b",
-        rf"\b{_PLATFORM_PRODUCT}\s+pro\s+(?:(?:con\s+)?(?:mando|mandos|juegos|accesorios)|pack|bundle)\b",
-        rf"\b{_PLATFORM_PRODUCT}\s+(?:(?:pro|slim)\s+)?(?:negra|negro|blanca|blanco)\b",
-        rf"\b{_PLATFORM_PRODUCT}\s+(?:(?:pro|slim)\s+)?(?:500 ?gb|1 ?tb|2 ?tb)\b",
-        rf"\b{_PLATFORM_PRODUCT}\s+(?:con\s+)?(?:\d+\s+)?juegos\b",
-        rf"\bpack\s+(?:de\s+)?{_PLATFORM_PRODUCT}(?:\s+con)?\s+juegos\b",
-    )
+_HARDWARE_VARIANT_SUPPORT: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:mando|mandos|juegos|accesorio|accesorios|cable|cables|pack|bundle|"
+    r"500\s*(?:gb|go)|512\s*(?:gb|go)|(?:1|2|4)\s*tb|"
+    r"negra|negro|blanca|blanco)\b"
 )
 
 _ACCESSORY_TERM = (
@@ -60,31 +60,6 @@ _CENTERED_CABLE_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"|\b(?:pack|lote)\s+(?:de\s+)?(?:cables|cargadores|chargers)\b"
 )
 
-_PLATFORM_FAMILY_PATTERNS: Final[tuple[tuple[re.Pattern[str], ...], ...]] = (
-    tuple(re.compile(pattern) for pattern in (r"\bps4\b", r"\bplaystation 4\b", r"\bplay 4\b")),
-    tuple(re.compile(pattern) for pattern in (r"\bps5\b", r"\bplaystation 5\b", r"\bplay 5\b")),
-    tuple(re.compile(pattern) for pattern in (r"\bxbox one\b", r"\bxboxone\b", r"\bxb1\b")),
-    tuple(
-        re.compile(pattern)
-        for pattern in (
-            r"\bxbox series\b",
-            r"\bxbox series x\b",
-            r"\bxbox series s\b",
-            r"\bxboxseries\b",
-            r"\bseries x\b",
-            r"\bseries s\b",
-        )
-    ),
-    tuple(
-        re.compile(pattern)
-        for pattern in (
-            r"\bnintendo switch\b",
-            r"\bswitch oled\b",
-            r"\bswitch lite\b",
-            r"\bswitch\b",
-        )
-    ),
-)
 _UNSUPPORTED_VARIANT_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
     re.compile(pattern)
     for pattern in (
@@ -205,6 +180,9 @@ def _is_contextual_occurrence(clause: str, start: int, end: int) -> bool:
 class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
     """Classify candidates using conservative, deterministic text rules."""
 
+    def __init__(self) -> None:
+        self._platform_matcher = PlatformLexicalMatcher()
+
     def classify(
         self,
         listing: CandidateListing,
@@ -239,7 +217,20 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
                 CandidateClassificationReason.ACCESSORY_OR_CONTROLLER,
                 (),
             )
-        if self._is_multiplatform(normalized_text):
+        if games:
+            self._validate_game_identities(games)
+            included_games, has_unresolved, has_contextual = self._included_games(
+                listing.title,
+                listing.description,
+                games,
+            )
+        else:
+            included_games, has_unresolved, has_contextual = (), False, False
+        if self._has_unresolved_multiplatform(
+            listing.title,
+            listing.description,
+            included_games,
+        ):
             return CandidateClassification(
                 CandidateDisposition.AMBIGUOUS,
                 CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
@@ -257,13 +248,6 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
                 CandidateClassificationReason.NO_INCLUDED_GAME,
                 (),
             )
-        self._validate_game_identities(games)
-
-        included_games, has_unresolved, has_contextual = self._included_games(
-            listing.title,
-            listing.description,
-            games,
-        )
         if not included_games:
             reason = CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY
             disposition = (
@@ -286,16 +270,22 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
 
     @staticmethod
     def _validate_game_identities(games: tuple[DetectedGame, ...]) -> None:
-        identities: set[tuple[str, object]] = set()
+        identities: set[GameIdentity | tuple[str, Platform]] = set()
         for game in games:
-            identity = (" ".join(game.canonical_name.strip().casefold().split()), game.platform)
+            normalized_name = " ".join(
+                game.canonical_name.strip().casefold().split()
+            )
+            identity: GameIdentity | tuple[str, Platform]
+            if game.platform is Platform.UNKNOWN:
+                identity = (normalized_name, game.platform)
+            else:
+                identity = GameIdentity(game.canonical_name, game.platform)
             if identity in identities:
                 raise ValueError("detected_games contains duplicate game identity")
             identities.add(identity)
 
-    @classmethod
     def _included_games(
-        cls,
+        self,
         title: str,
         description: str,
         games: tuple[DetectedGame, ...],
@@ -314,8 +304,8 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         unresolved_indices: set[int] = set()
 
         for index, game in enumerate(games):
-            title_occurrences = cls._locate_game(game, title_clauses, "title")
-            description_occurrences = cls._locate_game(
+            title_occurrences = self._locate_game(game, title_clauses, "title")
+            description_occurrences = self._locate_game(
                 game,
                 description_clauses,
                 "description",
@@ -329,7 +319,7 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
 
             has_reliable = False
             for source, clause, start, end in all_occurrences:
-                if _is_contextual_occurrence(clause, start, end):
+                if self._is_contextual_game_occurrence(clause, start, end):
                     contextual_indices.add(index)
                 else:
                     has_reliable = True
@@ -351,6 +341,21 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
 
         included = tuple(game for index, game in enumerate(games) if index in included_indices)
         return included, bool(unresolved_indices), bool(contextual_indices)
+
+    def _is_contextual_game_occurrence(
+        self,
+        clause: str,
+        start: int,
+        end: int,
+    ) -> bool:
+        if _is_contextual_occurrence(clause, start, end):
+            return True
+        after = clause[end:].strip()
+        mentions = self._platform_matcher.find_mentions(after)
+        if not mentions or mentions[0].start != 0:
+            return False
+        suffix = after[mentions[0].end :].strip()
+        return any(pattern.match(suffix) for pattern in _CONTEXT_SUFFIX_PATTERNS)
 
     @classmethod
     def _locate_game(
@@ -385,11 +390,42 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         alphanumeric = re.sub(r"[^a-z0-9\s]", " ", without_accents)
         return " ".join(alphanumeric.split())
 
+    def _is_hardware(self, title: str, text: str) -> bool:
+        if any(pattern.search(text) for pattern in _EXPLICIT_HARDWARE_PATTERNS):
+            return True
+        mentions = self._platform_matcher.find_mentions(title)
+        if not mentions:
+            return False
+        if _HARDWARE_UNIT_SIGNAL.search(title) is not None:
+            return True
+        return any(self._has_hardware_variant(title, mention) for mention in mentions)
+
     @staticmethod
-    def _is_hardware(title: str, text: str) -> bool:
-        return any(pattern.search(text) for pattern in _EXPLICIT_HARDWARE_PATTERNS) or any(
-            pattern.search(title) for pattern in _HARDWARE_TITLE_PATTERNS
-        )
+    def _has_hardware_variant(title: str, mention: PlatformMention) -> bool:
+        suffix = title[mention.end :].lstrip()
+        if mention.platform in {
+            Platform.PS2,
+            Platform.PS3,
+            Platform.PS4,
+            Platform.PS5,
+            Platform.XBOX_360,
+        } and re.match(r"(?:super\s+)?slim\b", suffix):
+            return True
+
+        variant_present = False
+        if mention.platform in {Platform.PS4, Platform.PS5}:
+            variant_present = re.match(r"pro\b", suffix) is not None
+        elif mention.platform is Platform.XBOX_ONE:
+            variant_present = re.match(r"[sx]\b", suffix) is not None
+        elif mention.platform is Platform.XBOX_SERIES:
+            variant_present = (
+                mention.matched_text.endswith((" x", " s"))
+                or re.match(r"[sx]\b", suffix) is not None
+            )
+        elif mention.platform is Platform.SWITCH:
+            variant_present = re.match(r"(?:lite|oled)\b", suffix) is not None
+
+        return variant_present and _HARDWARE_VARIANT_SUPPORT.search(title) is not None
 
     @staticmethod
     def _has_included_accessory(title: str, text: str) -> bool:
@@ -401,13 +437,140 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             or _CENTERED_CABLE_PATTERN.search(title) is not None
         )
 
-    @staticmethod
-    def _is_multiplatform(text: str) -> bool:
-        families = sum(
-            any(pattern.search(text) for pattern in family)
-            for family in _PLATFORM_FAMILY_PATTERNS
+    def _has_unresolved_multiplatform(
+        self,
+        title: str,
+        description: str,
+        included_games: tuple[DetectedGame, ...],
+    ) -> bool:
+        clauses = (*_normalise_clauses(title), *_normalise_clauses(description))
+        mentions_by_clause = tuple(
+            (
+                clause,
+                tuple(
+                    mention
+                    for mention in self._platform_matcher.find_mentions(clause)
+                    if not _is_contextual_occurrence(
+                        clause,
+                        mention.start,
+                        mention.end,
+                    )
+                ),
+            )
+            for clause in clauses
         )
-        return families > 1
+        product_platforms = {
+            mention.platform
+            for _, mentions in mentions_by_clause
+            for mention in mentions
+        }
+        included_platforms = {
+            game.platform
+            for game in included_games
+            if game.platform is not Platform.UNKNOWN
+        }
+        if len(included_games) > 1 and any(
+            game.platform is Platform.UNKNOWN for game in included_games
+        ):
+            return True
+        if len(product_platforms) <= 1 and len(included_platforms) <= 1:
+            return False
+        if not included_games:
+            return True
+        if any(game.platform is Platform.UNKNOWN for game in included_games):
+            return True
+        if any(
+            not self._has_local_platform_evidence(game, mentions_by_clause)
+            for game in included_games
+        ):
+            return True
+
+        for clause, mentions in mentions_by_clause:
+            if not mentions or not self._clause_contains_game(clause, included_games):
+                continue
+            if any(
+                mention.platform not in included_platforms
+                for mention in mentions
+            ):
+                return True
+        return not self._repeated_games_are_distinguishable(
+            clauses,
+            included_games,
+        )
+
+    @classmethod
+    def _has_local_platform_evidence(
+        cls,
+        game: DetectedGame,
+        mentions_by_clause: tuple[
+            tuple[str, tuple[PlatformMention, ...]], ...
+        ],
+    ) -> bool:
+        for clause, mentions in mentions_by_clause:
+            if not any(mention.platform is game.platform for mention in mentions):
+                continue
+            if cls._clause_contains_game(clause, (game,)):
+                return True
+        return False
+
+    @classmethod
+    def _clause_contains_game(
+        cls,
+        clause: str,
+        games: tuple[DetectedGame, ...],
+    ) -> bool:
+        return any(cls._game_occurrences(game, clause) for game in games)
+
+    @classmethod
+    def _repeated_games_are_distinguishable(
+        cls,
+        clauses: tuple[str, ...],
+        games: tuple[DetectedGame, ...],
+    ) -> bool:
+        games_by_name: dict[str, list[DetectedGame]] = {}
+        for game in games:
+            normalized_name = " ".join(
+                game.canonical_name.strip().casefold().split()
+            )
+            games_by_name.setdefault(normalized_name, []).append(game)
+
+        for repeated_games in games_by_name.values():
+            if len(repeated_games) == 1:
+                continue
+            occurrences = {
+                (clause_index, start, end)
+                for clause_index, clause in enumerate(clauses)
+                for start, end in cls._game_occurrences(
+                    repeated_games[0],
+                    clause,
+                )
+                if not _is_contextual_occurrence(clause, start, end)
+            }
+            if len(occurrences) < len(repeated_games):
+                return False
+        return True
+
+    @classmethod
+    def _game_occurrences(
+        cls,
+        game: DetectedGame,
+        clause: str,
+    ) -> tuple[tuple[int, int], ...]:
+        variants: list[str] = []
+        for value in (game.matched_text, game.canonical_name):
+            normalized = cls._normalize_text(value)
+            if normalized and normalized not in variants:
+                variants.append(normalized)
+        occurrences: set[tuple[int, int]] = set()
+        for variant in variants:
+            pattern = re.compile(
+                rf"(?<![a-z0-9]){re.escape(variant)}(?![a-z0-9])"
+            )
+            occurrences.update(
+                (match.start(), match.end())
+                for match in pattern.finditer(clause)
+            )
+        return tuple(sorted(occurrences))
 
     @staticmethod
     def _has_unsupported_variant(text: str) -> bool:

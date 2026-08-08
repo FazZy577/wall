@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from domain.entities.detected_game import Platform
-from infrastructure.detectors.platform_lexical_matcher import (
+from infrastructure.matching.platform_lexical_matcher import (
     PlatformLexicalMatcher,
     PlatformMention,
 )
@@ -15,9 +15,7 @@ from infrastructure.detectors.platform_lexical_matcher import (
 pytestmark = pytest.mark.unit
 
 PROJECT_ROOT = Path(__file__).parents[2]
-MATCHER_PATH = (
-    PROJECT_ROOT / "src/infrastructure/detectors/platform_lexical_matcher.py"
-)
+MATCHER_PATH = PROJECT_ROOT / "src/infrastructure/matching/platform_lexical_matcher.py"
 
 PLATFORM_CASES = (
     ("PS2", Platform.PS2),

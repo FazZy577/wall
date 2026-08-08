@@ -3,12 +3,16 @@
 from collections.abc import Iterable, Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
 import pytest
 
 from application.interfaces.candidate_search import SearchQuery
+from application.interfaces.detected_candidate import DetectedCandidate
+from application.interfaces.lot_opportunity_scanner import LotScanResult
+from application.interfaces.opportunity_scanner import ScanResult
 from application.interfaces.search_orchestrator import SearchPlan
 from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
@@ -149,6 +153,43 @@ class _Pipeline:
     candidate_detector: _RecordingGameDetector
 
 
+class _RecordingIndividualScanner:
+    def __init__(self) -> None:
+        self.calls: list[tuple[DetectedCandidate, ...]] = []
+
+    async def scan_detected_multiple(
+        self,
+        candidates: Sequence[DetectedCandidate],
+    ) -> ScanResult:
+        recorded = tuple(candidates)
+        self.calls.append(recorded)
+        return ScanResult(0, 0, 0, [], [], 0.0, datetime.now(UTC))
+
+
+class _RecordingLotScanner:
+    def __init__(self) -> None:
+        self.calls: list[DetectedCandidate] = []
+
+    async def scan_detected_lot(
+        self,
+        candidate: DetectedCandidate,
+    ) -> LotScanResult:
+        self.calls.append(candidate)
+        return LotScanResult(
+            listing=candidate.listing,
+            opportunity=None,
+            game_valuations=[],
+            failures=[],
+            total_detected_games=len(candidate.detected_games),
+            successfully_valued_games=0,
+            failed_games=0,
+            is_complete=False,
+            processing_time=0.0,
+            created_at=datetime.now(UTC),
+            detected_games=list(candidate.detected_games),
+        )
+
+
 def _raw_listing(
     listing_id: str,
     title: str,
@@ -217,6 +258,39 @@ def _rdr2_comparables() -> list[dict[str, Any]]:
         )
         for index, price in enumerate(prices)
     ]
+
+
+def _platform_comparables(
+    prefix: str,
+    title: str,
+    prices: tuple[str, ...],
+) -> list[dict[str, Any]]:
+    return [
+        _raw_listing(f"{prefix}-{index}", title, price)
+        for index, price in enumerate(prices)
+    ]
+
+
+def _multiplatform_catalog() -> _InMemoryGameCatalog:
+    return _InMemoryGameCatalog(
+        (
+            GameCatalogEntry(
+                "Grand Theft Auto V",
+                Platform.PS4,
+                ("GTA V", "GTA5"),
+            ),
+            GameCatalogEntry(
+                "Grand Theft Auto V",
+                Platform.PS5,
+                ("GTA V", "GTA5"),
+            ),
+            GameCatalogEntry(
+                "Red Dead Redemption 2",
+                Platform.PS5,
+                ("RDR2",),
+            ),
+        )
+    )
 
 
 def _responses_with_comparables(
@@ -523,6 +597,230 @@ async def test_real_policy_routes_expected_outcomes_without_false_lots() -> None
     )
     assert [lot.listing.listing_id for lot in result.lot_results] == [
         "routing-lot"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_real_routing_sends_exact_multiplatform_identities_to_fake_lot_scanner() -> None:
+    marketplace = _FakeMarketplaceSearch(
+        {
+            "observable lot": [
+                _raw_listing(
+                    "observable-mixed-lot",
+                    "GTA V PS4 + RDR2 PS5",
+                    "10",
+                )
+            ]
+        }
+    )
+    detector = FuzzyGameDetector(_multiplatform_catalog())
+    individual_scanner = _RecordingIndividualScanner()
+    lot_scanner = _RecordingLotScanner()
+    orchestrator = DefaultSearchOrchestrator(
+        candidate_search=WallapopCandidateSearchAdapter(marketplace),
+        game_detector=detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
+        opportunity_scanner=individual_scanner,  # type: ignore[arg-type]
+        lot_opportunity_scanner=lot_scanner,  # type: ignore[arg-type]
+    )
+
+    result = await orchestrator.execute(SearchPlan((_query("observable lot"),)))
+
+    assert individual_scanner.calls == []
+    assert len(lot_scanner.calls) == 1
+    assert [
+        (game.canonical_name, game.platform)
+        for game in lot_scanner.calls[0].detected_games
+    ] == [
+        ("Grand Theft Auto V", Platform.PS4),
+        ("Red Dead Redemption 2", Platform.PS5),
+    ]
+    assert result.ambiguous_candidates == ()
+    assert result.lot_results[0] is not None
+
+
+@pytest.mark.asyncio
+async def test_real_routing_does_not_call_fake_scanners_for_ambiguous_copy() -> None:
+    marketplace = _FakeMarketplaceSearch(
+        {
+            "observable ambiguous": [
+                _raw_listing(
+                    "observable-ambiguous-copy",
+                    "GTA V PS4 y PS5",
+                    "10",
+                )
+            ]
+        }
+    )
+    detector = FuzzyGameDetector(_multiplatform_catalog())
+    individual_scanner = _RecordingIndividualScanner()
+    lot_scanner = _RecordingLotScanner()
+    orchestrator = DefaultSearchOrchestrator(
+        candidate_search=WallapopCandidateSearchAdapter(marketplace),
+        game_detector=detector,
+        candidate_eligibility_policy=RuleBasedCandidateEligibilityPolicy(),
+        opportunity_scanner=individual_scanner,  # type: ignore[arg-type]
+        lot_opportunity_scanner=lot_scanner,  # type: ignore[arg-type]
+    )
+
+    result = await orchestrator.execute(
+        SearchPlan((_query("observable ambiguous"),))
+    )
+
+    assert individual_scanner.calls == []
+    assert lot_scanner.calls == []
+    assert len(result.ambiguous_candidates) == 1
+    assert (
+        result.ambiguous_candidates[0].reason
+        is CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM
+    )
+
+
+@pytest.mark.asyncio
+async def test_real_orchestrator_routes_resolved_multiplatform_lot_to_two_markets() -> None:
+    responses: dict[str, Sequence[dict[str, Any]]] = {
+        "multiplatform lot": [
+            _raw_listing(
+                "mixed-platform-lot",
+                "GTA V PS4 + RDR2 PS5",
+                "10",
+            )
+        ],
+        "gta v ps4": _platform_comparables(
+            "gta-ps4",
+            "GTA V PS4 juego",
+            ("18", "19", "20", "21", "22"),
+        ),
+        "rdr2 ps5": _platform_comparables(
+            "rdr2-ps5",
+            "Red Dead Redemption 2 PS5 juego",
+            ("24", "25", "26", "27", "28"),
+        ),
+    }
+    pipeline = _build_pipeline(
+        responses,
+        game_catalog=_multiplatform_catalog(),
+    )
+
+    result = await pipeline.orchestrator.execute(
+        SearchPlan((_query("multiplatform lot"),))
+    )
+
+    assert result.ambiguous_candidates == ()
+    assert result.individual_candidates == 0
+    assert result.lot_candidates == 1
+    assert len(result.lot_results) == 1
+    lot_result = result.lot_results[0]
+    assert [
+        (game.canonical_name, game.platform)
+        for game in lot_result.detected_games
+    ] == [
+        ("Grand Theft Auto V", Platform.PS4),
+        ("Red Dead Redemption 2", Platform.PS5),
+    ]
+    assert [valuation.game.platform for valuation in lot_result.game_valuations] == [
+        Platform.PS4,
+        Platform.PS5,
+    ]
+    assert all(valuation.currency == "EUR" for valuation in lot_result.game_valuations)
+    assert lot_result.opportunity is not None
+    assert lot_result.opportunity.currency == "EUR"
+    assert lot_result.opportunity.reference_market_value == sum(
+        (
+            valuation.estimated_market_value
+            for valuation in lot_result.game_valuations
+        ),
+        Decimal("0"),
+    )
+    assert _executed_keywords(pipeline) == [
+        "multiplatform lot",
+        "gta v PS4",
+        "rdr2 PS5",
+    ]
+
+
+@pytest.mark.asyncio
+async def test_real_orchestrator_keeps_single_copy_multiplatform_ambiguous() -> None:
+    pipeline = _build_pipeline(
+        {
+            "ambiguous copy": [
+                _raw_listing(
+                    "ambiguous-copy",
+                    "GTA V PS4 y PS5",
+                    "10",
+                )
+            ]
+        },
+        game_catalog=_multiplatform_catalog(),
+    )
+
+    result = await pipeline.orchestrator.execute(
+        SearchPlan((_query("ambiguous copy"),))
+    )
+
+    assert result.individual_candidates == 0
+    assert result.lot_candidates == 0
+    assert result.lot_results == ()
+    assert result.individual_result is None
+    assert len(result.ambiguous_candidates) == 1
+    assert result.ambiguous_candidates[0].listing_id == "ambiguous-copy"
+    assert (
+        result.ambiguous_candidates[0].reason
+        is CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM
+    )
+    assert _executed_keywords(pipeline) == ["ambiguous copy"]
+
+
+@pytest.mark.asyncio
+async def test_same_game_multiplatform_lot_keeps_two_independent_valuations() -> None:
+    pipeline = _build_pipeline(
+        {
+            "same game lot": [
+                _raw_listing(
+                    "same-game-platform-lot",
+                    "GTA V PS4 + GTA V PS5",
+                    "10",
+                )
+            ],
+            "gta v ps4": _platform_comparables(
+                "gta-ps4",
+                "GTA V PS4 juego",
+                ("18", "19", "20", "21", "22"),
+            ),
+            "gta v ps5": _platform_comparables(
+                "gta-ps5",
+                "GTA V PS5 juego",
+                ("30", "31", "32", "33", "34"),
+            ),
+        },
+        game_catalog=_multiplatform_catalog(),
+    )
+
+    result = await pipeline.orchestrator.execute(
+        SearchPlan((_query("same game lot"),))
+    )
+
+    assert result.ambiguous_candidates == ()
+    assert result.lot_candidates == 1
+    assert len(result.lot_results) == 1
+    lot_result = result.lot_results[0]
+    assert [
+        (valuation.game.canonical_name, valuation.game.platform)
+        for valuation in lot_result.game_valuations
+    ] == [
+        ("Grand Theft Auto V", Platform.PS4),
+        ("Grand Theft Auto V", Platform.PS5),
+    ]
+    assert [
+        valuation.estimated_market_value
+        for valuation in lot_result.game_valuations
+    ] == [Decimal("20"), Decimal("32")]
+    assert lot_result.opportunity is not None
+    assert lot_result.opportunity.reference_market_value == Decimal("52")
+    assert _executed_keywords(pipeline) == [
+        "same game lot",
+        "gta v PS4",
+        "gta v PS5",
     ]
 
 

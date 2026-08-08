@@ -11,7 +11,7 @@ from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.game_identity import GameIdentity
 from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import IGameDetector, ListingText
-from infrastructure.detectors.platform_lexical_matcher import (
+from infrastructure.matching.platform_lexical_matcher import (
     PlatformLexicalMatcher,
     PlatformMention,
 )

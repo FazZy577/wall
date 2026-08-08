@@ -556,6 +556,360 @@ def test_one_platform_family_is_not_ambiguous(
     )
 
 
+@pytest.mark.parametrize(
+    ("title", "games"),
+    [
+        (
+            "GTA V PS4 + RDR2 PS5",
+            (
+                _game(platform=Platform.PS4),
+                _game("Red Dead Redemption 2", Platform.PS5),
+            ),
+        ),
+        (
+            "GTA V PS5 + RDR2 PS4",
+            (
+                _game(platform=Platform.PS5),
+                _game("Red Dead Redemption 2", Platform.PS4),
+            ),
+        ),
+        (
+            "Pack: GTA V Xbox 360 + Halo Test Xbox One",
+            (
+                _game(platform=Platform.XBOX_360),
+                _game("Halo Test", Platform.XBOX_ONE),
+            ),
+        ),
+        (
+            "Lote Zelda Test Wii + Portable Test Nintendo 3DS",
+            (
+                _game("Zelda Test", Platform.WII),
+                _game("Portable Test", Platform.NINTENDO_3DS),
+            ),
+        ),
+        (
+            "GTA V PS4 + RDR2 PS4",
+            (_game(), _game("Red Dead Redemption 2")),
+        ),
+    ],
+)
+def test_locally_resolved_physical_lots_are_eligible_across_platforms(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    games: tuple[DetectedGame, ...],
+) -> None:
+    result = policy.classify(_listing(title), games)
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        games,
+    )
+
+
+def test_same_game_on_two_platforms_requires_and_preserves_two_physical_items(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    ps4 = _game(platform=Platform.PS4)
+    ps5 = _game(platform=Platform.PS5)
+
+    result = policy.classify(_listing("GTA V PS4 + GTA V PS5"), (ps4, ps5))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        (ps4, ps5),
+    )
+    assert result.included_games[0] is ps4
+    assert result.included_games[1] is ps5
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "GTA V PS4 y PS5",
+        "GTA V PS5 y PS4",
+        "GTA V Xbox One y Xbox Series X",
+    ],
+)
+def test_one_game_mention_with_multiple_platforms_remains_ambiguous(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+) -> None:
+    result = policy.classify(_listing(title), ())
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+
+def test_same_game_cannot_become_a_lot_from_duplicate_detector_results_only(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("GTA V PS4 y PS5"),
+        (
+            _game(platform=Platform.PS4),
+            _game(platform=Platform.PS5),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+
+def test_multiplatform_lot_without_local_association_is_ambiguous(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("Lote PS4 y PS5", "GTA V RDR2"),
+        (
+            _game(platform=Platform.PS4),
+            _game("Red Dead Redemption 2", Platform.PS5),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+
+def test_detected_cross_platform_lot_requires_every_local_platform_mention(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("Lote GTA V PS4 + RDR2"),
+        (
+            _game(platform=Platform.PS4),
+            _game("Red Dead Redemption 2", Platform.PS5),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+def test_contextual_platform_is_filtered_before_multiplatform_decision(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game(platform=Platform.PS4)
+    rdr2 = _game("Red Dead Redemption 2", Platform.PS5)
+
+    result = policy.classify(
+        _listing("GTA V PS4", "Cambio por RDR2 PS5"),
+        (gta, rdr2),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (gta,),
+    )
+
+
+def test_search_context_keeps_only_the_game_being_sold(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    rdr2 = _game("Red Dead Redemption 2", Platform.PS5)
+    gta = _game(platform=Platform.PS4)
+
+    result = policy.classify(
+        _listing("Vendo RDR2 PS5", "Busco GTA V PS4"),
+        (rdr2, gta),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (rdr2,),
+    )
+
+
+def test_multiplatform_search_only_remains_a_contextual_reference(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("Busco GTA V PS4 y RDR2 PS5"),
+        (
+            _game(platform=Platform.PS4),
+            _game("Red Dead Redemption 2", Platform.PS5),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
+    )
+
+
+def test_compatibility_platform_is_not_a_second_product(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game(platform=Platform.PS4)
+
+    result = policy.classify(
+        _listing("GTA V PS4 compatible con PS5"),
+        (gta,),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (gta,),
+    )
+
+
+def test_unassociated_platform_in_separate_context_does_not_relabel_game(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game(platform=Platform.PS4)
+
+    result = policy.classify(
+        _listing("GTA V PS4", "TambiГ©n tengo una PS5"),
+        (gta,),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (gta,),
+    )
+
+
+def test_contextually_excluded_game_does_not_affect_multiplatform_lot(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    gta = _game(platform=Platform.PS4)
+    rdr2 = _game("Red Dead Redemption 2", Platform.PS5)
+    ghost = _game("Ghost of Tsushima", Platform.PS4)
+
+    result = policy.classify(
+        _listing(
+            "Lote GTA V PS4 + RDR2 PS5",
+            "Ghost of Tsushima PS4 vendido por separado",
+        ),
+        (gta, rdr2, ghost),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_LOT,
+        CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
+        (gta, rdr2),
+    )
+
+
+def test_unknown_platform_cannot_enable_a_multiplatform_lot(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("GTA V PS4 + RDR2 PS5"),
+        (
+            _game(platform=Platform.PS4),
+            _game("Red Dead Redemption 2", Platform.UNKNOWN),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+    )
+
+
+def test_multiplatform_unsupported_edition_remains_candidate_level(
+    policy: RuleBasedCandidateEligibilityPolicy,
+) -> None:
+    result = policy.classify(
+        _listing("Lote GTA V PS4 + RDR2 Ultimate Edition PS5"),
+        (
+            _game(platform=Platform.PS4),
+            _game("Red Dead Redemption 2", Platform.PS5),
+        ),
+    )
+
+    _assert_classification(
+        result,
+        CandidateDisposition.AMBIGUOUS,
+        CandidateClassificationReason.UNSUPPORTED_EDITION,
+    )
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Consola PS2 Slim",
+        "PS3 Super Slim 500 GB",
+        "Consola PS4 Pro 1 TB",
+        "PS5 Slim con mando",
+        "Xbox 360 Slim consola",
+        "Xbox One S 1 TB",
+        "Xbox One X con mando",
+        "Xbox Series S 512 GB",
+        "Xbox Series X 1 TB",
+        "Nintendo Switch Lite consola",
+        "Nintendo Switch OLED con accesorios",
+        "Nintendo 3DS consola",
+        "PSP consola",
+        "PS Vita consola",
+    ],
+)
+def test_multigeneration_hardware_is_ignored(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+) -> None:
+    result = policy.classify(_listing(title), (_game(),))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.IGNORED,
+        CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+    )
+
+
+@pytest.mark.parametrize(
+    ("title", "game_name", "platform"),
+    [
+        ("Wii Sports", "Wii Sports", Platform.WII),
+        ("Nintendo Switch Sports", "Nintendo Switch Sports", Platform.SWITCH),
+        ("Xbox One Piece Odyssey", "One Piece Odyssey", Platform.XBOX_ONE),
+        ("PS Vita FIFA 15", "FIFA 15", Platform.PS_VITA),
+    ],
+)
+def test_platform_words_inside_game_titles_are_not_hardware(
+    policy: RuleBasedCandidateEligibilityPolicy,
+    title: str,
+    game_name: str,
+    platform: Platform,
+) -> None:
+    game = _game(game_name, platform)
+
+    result = policy.classify(_listing(title), (game,))
+
+    _assert_classification(
+        result,
+        CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+        CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+        (game,),
+    )
+
+
 def test_no_detected_game_is_ignored(
     policy: RuleBasedCandidateEligibilityPolicy,
 ) -> None:
@@ -839,7 +1193,13 @@ def test_implementation_has_no_forbidden_dependencies_or_io() -> None:
 
     assert not any(name.startswith("application") for name in imports)
     assert not any(name.startswith("presentation") for name in imports)
-    assert not any(name.startswith("infrastructure") for name in imports)
+    allowed_infrastructure_imports = {
+        "infrastructure.matching.platform_lexical_matcher",
+    }
+    infrastructure_imports = {
+        name for name in imports if name.startswith("infrastructure")
+    }
+    assert infrastructure_imports <= allowed_infrastructure_imports
     forbidden = (
         "wallapop",
         "playwright",

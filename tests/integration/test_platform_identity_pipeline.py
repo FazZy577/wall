@@ -9,6 +9,11 @@ from application.use_cases.default_lot_opportunity_scanner import (
     DefaultLotOpportunityScanner,
 )
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
+from domain.entities.candidate_classification import (
+    CandidateClassification,
+    CandidateClassificationReason,
+    CandidateDisposition,
+)
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
@@ -18,6 +23,9 @@ from domain.interfaces.game_detector import ListingText
 from domain.interfaces.price_dataset_builder import PriceDataset
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
+)
+from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
+    RuleBasedCandidateEligibilityPolicy,
 )
 from infrastructure.collectors.wallapop_price_collector import WallapopPriceCollector
 from infrastructure.dataset_builders.default_price_dataset_builder import (
@@ -106,7 +114,11 @@ def _identity_catalog() -> _Catalog:
     )
     return _Catalog(
         entries
-        + (_entry("Red Dead Redemption 2", Platform.PS4, "RDR2"),)
+        + tuple(
+            _entry("Red Dead Redemption 2", platform, "RDR2")
+            for platform in (Platform.PS4, Platform.PS5)
+        )
+        + (_entry("Ghost of Tsushima", Platform.PS4, "Ghost"),)
         + tuple(
             _entry("Halo Test", platform, "Halo")
             for platform in (
@@ -162,6 +174,111 @@ def _individual_scanner(
         ),
         opportunity_ranker=DefaultOpportunityRanker(),
     )
+
+
+def _detect_and_classify(
+    title: str,
+    description: str = "",
+) -> tuple[list[DetectedGame], CandidateClassification]:
+    detector = FuzzyGameDetector(_identity_catalog())
+    policy = RuleBasedCandidateEligibilityPolicy()
+    games = detector.detect_games(ListingText(title, description))
+    listing = CandidateListing(
+        "eligibility-integration",
+        title,
+        description,
+        Decimal("10"),
+        "EUR",
+        "https://example.test/eligibility-integration",
+    )
+    return games, policy.classify(listing, games)
+
+
+@pytest.mark.parametrize(
+    ("title", "expected"),
+    [
+        (
+            "GTA V PS4 + RDR2 PS5",
+            (
+                ("Grand Theft Auto V", Platform.PS4),
+                ("Red Dead Redemption 2", Platform.PS5),
+            ),
+        ),
+        (
+            "GTA V PS4 + GTA V PS5",
+            (
+                ("Grand Theft Auto V", Platform.PS4),
+                ("Grand Theft Auto V", Platform.PS5),
+            ),
+        ),
+    ],
+)
+def test_real_detector_and_eligibility_accept_locally_resolved_multiplatform_lots(
+    title: str,
+    expected: tuple[tuple[str, Platform], ...],
+) -> None:
+    games, classification = _detect_and_classify(title)
+
+    assert [(game.canonical_name, game.platform) for game in games] == list(expected)
+    assert classification.disposition is CandidateDisposition.ELIGIBLE_LOT
+    assert (
+        classification.reason
+        is CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT
+    )
+    assert classification.included_games == tuple(games)
+
+
+def test_real_detector_and_eligibility_keep_single_copy_multiplatform_ambiguous() -> None:
+    games, classification = _detect_and_classify("GTA V PS4 y PS5")
+
+    assert games == []
+    assert classification.disposition is CandidateDisposition.AMBIGUOUS
+    assert (
+        classification.reason
+        is CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM
+    )
+    assert classification.included_games == ()
+
+
+def test_real_detector_and_eligibility_ignore_compatibility_platform() -> None:
+    games, classification = _detect_and_classify(
+        "GTA V PS4 compatible con PS5"
+    )
+
+    assert [(game.canonical_name, game.platform) for game in games] == [
+        ("Grand Theft Auto V", Platform.PS4)
+    ]
+    assert classification.disposition is CandidateDisposition.ELIGIBLE_INDIVIDUAL
+    assert classification.included_games == tuple(games)
+
+
+def test_real_detector_and_eligibility_filter_cross_platform_exchange() -> None:
+    games, classification = _detect_and_classify(
+        "GTA V PS4",
+        "Cambio por RDR2 PS5",
+    )
+
+    assert [(game.canonical_name, game.platform) for game in games] == [
+        ("Grand Theft Auto V", Platform.PS4),
+        ("Red Dead Redemption 2", Platform.PS5),
+    ]
+    assert classification.disposition is CandidateDisposition.ELIGIBLE_INDIVIDUAL
+    assert classification.included_games == (games[0],)
+
+
+def test_real_detector_and_eligibility_filter_sold_separately_from_mixed_lot() -> None:
+    games, classification = _detect_and_classify(
+        "Lote GTA V PS4 + RDR2 PS5",
+        "Ghost of Tsushima PS4 vendido por separado",
+    )
+
+    assert [(game.canonical_name, game.platform) for game in games] == [
+        ("Grand Theft Auto V", Platform.PS4),
+        ("Red Dead Redemption 2", Platform.PS5),
+        ("Ghost of Tsushima", Platform.PS4),
+    ]
+    assert classification.disposition is CandidateDisposition.ELIGIBLE_LOT
+    assert classification.included_games == (games[0], games[1])
 
 
 @pytest.mark.asyncio

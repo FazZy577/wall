@@ -9,7 +9,7 @@ import unicodedata
 
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
-from infrastructure.detectors.platform_lexical_matcher import (
+from infrastructure.matching.platform_lexical_matcher import (
     PlatformLexicalMatcher,
     PlatformMention,
 )
