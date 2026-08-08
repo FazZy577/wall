@@ -7,7 +7,27 @@ import pytest
 
 from domain.entities.detected_game import Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
+from domain.entities.game_identity import GameIdentity
 from domain.interfaces.game_catalog import IGameCatalog
+
+CONCRETE_PLATFORMS = (
+    Platform.PS2,
+    Platform.PS3,
+    Platform.PS4,
+    Platform.PS5,
+    Platform.XBOX,
+    Platform.XBOX_360,
+    Platform.XBOX_ONE,
+    Platform.XBOX_SERIES,
+    Platform.GAMECUBE,
+    Platform.WII,
+    Platform.WII_U,
+    Platform.SWITCH,
+    Platform.NINTENDO_DS,
+    Platform.NINTENDO_3DS,
+    Platform.PSP,
+    Platform.PS_VITA,
+)
 
 
 def _entry(
@@ -53,10 +73,47 @@ def test_non_string_canonical_name_is_rejected(canonical_name: object) -> None:
 
 @pytest.mark.parametrize(
     "platform",
-    [Platform.PS4, Platform.PS5, Platform.XBOX_ONE, Platform.XBOX_SERIES, Platform.SWITCH],
+    CONCRETE_PLATFORMS,
 )
 def test_concrete_platforms_are_valid(platform: Platform) -> None:
     assert _entry(platform=platform).platform is platform
+
+
+def test_platform_has_exact_supported_members_and_stable_values() -> None:
+    assert list(Platform) == [*CONCRETE_PLATFORMS, Platform.UNKNOWN]
+    assert [platform.value for platform in Platform] == [
+        "PS2",
+        "PS3",
+        "PS4",
+        "PS5",
+        "Xbox",
+        "Xbox 360",
+        "Xbox One",
+        "Xbox Series",
+        "Nintendo GameCube",
+        "Nintendo Wii",
+        "Nintendo Wii U",
+        "Nintendo Switch",
+        "Nintendo DS",
+        "Nintendo 3DS",
+        "PSP",
+        "PS Vita",
+        "Unknown",
+    ]
+    assert len({platform.value for platform in Platform}) == len(Platform)
+    for variant in (
+        "PS4_PRO",
+        "PS5_PRO",
+        "PS2_SLIM",
+        "PS3_SLIM",
+        "XBOX_ONE_S",
+        "XBOX_ONE_X",
+        "XBOX_SERIES_S",
+        "XBOX_SERIES_X",
+        "SWITCH_LITE",
+        "SWITCH_OLED",
+    ):
+        assert not hasattr(Platform, variant)
 
 
 @pytest.mark.parametrize("platform", ["PS4", None, 4, object()])
@@ -68,6 +125,12 @@ def test_non_platform_value_is_rejected(platform: object) -> None:
 def test_unknown_platform_is_rejected() -> None:
     with pytest.raises(ValueError, match="platform must not be Platform.UNKNOWN"):
         _entry(platform=Platform.UNKNOWN)
+
+
+def test_catalog_entry_exposes_total_canonical_identity() -> None:
+    entry = _entry(canonical_name="  GRAND   THEFT AUTO V  ", platform=Platform.PS3)
+
+    assert entry.identity == GameIdentity("grand theft auto v", Platform.PS3)
 
 
 def test_external_alias_list_is_snapshotted_as_tuple() -> None:

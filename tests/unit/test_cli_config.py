@@ -323,7 +323,7 @@ def test_search_target_rejects_non_string_name(value: object) -> None:
 
 @pytest.mark.parametrize(
     "platform",
-    [Platform.PS4, Platform.PS5, Platform.XBOX_ONE, Platform.XBOX_SERIES, Platform.SWITCH],
+    [platform for platform in Platform if platform is not Platform.UNKNOWN],
 )
 def test_search_target_accepts_all_known_platform_types(platform: Platform) -> None:
     assert _target(platform=platform).platform is platform
@@ -336,7 +336,7 @@ def test_search_target_rejects_unknown_platform(value: Platform | str) -> None:
         _target(platform=value)
 
 
-@pytest.mark.parametrize("value", ["play 4", "ps4", "PS 4", "Xbox", "SWITCH"])
+@pytest.mark.parametrize("value", ["play 4", "ps4", "PS 4", "xbox", "x360", "SWITCH"])
 def test_search_target_rejects_unknown_or_approximate_platform(value: str) -> None:
     with pytest.raises(ValidationError, match="platform"):
         _target(platform=value)

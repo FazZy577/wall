@@ -7,11 +7,22 @@ from enum import StrEnum
 class Platform(StrEnum):
     """Gaming platforms."""
 
+    PS2 = "PS2"
+    PS3 = "PS3"
     PS4 = "PS4"
     PS5 = "PS5"
+    XBOX = "Xbox"
+    XBOX_360 = "Xbox 360"
     XBOX_ONE = "Xbox One"
     XBOX_SERIES = "Xbox Series"
+    GAMECUBE = "Nintendo GameCube"
+    WII = "Nintendo Wii"
+    WII_U = "Nintendo Wii U"
     SWITCH = "Nintendo Switch"
+    NINTENDO_DS = "Nintendo DS"
+    NINTENDO_3DS = "Nintendo 3DS"
+    PSP = "PSP"
+    PS_VITA = "PS Vita"
     UNKNOWN = "Unknown"
 
 

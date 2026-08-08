@@ -147,7 +147,7 @@ def test_non_object_entry_is_rejected(tmp_path: Path, item: object) -> None:
         (_raw_entry(canonical_name="  "), "canonical_name", "must not be empty"),
         ({"canonical_name": "GTA V", "aliases": []}, "platform", "is required"),
         (_raw_entry(platform=123), "platform", "must be a string"),
-        (_raw_entry(platform="PS3"), "platform", "has unknown value"),
+        (_raw_entry(platform="PS6"), "platform", "has unknown value"),
         (_raw_entry(platform="Unknown"), "platform", "must not be Platform.UNKNOWN"),
         (
             {"canonical_name": "GTA V", "platform": "PS4"},
@@ -212,6 +212,34 @@ def test_same_normalized_name_on_different_platforms_is_allowed(
     games = PackagedGameCatalog(path).list_games()
 
     assert [game.platform for game in games] == [Platform.PS4, Platform.PS5]
+
+
+def test_same_game_on_ps3_ps4_and_ps5_has_three_distinct_identities(
+    tmp_path: Path,
+) -> None:
+    path = _write_json(
+        tmp_path / "catalog.json",
+        [
+            _raw_entry(platform="PS3"),
+            _raw_entry(platform="PS4"),
+            _raw_entry(platform="PS5"),
+        ],
+    )
+
+    games = PackagedGameCatalog(path).list_games()
+
+    assert [game.identity for game in games] == [
+        GameCatalogEntry(
+            "Grand Theft Auto V", Platform.PS3, ("gta v", "gta 5")
+        ).identity,
+        GameCatalogEntry(
+            "Grand Theft Auto V", Platform.PS4, ("gta v", "gta 5")
+        ).identity,
+        GameCatalogEntry(
+            "Grand Theft Auto V", Platform.PS5, ("gta v", "gta 5")
+        ).identity,
+    ]
+    assert len({game.identity for game in games}) == 3
 
 
 @pytest.mark.parametrize(

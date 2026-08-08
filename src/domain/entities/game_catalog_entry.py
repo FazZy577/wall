@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from domain.entities.detected_game import Platform
+from domain.entities.game_identity import GameIdentity
 
 
 @dataclass(frozen=True)
@@ -41,3 +42,8 @@ class GameCatalogEntry:
 
         object.__setattr__(self, "canonical_name", canonical_name)
         object.__setattr__(self, "detection_aliases", tuple(alias_snapshot))
+
+    @property
+    def identity(self) -> GameIdentity:
+        """Return the canonical game-and-platform identity."""
+        return GameIdentity(self.canonical_name, self.platform)

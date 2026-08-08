@@ -75,6 +75,19 @@ def test_game_search_target_is_valid_stripped_and_keeps_platform() -> None:
     assert target.platform is Platform.PS5
 
 
+@pytest.mark.parametrize(
+    "platform",
+    [Platform.PS3, Platform.PS4, Platform.PS5, Platform.XBOX_360],
+)
+def test_game_search_target_accepts_new_concrete_platforms(
+    platform: Platform,
+) -> None:
+    target = GameSearchTarget("Grand Theft Auto V", platform)
+
+    assert target.canonical_name == "Grand Theft Auto V"
+    assert target.platform is platform
+
+
 def test_game_search_target_does_not_normalize_internal_content() -> None:
     target = GameSearchTarget("  Pokémon:   Stadium 2!  ", Platform.SWITCH)
 
