@@ -344,6 +344,11 @@ async def test_config_error_returns_three_and_loader_is_called_once(
     monkeypatch.setattr(cli_main, "load_app_config", fail)
     monkeypatch.setattr(
         cli_main,
+        "preflight_json_report_destination",
+        lambda *args, **kwargs: pytest.fail("preflight must not run"),
+    )
+    monkeypatch.setattr(
+        cli_main,
         "open_operational_runtime",
         lambda config: pytest.fail("runtime must not be opened"),
     )
@@ -499,6 +504,46 @@ async def test_expected_classifications_do_not_change_failure_exit_semantics(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "destination_kind",
+    ["missing_parent", "existing_target", "directory_target"],
+)
+async def test_json_preflight_failure_prevents_runtime_and_scan(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    destination_kind: str,
+) -> None:
+    overwrite = False
+    if destination_kind == "missing_parent":
+        destination = tmp_path / "missing" / "report.json"
+    elif destination_kind == "existing_target":
+        destination = tmp_path / "existing.json"
+        destination.write_text("existing", encoding="utf-8")
+    else:
+        destination = tmp_path / "report-directory"
+        destination.mkdir()
+        overwrite = True
+    config = _config(
+        output=OutputConfig(
+            terminal=True,
+            json_path=destination,
+            overwrite=overwrite,
+        )
+    )
+    generator, orchestrator, lifecycle = _patch_run(monkeypatch, config=config)
+
+    code = await cli_main.run_scan(Path("config.toml"), confirm_live=True)
+
+    assert code == 7
+    assert generator.calls == 0
+    assert orchestrator.calls == 0
+    assert lifecycle == {"opened": False, "closed": False}
+    assert "JSON report error" in capsys.readouterr().err
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_outputs_run_once_after_runtime_closes_and_preserve_overwrite(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -547,6 +592,79 @@ async def test_outputs_run_once_after_runtime_closes_and_preserve_overwrite(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+async def test_json_preflight_runs_before_runtime_scan_and_final_write(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    destination = tmp_path / "report.json"
+    config = _config(
+        output=OutputConfig(
+            terminal=False,
+            json_path=destination,
+            overwrite=False,
+        )
+    )
+    generator, orchestrator, _ = _patch_run(monkeypatch, config=config)
+    events: list[str] = []
+    original_load = cli_main.load_app_config
+    original_open = cli_main.open_operational_runtime
+    original_generate = generator.generate
+    original_execute = orchestrator.execute
+
+    def load(path: Path) -> AppConfig:
+        events.append("load")
+        return original_load(path)
+
+    def preflight(path: Path, *, overwrite: bool) -> None:
+        assert path == destination
+        assert overwrite is False
+        events.append("preflight")
+
+    @asynccontextmanager
+    async def open_runtime(runtime_config: AppConfig) -> Any:
+        events.append("open_runtime")
+        async with original_open(runtime_config) as runtime:
+            yield runtime
+
+    def generate(request: object) -> SearchPlanGenerationResult:
+        events.append("generate")
+        return original_generate(request)
+
+    async def execute(plan: SearchPlan) -> SearchOrchestrationResult:
+        events.append("scan")
+        return await original_execute(plan)
+
+    def build(generation: object, execution: object) -> dict[str, object]:
+        events.append("build_json")
+        return {"schema_version": 2}
+
+    def write(report: object, path: Path, *, overwrite: bool) -> None:
+        events.append("write_json")
+
+    monkeypatch.setattr(cli_main, "load_app_config", load)
+    monkeypatch.setattr(cli_main, "preflight_json_report_destination", preflight)
+    monkeypatch.setattr(cli_main, "open_operational_runtime", open_runtime)
+    monkeypatch.setattr(generator, "generate", generate)
+    monkeypatch.setattr(orchestrator, "execute", execute)
+    monkeypatch.setattr(cli_main, "build_json_report", build)
+    monkeypatch.setattr(cli_main, "write_json_report", write)
+
+    code = await cli_main.run_scan(Path("config.toml"), confirm_live=True)
+
+    assert code == 0
+    assert events == [
+        "load",
+        "preflight",
+        "open_runtime",
+        "generate",
+        "scan",
+        "build_json",
+        "write_json",
+    ]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_disabled_outputs_are_not_called(monkeypatch: pytest.MonkeyPatch) -> None:
     config = _config(
         output=OutputConfig(
@@ -588,6 +706,11 @@ async def test_json_output_is_not_built_when_path_is_disabled(
     monkeypatch.setattr(cli_main, "render_terminal_report", lambda *args, **kwargs: "")
     monkeypatch.setattr(
         cli_main,
+        "preflight_json_report_destination",
+        lambda *args, **kwargs: pytest.fail("preflight must not run"),
+    )
+    monkeypatch.setattr(
+        cli_main,
         "build_json_report",
         lambda *args: pytest.fail("JSON report must not be built"),
     )
@@ -613,7 +736,7 @@ async def test_json_error_returns_seven_after_runtime_closed(
             overwrite=False,
         )
     )
-    _, _, lifecycle = _patch_run(monkeypatch, config=config)
+    _, orchestrator, lifecycle = _patch_run(monkeypatch, config=config)
     monkeypatch.setattr(cli_main, "build_json_report", lambda generation, execution: {})
 
     def fail(report: object, path: Path, *, overwrite: bool) -> None:
@@ -625,6 +748,8 @@ async def test_json_error_returns_seven_after_runtime_closed(
     result = await cli_main.run_scan(Path("config.toml"), confirm_live=True)
 
     assert result == 7
+    assert orchestrator.calls == 1
+    assert lifecycle == {"opened": True, "closed": True}
 
 
 @pytest.mark.unit

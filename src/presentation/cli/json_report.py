@@ -6,6 +6,7 @@ import json
 import math
 import os
 import re
+import stat
 import tempfile
 from collections.abc import Mapping
 from contextlib import suppress
@@ -38,6 +39,7 @@ __all__ = (
     "JsonValue",
     "JsonReportWriteError",
     "build_json_report",
+    "preflight_json_report_destination",
     "write_json_report",
 )
 
@@ -55,6 +57,65 @@ _SENSITIVE_MARKERS = (
 
 class JsonReportWriteError(OSError):
     """Raised when a JSON report cannot be serialized or written."""
+
+
+def _validate_destination_arguments(path: Path, overwrite: bool) -> None:
+    if not isinstance(path, Path):
+        raise TypeError("path must be pathlib.Path")
+    if type(overwrite) is not bool:
+        raise TypeError("overwrite must be bool")
+
+
+def _validate_destination_structure(path: Path, overwrite: bool) -> None:
+    parent = path.parent
+    try:
+        parent_status = parent.stat()
+    except FileNotFoundError as error:
+        raise JsonReportWriteError(
+            f"JSON report parent directory does not exist: {parent}"
+        ) from error
+    except NotADirectoryError as error:
+        raise JsonReportWriteError(
+            f"JSON report parent is not a directory: {parent}"
+        ) from error
+    except OSError as error:
+        raise JsonReportWriteError(
+            f"Could not inspect JSON report parent directory: {parent}"
+        ) from error
+    if not stat.S_ISDIR(parent_status.st_mode):
+        parent_type_error = NotADirectoryError(str(parent))
+        raise JsonReportWriteError(
+            f"JSON report parent is not a directory: {parent}"
+        ) from parent_type_error
+
+    try:
+        target_status = path.stat()
+    except FileNotFoundError:
+        return
+    except OSError as error:
+        raise JsonReportWriteError(
+            f"Could not inspect JSON report destination: {path}"
+        ) from error
+    if stat.S_ISDIR(target_status.st_mode):
+        destination_type_error = IsADirectoryError(str(path))
+        raise JsonReportWriteError(
+            f"JSON report destination is a directory: {path}"
+        ) from destination_type_error
+    if not overwrite:
+        exists_error = FileExistsError(str(path))
+        raise JsonReportWriteError(
+            f"JSON report already exists and overwrite is disabled: {path}"
+        ) from exists_error
+
+
+def preflight_json_report_destination(
+    path: Path,
+    *,
+    overwrite: bool,
+) -> None:
+    """Reject structurally invalid JSON destinations before opening runtime."""
+    _validate_destination_arguments(path, overwrite)
+    _validate_destination_structure(path, overwrite)
 
 
 def _one_line(value: str) -> str:
@@ -382,10 +443,7 @@ def write_json_report(
     """Serialize and atomically write a JSON report beside its target."""
     if not isinstance(report, Mapping):
         raise TypeError("report must be a Mapping")
-    if not isinstance(path, Path):
-        raise TypeError("path must be pathlib.Path")
-    if type(overwrite) is not bool:
-        raise TypeError("overwrite must be bool")
+    _validate_destination_arguments(path, overwrite)
 
     try:
         serialized = json.dumps(
@@ -399,15 +457,7 @@ def write_json_report(
             f"Could not serialize JSON report for {path}"
         ) from error
 
-    try:
-        target_exists = path.exists()
-    except OSError as error:
-        raise JsonReportWriteError(f"Could not inspect JSON report target {path}") from error
-    if target_exists and not overwrite:
-        file_exists_error = FileExistsError(str(path))
-        raise JsonReportWriteError(
-            f"JSON report target already exists: {path}"
-        ) from file_exists_error
+    _validate_destination_structure(path, overwrite)
 
     temporary_path: Path | None = None
     replaced = False

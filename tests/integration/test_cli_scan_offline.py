@@ -188,6 +188,32 @@ async def test_scan_command_runs_full_offline_pipeline_and_writes_both_outputs(
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("destination_kind", ["missing_parent", "existing_target"])
+async def test_invalid_json_destination_stops_before_offline_runtime(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    destination_kind: str,
+) -> None:
+    config_path = tmp_path / "config.toml"
+    if destination_kind == "missing_parent":
+        json_path = "missing/report.json"
+    else:
+        json_path = "existing.json"
+        (tmp_path / json_path).write_text("existing", encoding="utf-8")
+    _write_config(config_path, json_path=json_path)
+    marketplace = _FakeMarketplaceSearch(_success_responses())
+    lifecycle = _patch_runtime(monkeypatch, marketplace)
+
+    code = await cli_main.run_scan(config_path, confirm_live=True)
+
+    assert code == 7
+    assert lifecycle == {"opened": False, "closed": False}
+    assert marketplace.calls == []
+    assert "JSON report error" in capsys.readouterr().err
+
+
+@pytest.mark.asyncio
 async def test_unknown_target_and_limit_errors_do_not_search_marketplace(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

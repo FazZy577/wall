@@ -16,6 +16,7 @@ from presentation.cli.config_loader import AppConfigLoadError, load_app_config
 from presentation.cli.json_report import (
     JsonReportWriteError,
     build_json_report,
+    preflight_json_report_destination,
     write_json_report,
 )
 from presentation.cli.main import main, run_scan
@@ -194,11 +195,16 @@ def test_json_report_is_a_safe_presentation_boundary() -> None:
     assert json_report.__name__ == "presentation.cli.json_report"
     assert JsonReportWriteError.__module__ == "presentation.cli.json_report"
     assert build_json_report.__module__ == "presentation.cli.json_report"
+    assert (
+        preflight_json_report_destination.__module__
+        == "presentation.cli.json_report"
+    )
     assert write_json_report.__module__ == "presentation.cli.json_report"
     assert set(json_report.__all__) == {
         "JsonValue",
         "JsonReportWriteError",
         "build_json_report",
+        "preflight_json_report_destination",
         "write_json_report",
     }
     assert any(module.startswith("application.") for module in imported_modules)

@@ -25,7 +25,11 @@ from presentation.cli.config import (
     SearchTargetConfig,
     WallapopConfig,
 )
-from presentation.cli.json_report import build_json_report, write_json_report
+from presentation.cli.json_report import (
+    build_json_report,
+    preflight_json_report_destination,
+    write_json_report,
+)
 
 pytestmark = pytest.mark.integration
 
@@ -175,6 +179,8 @@ async def test_json_report_pipeline_is_offline_and_serializable(tmp_path: Path) 
     execution = await runtime.search_orchestrator.execute(generation.plan)
     report = build_json_report(generation, execution)
     output = tmp_path / "operational-report.json"
+    preflight_json_report_destination(output, overwrite=False)
+    assert not output.exists()
     write_json_report(report, output, overwrite=False)
     loaded = json.loads(output.read_text(encoding="utf-8"))
 

@@ -27,6 +27,7 @@ from presentation.cli.config_loader import AppConfigLoadError, load_app_config
 from presentation.cli.json_report import (
     JsonReportWriteError,
     build_json_report,
+    preflight_json_report_destination,
     write_json_report,
 )
 from presentation.cli.terminal_report import render_terminal_report
@@ -178,6 +179,11 @@ async def run_scan(
         return 3
 
     try:
+        if config.output.json_path is not None:
+            preflight_json_report_destination(
+                config.output.json_path,
+                overwrite=config.output.overwrite,
+            )
         request = _request_from_config(config)
         async with open_operational_runtime(config) as runtime:
             generation = runtime.plan_generator.generate(request)

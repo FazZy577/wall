@@ -37,6 +37,7 @@ from presentation.cli import json_report
 from presentation.cli.json_report import (
     JsonReportWriteError,
     build_json_report,
+    preflight_json_report_destination,
     write_json_report,
 )
 from tests.unit.test_cli_terminal_report import (
@@ -217,7 +218,90 @@ def test_build_validates_result_types() -> None:
         build_json_report(generation, object())  # type: ignore[arg-type]
 
     assert not inspect.iscoroutinefunction(build_json_report)
+    assert not inspect.iscoroutinefunction(preflight_json_report_destination)
     assert not inspect.iscoroutinefunction(write_json_report)
+
+    with pytest.raises(TypeError):
+        preflight_json_report_destination("report.json", overwrite=False)  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        preflight_json_report_destination(Path("report.json"), overwrite=1)  # type: ignore[arg-type]
+
+
+@pytest.mark.unit
+def test_preflight_accepts_valid_destination_without_writing(tmp_path: Path) -> None:
+    target = (tmp_path / "informe-espaГ±ol.json").resolve(strict=False)
+
+    preflight_json_report_destination(target, overwrite=False)
+    preflight_json_report_destination(target, overwrite=False)
+
+    assert target.is_absolute()
+    assert not target.exists()
+    assert not list(tmp_path.glob(".*.tmp"))
+
+
+@pytest.mark.unit
+def test_preflight_enforces_parent_target_and_overwrite_structure(
+    tmp_path: Path,
+) -> None:
+    missing_target = tmp_path / "missing" / "report.json"
+    with pytest.raises(JsonReportWriteError) as missing_error:
+        preflight_json_report_destination(missing_target, overwrite=False)
+    assert isinstance(missing_error.value.__cause__, FileNotFoundError)
+    assert str(missing_target.parent) in str(missing_error.value)
+    assert not missing_target.parent.exists()
+
+    parent_file = tmp_path / "parent-file"
+    parent_file.write_text("parent content", encoding="utf-8")
+    with pytest.raises(JsonReportWriteError) as parent_error:
+        preflight_json_report_destination(parent_file / "report.json", overwrite=False)
+    assert isinstance(parent_error.value.__cause__, NotADirectoryError)
+    assert parent_file.read_text(encoding="utf-8") == "parent content"
+
+    target_directory = tmp_path / "target-directory"
+    target_directory.mkdir()
+    with pytest.raises(JsonReportWriteError) as directory_error:
+        preflight_json_report_destination(target_directory, overwrite=True)
+    assert isinstance(directory_error.value.__cause__, IsADirectoryError)
+    assert target_directory.is_dir()
+
+    existing_target = tmp_path / "existing.json"
+    existing_target.write_text("original content", encoding="utf-8")
+    with pytest.raises(JsonReportWriteError) as existing_error:
+        preflight_json_report_destination(existing_target, overwrite=False)
+    assert isinstance(existing_error.value.__cause__, FileExistsError)
+    preflight_json_report_destination(existing_target, overwrite=True)
+    preflight_json_report_destination(existing_target, overwrite=True)
+    assert existing_target.read_text(encoding="utf-8") == "original content"
+
+
+@pytest.mark.unit
+def test_preflight_wraps_filesystem_errors_and_writer_revalidates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = tmp_path / "report.json"
+    original_stat = Path.stat
+
+    def fail_parent_stat(path: Path, *args: object, **kwargs: object):
+        if path == tmp_path:
+            raise PermissionError("inspection denied")
+        return original_stat(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "stat", fail_parent_stat)
+    with pytest.raises(JsonReportWriteError) as inspection_error:
+        preflight_json_report_destination(target, overwrite=False)
+    assert isinstance(inspection_error.value.__cause__, PermissionError)
+
+    monkeypatch.setattr(Path, "stat", original_stat)
+    preflight_json_report_destination(target, overwrite=False)
+    target.write_text("created after preflight", encoding="utf-8")
+
+    with pytest.raises(JsonReportWriteError) as writer_error:
+        write_json_report({"schema_version": 2}, target, overwrite=False)
+
+    assert isinstance(writer_error.value.__cause__, FileExistsError)
+    assert target.read_text(encoding="utf-8") == "created after preflight"
+    assert not list(tmp_path.glob(".*.tmp"))
 
 
 @pytest.mark.unit
