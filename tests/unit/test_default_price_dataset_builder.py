@@ -6,6 +6,7 @@ using mocks (no real data).
 
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import get_type_hints
 from unittest.mock import Mock
 
 import pytest
@@ -21,6 +22,7 @@ from domain.interfaces.game_detector import (
 from domain.interfaces.price_dataset_builder import (
     InvalidComparableListingError,
     PriceDataset,
+    PriceObservation,
 )
 from infrastructure.dataset_builders.default_price_dataset_builder import (
     DefaultPriceDatasetBuilder,
@@ -603,7 +605,7 @@ class TestCanonicalComparableDeduplication:
         assert result.observations[0].price == Decimal("10")
         assert result.observations[0].title == "First"
 
-    def test_same_listing_id_on_different_platforms_is_distinct(
+    def test_same_listing_id_on_different_platforms_is_rejected(
         self,
         dataset_builder: DefaultPriceDatasetBuilder,
         target_game: DetectedGame,
@@ -618,12 +620,122 @@ class TestCanonicalComparableDeduplication:
         ps4 = create_comparable_listing("123", "GTA V", Decimal("10"), game=target_game)
         ps5 = create_comparable_listing("123", "GTA V", Decimal("20"), game=ps5_game)
 
-        result = dataset_builder.build([ps4, ps5], "EUR")
+        with pytest.raises(
+            ValueError,
+            match="All comparable listings must share the same GameIdentity",
+        ):
+            dataset_builder.build([ps4, ps5], "EUR")
 
-        assert [(item.platform, item.price) for item in result.observations] == [
-            (Platform.PS4, Decimal("10")),
-            (Platform.PS5, Decimal("20")),
+    @pytest.mark.parametrize(
+        ("other_name", "other_platform"),
+        [
+            ("Grand Theft Auto V", Platform.XBOX_ONE),
+            ("Red Dead Redemption 2", Platform.PS4),
+        ],
+    )
+    @pytest.mark.parametrize("reverse", [False, True])
+    def test_heterogeneous_game_identities_are_rejected_in_any_order(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+        target_game: DetectedGame,
+        other_name: str,
+        other_platform: Platform,
+        reverse: bool,
+    ) -> None:
+        other_game = DetectedGame(
+            canonical_name=other_name,
+            matched_text=other_name,
+            platform=other_platform,
+            confidence=1.0,
+            detection_method=DetectionMethod.EXACT_MATCH,
+        )
+        listings = [
+            create_comparable_listing("target", "Target", 10.0, game=target_game),
+            create_comparable_listing("other", "Other", 20.0, game=other_game),
         ]
+        if reverse:
+            listings.reverse()
+
+        with pytest.raises(
+            ValueError,
+            match="All comparable listings must share the same GameIdentity",
+        ):
+            dataset_builder.build(listings, "EUR")
+
+    def test_homogeneous_identity_uses_game_identity_normalization(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+    ) -> None:
+        games = [
+            DetectedGame(
+                canonical_name=name,
+                matched_text=alias,
+                platform=Platform.PS4,
+                confidence=confidence,
+                detection_method=method,
+            )
+            for name, alias, confidence, method in (
+                (
+                    " Grand Theft  Auto V ",
+                    "GTA V",
+                    1.0,
+                    DetectionMethod.EXACT_MATCH,
+                ),
+                (
+                    "grand theft auto v",
+                    "GTA5",
+                    0.95,
+                    DetectionMethod.ALIAS_MATCH,
+                ),
+                (
+                    "GRAND THEFT AUTO V",
+                    "Grand Thef Auto V",
+                    0.9,
+                    DetectionMethod.FUZZY_MATCH,
+                ),
+            )
+        ]
+        listings = [
+            create_comparable_listing(str(index), "GTA V PS4", 10 + index, game=game)
+            for index, game in enumerate(games)
+        ]
+
+        result = dataset_builder.build(listings, "EUR")
+
+        assert result.sample_size == 3
+        assert result.game is games[0]
+        assert [observation.listing_id for observation in result.observations] == [
+            "0",
+            "1",
+            "2",
+        ]
+
+    def test_price_observation_platform_is_typed_as_platform(self) -> None:
+        assert get_type_hints(PriceObservation)["platform"] is Platform
+
+    def test_unknown_platform_is_not_a_concrete_market_identity(
+        self,
+        dataset_builder: DefaultPriceDatasetBuilder,
+    ) -> None:
+        unknown = DetectedGame(
+            canonical_name="Grand Theft Auto V",
+            matched_text="GTA V",
+            platform=Platform.UNKNOWN,
+            confidence=1.0,
+            detection_method=DetectionMethod.EXACT_MATCH,
+        )
+        listing = create_comparable_listing(
+            "unknown",
+            "GTA V",
+            10.0,
+            game=unknown,
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="Comparable listings must have a concrete GameIdentity",
+        ):
+            dataset_builder.build([listing], "EUR")
 
     def test_similar_listings_with_different_ids_are_distinct(
         self,

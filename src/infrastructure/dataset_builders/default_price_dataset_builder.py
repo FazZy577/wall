@@ -12,6 +12,7 @@ from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.comparable_listing import ComparableListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
+from domain.entities.game_identity import GameIdentity
 from domain.interfaces.price_dataset_builder import (
     InvalidComparableListingError,
     IPriceDatasetBuilder,
@@ -71,6 +72,8 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             logger.warning("No valid ComparableListing objects provided")
             return self._build_empty_dataset(currency)
 
+        self._validate_homogeneous_identity(listings)
+
         for listing in listings:
             if listing.currency != currency:
                 raise CurrencyMismatchError(currency, listing.currency, "PriceDataset")
@@ -112,6 +115,40 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
             sample_size=len(observations),
             currency=currency,
         )
+
+    @staticmethod
+    def _validate_homogeneous_identity(
+        listings: list[ComparableListing],
+    ) -> None:
+        """Fail fast when comparables cross a game-market boundary."""
+        identities: list[GameIdentity] = []
+        for listing in listings:
+            try:
+                detected_game = listing.detected_game
+            except AttributeError:
+                # Preserve the existing corrupt-comparable behavior: extraction
+                # will discard this item without weakening identity checks for
+                # well-formed comparables.
+                continue
+            try:
+                identities.append(
+                    GameIdentity(
+                        detected_game.canonical_name,
+                        detected_game.platform,
+                    )
+                )
+            except (AttributeError, TypeError, ValueError) as error:
+                raise ValueError(
+                    "Comparable listings must have a concrete GameIdentity"
+                ) from error
+
+        if not identities:
+            return
+        target_identity = identities[0]
+        if any(identity != target_identity for identity in identities[1:]):
+            raise ValueError(
+                "All comparable listings must share the same GameIdentity"
+            )
 
     def _build_empty_dataset(self, currency: str) -> PriceDataset:
         """Build an empty dataset for error cases.

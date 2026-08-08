@@ -145,12 +145,12 @@ def _responses() -> dict[str, Sequence[dict[str, Any]]]:
             _raw("json-individual", "GTA V PS4 juego individual", "5.00"),
             _raw("json-lot", "Lote GTA V RDR2 PS4", "20.00"),
         ),
-        "gta v": _comparables(
+        "gta v ps4": _comparables(
             "json-gta",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
         ),
-        "rdr2": _comparables(
+        "rdr2 ps4": _comparables(
             "json-rdr2",
             "RDR2 PS4 juego",
             ("24", "25", "26", "27", "28"),

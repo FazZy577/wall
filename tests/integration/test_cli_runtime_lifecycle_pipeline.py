@@ -28,7 +28,7 @@ from presentation.cli.config import (
 pytestmark = pytest.mark.integration
 
 _CANDIDATE_QUERY = "Grand Theft Auto V PS4"
-_COMPARABLE_QUERY = "gta v"
+_COMPARABLE_QUERY = "gta v PS4"
 
 
 class _OfflinePlaywrightClient(IMarketplaceSearch):

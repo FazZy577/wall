@@ -443,12 +443,51 @@ class TestEdgeCases:
     def test_game_multiple_platforms(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame
     ) -> None:
-        """Valid: Game compatible with multiple platforms."""
+        """Reject a listing that advertises two product platforms."""
         listing = ComparableFilterInput(
             title="GTA V PS4/PS5",
             description="Compatible con ambas consolas",
         )
+        assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
+
+    @pytest.mark.parametrize(
+        "title",
+        [
+            "GTA V PS4 y PS5",
+            "GTA V Xbox One y Xbox Series",
+            "GTA V Nintendo Wii y Nintendo Wii U",
+        ],
+    )
+    def test_conflicting_product_platforms_are_rejected(
+        self,
+        filter_instance: RuleBasedComparableFilter,
+        gta_v_game: DetectedGame,
+        title: str,
+    ) -> None:
+        listing = ComparableFilterInput(title=title)
+
+        assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
+
+    def test_compatibility_platform_is_not_a_second_product_platform(
+        self,
+        filter_instance: RuleBasedComparableFilter,
+        gta_v_game: DetectedGame,
+    ) -> None:
+        listing = ComparableFilterInput(
+            title="GTA V PS4",
+            description="Compatible con PS5",
+        )
+
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is True
+
+    def test_single_different_product_platform_is_rejected(
+        self,
+        filter_instance: RuleBasedComparableFilter,
+        gta_v_game: DetectedGame,
+    ) -> None:
+        listing = ComparableFilterInput(title="GTA V PS5")
+
+        assert filter_instance.is_valid_comparable(gta_v_game, listing) is False
 
     def test_special_characters_in_title(
         self, filter_instance: RuleBasedComparableFilter, gta_v_game: DetectedGame

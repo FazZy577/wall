@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from domain._decimal import require_decimal
 from domain.currency import CurrencyMismatchError, validate_currency_code
-from domain.entities.detected_game import DetectedGame
+from domain.entities.detected_game import DetectedGame, Platform
 from domain.listing_id import validate_listing_id
 
 
@@ -36,7 +36,7 @@ class PriceObservation:
     currency: str
     listing_id: str
     title: str
-    platform: str
+    platform: Platform
     source: str
     raw_listing: dict[str, str | Decimal]
 

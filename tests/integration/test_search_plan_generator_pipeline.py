@@ -191,8 +191,8 @@ def _responses(
     return {
         _GTA_KEYWORDS: gta_candidates,
         _RDR2_KEYWORDS: rdr2_candidates,
-        "gta v": _gta_comparables(),
-        "rdr2": _rdr2_comparables(),
+        "gta v ps4": _gta_comparables(),
+        "rdr2 ps4": _rdr2_comparables(),
     }
 
 
@@ -327,7 +327,7 @@ async def test_complete_pipeline_from_real_catalog_target() -> None:
         execution.lot_candidates,
         execution.undetected_candidates,
     ) == (1, 1, 0, 1, 1, 1, 1, 0, 0)
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
     assert pipeline.marketplace.calls[0].max_results == _MAX_RESULTS
     assert pipeline.marketplace.calls[1].max_results == 100
 
@@ -377,8 +377,8 @@ async def test_multiple_real_targets_preserve_generation_and_execution_order() -
     assert _called_keywords(pipeline) == [
         _GTA_KEYWORDS,
         _RDR2_KEYWORDS,
-        "gta v",
-        "rdr2",
+        "gta v PS4",
+        "rdr2 PS4",
     ]
 
 
@@ -408,7 +408,7 @@ async def test_generator_deduplication_remains_separate_from_orchestrator() -> N
         execution.duplicate_queries,
     ) == (1, 1, 0)
     assert execution.unique_candidates == 1
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
 
 
 @pytest.mark.asyncio
@@ -450,7 +450,7 @@ async def test_query_limit_is_atomic_and_duplicates_fit_after_deduplication() ->
     assert generation.queries_generated == 1
     assert generation.duplicate_queries_removed == 1
     assert execution.executed_queries == 1
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
 
 
 @pytest.mark.asyncio

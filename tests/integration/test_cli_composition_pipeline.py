@@ -29,7 +29,7 @@ from presentation.cli.config import (
 pytestmark = pytest.mark.integration
 
 _CANDIDATE_QUERY = "Grand Theft Auto V PS4"
-_COMPARABLE_QUERY = "gta v"
+_COMPARABLE_QUERY = "gta v ps4"
 
 
 @dataclass(frozen=True)

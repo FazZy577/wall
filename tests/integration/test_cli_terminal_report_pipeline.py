@@ -134,8 +134,8 @@ def _responses() -> dict[str, Sequence[dict[str, Any]]]:
             _raw("renderer-individual", "GTA V PS4 juego individual", "5.00"),
             _raw("renderer-lot", "Lote GTA V RDR2 PS4", "20.00"),
         ),
-        "gta v": _comparables("renderer-gta", "GTA V PS4 juego", ("18", "19", "20", "21", "22")),
-        "rdr2": _comparables("renderer-rdr2", "RDR2 PS4 juego", ("24", "25", "26", "27", "28")),
+        "gta v ps4": _comparables("renderer-gta", "GTA V PS4 juego", ("18", "19", "20", "21", "22")),
+        "rdr2 ps4": _comparables("renderer-rdr2", "RDR2 PS4 juego", ("24", "25", "26", "27", "28")),
     }
 
 
@@ -194,5 +194,5 @@ async def test_terminal_renderer_composes_with_full_offline_pipeline() -> None:
     assert "must-not-be-rendered" not in report
     assert "traceback" not in report.casefold()
     assert marketplace.calls[0] == _CANDIDATE_QUERY
-    assert "gta v" in [call.casefold() for call in marketplace.calls]
-    assert "rdr2" in [call.casefold() for call in marketplace.calls]
+    assert "gta v ps4" in [call.casefold() for call in marketplace.calls]
+    assert "rdr2 ps4" in [call.casefold() for call in marketplace.calls]

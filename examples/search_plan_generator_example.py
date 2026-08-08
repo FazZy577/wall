@@ -153,12 +153,12 @@ def _marketplace_responses() -> dict[str, Sequence[dict[str, Any]]]:
     return {
         _GTA_KEYWORDS: [gta_candidate, lot_candidate],
         _RDR2_KEYWORDS: [rdr2_candidate],
-        "gta v": _comparables(
+        "gta v ps4": _comparables(
             "generator-example-gta-comparable",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
         ),
-        "rdr2": _comparables(
+        "rdr2 ps4": _comparables(
             "generator-example-rdr2-comparable",
             "Red Dead Redemption 2 PS4 juego",
             ("24", "25", "26", "27", "28"),

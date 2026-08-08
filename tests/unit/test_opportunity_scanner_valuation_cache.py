@@ -212,6 +212,10 @@ async def test_same_name_on_different_platforms_is_not_shared(
         [listing("ps4", game()), listing("ps5", game(platform=Platform.PS5))]
     )
     assert scanner.price_collector.collect_comparables.await_count == 2
+    assert [
+        call.kwargs["game"].platform
+        for call in scanner.price_collector.collect_comparables.await_args_list
+    ] == [Platform.PS4, Platform.PS5]
     assert (result.comparable_cache_misses, result.comparable_cache_hits) == (2, 0)
 
 

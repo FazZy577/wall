@@ -226,10 +226,10 @@ def _responses_with_comparables(
 ) -> dict[str, Sequence[dict[str, Any]]]:
     rdr2_comparables = _rdr2_comparables()
     responses: dict[str, Sequence[dict[str, Any]]] = {
-        "gta v": _gta_comparables()
+        "gta v ps4": _gta_comparables()
         if gta_comparables is None
         else gta_comparables,
-        "rdr2": rdr2_comparables,
+        "rdr2 ps4": rdr2_comparables,
         "red dead redemption 2 ps4": rdr2_comparables,
     }
     responses.update(candidate_responses)
@@ -354,7 +354,7 @@ async def test_complete_individual_pipeline_uses_all_productive_components() -> 
         result.lot_candidates,
         result.undetected_candidates,
     ) == (1, 1, 0, 1, 1, 0, 1, 1, 0, 0)
-    assert _executed_keywords(pipeline) == ["individual candidates", "gta v"]
+    assert _executed_keywords(pipeline) == ["individual candidates", "gta v PS4"]
     assert pipeline.marketplace.calls[0].max_results == _MAX_RESULTS
     assert pipeline.marketplace.calls[1].max_results == 100
 
@@ -386,7 +386,7 @@ async def test_complete_pipeline_uses_injected_catalog_for_detection() -> None:
                     title="Synthetic Test Game PS4",
                 )
             ],
-            "synthetic test game": comparables,
+            "synthetic test game ps4": comparables,
         },
         game_catalog=catalog,
     )
@@ -402,7 +402,7 @@ async def test_complete_pipeline_uses_injected_catalog_for_detection() -> None:
     assert opportunity.game.platform is Platform.PS4
     assert _executed_keywords(pipeline) == [
         "synthetic candidates",
-        "synthetic test game",
+        "synthetic test game PS4",
     ]
 
 
@@ -450,7 +450,11 @@ async def test_complete_lot_pipeline_keeps_lot_results_separate() -> None:
         result.lot_candidates,
         result.undetected_candidates,
     ) == (0, 1, 0)
-    assert _executed_keywords(pipeline) == ["lot candidates", "gta v", "rdr2"]
+    assert _executed_keywords(pipeline) == [
+        "lot candidates",
+        "gta v PS4",
+        "rdr2 PS4",
+    ]
     assert len(pipeline.candidate_detector.calls) == 1
 
 
@@ -580,9 +584,9 @@ async def test_mixed_pipeline_deduplicates_queries_and_candidates_stably() -> No
     assert _executed_keywords(pipeline) == [
         "mixed first",
         "mixed second",
-        "gta v",
-        "gta v",
-        "rdr2",
+        "gta v PS4",
+        "gta v PS4",
+        "rdr2 PS4",
     ]
 
 
@@ -627,7 +631,7 @@ async def test_query_failure_preserves_successful_productive_pipeline() -> None:
     assert _executed_keywords(pipeline) == [
         "technical failure",
         "valid after failure",
-        "gta v",
+        "gta v PS4",
     ]
 
 
@@ -703,7 +707,7 @@ async def test_candidate_is_excluded_from_its_own_market_dataset() -> None:
     assert opportunity.listing.listing_id == candidate_id
     assert opportunity.market_price == Decimal("15")
     assert opportunity.market_price != Decimal("14")
-    assert _executed_keywords(pipeline) == ["self exclusion", "gta v"]
+    assert _executed_keywords(pipeline) == ["self exclusion", "gta v PS4"]
 
 
 @pytest.mark.asyncio
@@ -731,7 +735,7 @@ async def test_consecutive_executions_share_no_candidate_or_cache_state() -> Non
     assert len(pipeline.candidate_detector.calls) == 2
     assert _executed_keywords(pipeline) == [
         "repeat candidates",
-        "gta v",
+        "gta v PS4",
         "repeat candidates",
-        "gta v",
+        "gta v PS4",
     ]

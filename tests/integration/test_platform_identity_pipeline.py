@@ -11,7 +11,9 @@ from application.use_cases.default_lot_opportunity_scanner import (
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
+from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import ListingText
 from domain.interfaces.price_dataset_builder import PriceDataset
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
@@ -24,8 +26,12 @@ from infrastructure.dataset_builders.default_price_dataset_builder import (
 from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
+from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
 from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
+)
+from infrastructure.filters.rule_based_comparable_filter import (
+    RuleBasedComparableFilter,
 )
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
 from infrastructure.rankers.default_opportunity_ranker import DefaultOpportunityRanker
@@ -39,7 +45,12 @@ def _game(name: str, platform: Platform) -> DetectedGame:
 class _TextDetector:
     def detect_games(self, listing_text: ListingText) -> list[DetectedGame]:
         title = listing_text.title
-        name = "FIFA 24" if "FIFA" in title else "Grand Theft Auto V"
+        if "RDR2" in title:
+            name = "Red Dead Redemption 2"
+        elif "FIFA" in title:
+            name = "FIFA 24"
+        else:
+            name = "Grand Theft Auto V"
         if "PS5" in title:
             platform = Platform.PS5
         elif "Xbox One" in title:
@@ -64,6 +75,56 @@ class _Search:
         del kwargs
         self.calls += 1
         return self.listings
+
+
+class _Catalog(IGameCatalog):
+    def __init__(self, entries: tuple[GameCatalogEntry, ...]) -> None:
+        self._entries = entries
+
+    def list_games(self) -> tuple[GameCatalogEntry, ...]:
+        return self._entries
+
+
+def _entry(
+    name: str,
+    platform: Platform,
+    *aliases: str,
+) -> GameCatalogEntry:
+    return GameCatalogEntry(name, platform, aliases)
+
+
+def _identity_catalog() -> _Catalog:
+    entries = tuple(
+        _entry("Grand Theft Auto V", platform, "GTA V", "GTA5")
+        for platform in (
+            Platform.PS3,
+            Platform.PS4,
+            Platform.PS5,
+            Platform.XBOX_360,
+            Platform.XBOX_ONE,
+        )
+    )
+    return _Catalog(
+        entries
+        + (_entry("Red Dead Redemption 2", Platform.PS4, "RDR2"),)
+        + tuple(
+            _entry("Halo Test", platform, "Halo")
+            for platform in (
+                Platform.XBOX,
+                Platform.XBOX_360,
+                Platform.XBOX_ONE,
+                Platform.XBOX_SERIES,
+            )
+        )
+    )
+
+
+def _real_collector(search: _Search) -> WallapopPriceCollector:
+    return WallapopPriceCollector(
+        search,
+        FuzzyGameDetector(_identity_catalog()),
+        RuleBasedComparableFilter(),
+    )
 
 
 def _raw(identifier: str, title: str, price: str) -> dict[str, object]:
@@ -158,12 +219,15 @@ async def test_lot_pipeline_keeps_each_game_on_its_requested_platform() -> None:
         [
             _raw("gta-ps5", "GTA V PS5", "90"),
             _raw("gta-ps4", "GTA V PS4", "15"),
-            _raw("fifa-ps4", "FIFA 24 PS4", "80"),
-            _raw("fifa-ps5", "FIFA 24 PS5", "25"),
+            _raw("rdr-ps4", "RDR2 PS4", "80"),
+            _raw("rdr-ps5", "RDR2 PS5", "25"),
         ]
     )
     collector = _collector(search)
-    games = [_game("Grand Theft Auto V", Platform.PS4), _game("FIFA 24", Platform.PS5)]
+    games = [
+        _game("Grand Theft Auto V", Platform.PS4),
+        _game("Red Dead Redemption 2", Platform.PS5),
+    ]
     detector = Mock()
     detector.detect_games.return_value = games
     real_builder = DefaultPriceDatasetBuilder()
@@ -187,7 +251,7 @@ async def test_lot_pipeline_keeps_each_game_on_its_requested_platform() -> None:
         lot_analyzer=analyzer,
     )
 
-    result = await scanner.scan_lot(_candidate("lot", "GTA V PS4 + FIFA 24 PS5"))
+    result = await scanner.scan_lot(_candidate("lot", "GTA V PS4 + RDR2 PS5"))
 
     assert search.calls == 2
     assert [dataset.game.platform for dataset in datasets] == [Platform.PS4, Platform.PS5]
@@ -200,3 +264,96 @@ async def test_lot_pipeline_keeps_each_game_on_its_requested_platform() -> None:
         Platform.PS5,
     ]
     analyzer.analyze.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_real_ps4_market_excludes_every_cross_identity_comparable() -> None:
+    search = _Search(
+        [
+            _raw("ps3", "GTA V PS3", "30"),
+            _raw("ps4", "GTA V PS4", "12"),
+            _raw("ps5", "GTA V PS5", "40"),
+            _raw("x360", "GTA V Xbox 360", "22"),
+            _raw("xone", "GTA V Xbox One", "25"),
+            _raw("ambiguous", "GTA V PS4 y PS5", "18"),
+            _raw("other-game", "RDR2 PS4", "20"),
+            {
+                **_raw("compatible", "GTA V PS4", "15"),
+                "description": "Compatible con PS5",
+            },
+        ]
+    )
+    target = _game("Grand Theft Auto V", Platform.PS4)
+
+    comparables = await _real_collector(search).collect_comparables(
+        target,
+        latitude=40.0,
+        longitude=-3.0,
+    )
+    dataset = DefaultPriceDatasetBuilder().build(list(comparables), "EUR")
+
+    assert [item.listing_id for item in comparables] == ["ps4", "compatible"]
+    assert [item.listing_id for item in dataset.observations] == [
+        "ps4",
+        "compatible",
+    ]
+    assert dataset.game.platform is Platform.PS4
+    assert all(item.platform is Platform.PS4 for item in dataset.observations)
+
+
+@pytest.mark.asyncio
+async def test_real_ps5_market_is_not_hardcoded_to_ps4() -> None:
+    search = _Search(
+        [
+            _raw("ps4", "GTA V PS4", "12"),
+            _raw("ps5", "GTA V PS5", "30"),
+        ]
+    )
+    target = _game("Grand Theft Auto V", Platform.PS5)
+
+    comparables = await _real_collector(search).collect_comparables(
+        target,
+        latitude=40.0,
+        longitude=-3.0,
+    )
+    dataset = DefaultPriceDatasetBuilder().build(list(comparables), "EUR")
+
+    assert [item.listing_id for item in comparables] == ["ps5"]
+    assert dataset.game.platform is Platform.PS5
+    assert [item.platform for item in dataset.observations] == [Platform.PS5]
+
+
+@pytest.mark.asyncio
+async def test_real_xbox_360_market_isolated_within_xbox_family() -> None:
+    search = _Search(
+        [
+            {
+                **_raw("xbox", "Halo Test Xbox", "10"),
+                "description": "Juego fisico",
+            },
+            {
+                **_raw("x360", "Halo Test Xbox 360", "20"),
+                "description": "Juego fisico",
+            },
+            {
+                **_raw("xone", "Halo Test Xbox One", "30"),
+                "description": "Juego fisico",
+            },
+            {
+                **_raw("xseries", "Halo Test Xbox Series", "40"),
+                "description": "Juego fisico",
+            },
+        ]
+    )
+    target = _game("Halo Test", Platform.XBOX_360)
+
+    comparables = await _real_collector(search).collect_comparables(
+        target,
+        latitude=40.0,
+        longitude=-3.0,
+    )
+    dataset = DefaultPriceDatasetBuilder().build(list(comparables), "EUR")
+
+    assert [item.listing_id for item in comparables] == ["x360"]
+    assert dataset.game.platform is Platform.XBOX_360
+    assert [item.platform for item in dataset.observations] == [Platform.XBOX_360]

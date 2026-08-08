@@ -141,8 +141,8 @@ def _candidate_responses() -> dict[str, Sequence[dict[str, Any]]]:
         "individual": [individual],
         "lot": [lot],
         "repeat": [repeated_individual],
-        "gta v": gta_comparables,
-        "rdr2": rdr2_comparables,
+        "gta v ps4": gta_comparables,
+        "rdr2 ps4": rdr2_comparables,
     }
 
 

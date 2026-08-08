@@ -5,12 +5,14 @@ to collect valid comparable listings.
 """
 
 import logging
+import re
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from domain.currency import validate_currency_code
 from domain.entities.comparable_listing import ComparableListing
-from domain.entities.detected_game import DetectedGame
+from domain.entities.detected_game import DetectedGame, Platform
+from domain.entities.game_identity import GameIdentity
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
 from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.marketplace_search import IMarketplaceSearch
@@ -149,12 +151,24 @@ class WallapopPriceCollector(IPriceCollector):
         Returns:
             Search query string
         """
+        # A market query must always retain the target platform dimension.
+        GameIdentity(game.canonical_name, game.platform)
+
         # Use the matched_text if it's already a good query
         # Otherwise, try to extract a good alias from canonical name
 
         # If matched_text is short and looks good, use it
-        if len(game.matched_text.split()) <= 3:
-            return game.matched_text
+        matched_word_count = len(game.matched_text.split())
+        if 0 < matched_word_count <= 3:
+            search_terms = game.matched_text
+        else:
+            search_terms = self._generate_concise_game_terms(game.canonical_name)
+
+        return self._append_platform(search_terms, game.platform)
+
+    @staticmethod
+    def _generate_concise_game_terms(canonical_name: str) -> str:
+        """Generate deterministic game terms without dropping identity."""
 
         # Otherwise, try to create a concise query from canonical name
         # Handle common patterns:
@@ -162,7 +176,7 @@ class WallapopPriceCollector(IPriceCollector):
         # "Call of Duty: Black Ops 6" -> "COD Black Ops 6"
         # "EA Sports FC 24" -> "FC 24"
 
-        canonical = game.canonical_name.lower()
+        canonical = canonical_name.lower()
 
         # GTA
         if "grand theft auto" in canonical:
@@ -188,8 +202,6 @@ class WallapopPriceCollector(IPriceCollector):
         # EA Sports FC / FIFA
         if "ea sports fc" in canonical or "fifa" in canonical:
             # Extract year
-            import re
-
             year_match = re.search(r"\b(20\d{2}|2[0-9])\b", canonical)
             if year_match:
                 year = year_match.group(1)
@@ -199,9 +211,19 @@ class WallapopPriceCollector(IPriceCollector):
                     return f"FC {year}"
             return "FIFA" if "fifa" in canonical else "FC"
 
-        # Default: use canonical name but include platform
-        # "Red Dead Redemption 2" -> "Red Dead Redemption 2 PS4"
-        return f"{game.canonical_name} {game.platform}"
+        return canonical_name
+
+    @staticmethod
+    def _append_platform(search_terms: str, platform: Platform) -> str:
+        """Append the canonical platform unless it is already explicit."""
+        normalized_terms = " ".join(search_terms.strip().casefold().split())
+        normalized_platform = " ".join(platform.value.casefold().split())
+        platform_pattern = re.compile(
+            rf"(?<!\w){re.escape(normalized_platform)}(?!\w)"
+        )
+        if platform_pattern.search(normalized_terms) is not None:
+            return search_terms.strip()
+        return f"{search_terms.strip()} {platform.value}"
 
     def _process_listing(
         self,
@@ -252,13 +274,21 @@ class WallapopPriceCollector(IPriceCollector):
         listing_text = ListingText(title=title, description=description)
         detected_games = self.game_detector.detect_games(listing_text)
 
-        # Check if target game is detected
+        # Check if the complete target identity is detected.
+        target_identity = GameIdentity(
+            target_game.canonical_name,
+            target_game.platform,
+        )
         target_detected = None
         for detected_game in detected_games:
-            if (
-                detected_game.canonical_name == target_game.canonical_name
-                and detected_game.platform == target_game.platform
-            ):
+            try:
+                detected_identity = GameIdentity(
+                    detected_game.canonical_name,
+                    detected_game.platform,
+                )
+            except (TypeError, ValueError):
+                continue
+            if detected_identity == target_identity:
                 target_detected = detected_game
                 break
 

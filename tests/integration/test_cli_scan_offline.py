@@ -148,7 +148,7 @@ def _success_responses() -> dict[str, Sequence[dict[str, Any]]]:
         _GTA_QUERY: (
             _raw("cli-individual", "GTA V PS4 juego individual", "5.00"),
         ),
-        "gta v": _comparables(
+        "gta v ps4": _comparables(
             "cli-gta",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
@@ -181,7 +181,7 @@ async def test_scan_command_runs_full_offline_pipeline_and_writes_both_outputs(
     assert report["individual_opportunities"][0]["currency"] == "EUR"
     assert isinstance(report["individual_opportunities"][0]["purchase_price"], str)
     assert _GTA_QUERY in marketplace.calls
-    assert "gta v" in [call.casefold() for call in marketplace.calls]
+    assert "gta v ps4" in [call.casefold() for call in marketplace.calls]
     serialized = report_path.read_text(encoding="utf-8").casefold()
     assert "must-not-be-reported" not in serialized
     assert "traceback" not in serialized

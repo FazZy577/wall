@@ -9,6 +9,14 @@ import unicodedata
 
 from domain.entities.detected_game import DetectedGame
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
+from infrastructure.detectors.platform_lexical_matcher import (
+    PlatformLexicalMatcher,
+    PlatformMention,
+)
+
+_COMPATIBILITY_PREFIX = re.compile(
+    r"(?:compatible con|compatibilidad con|funciona en|retrocompatible con)\s*$"
+)
 
 _UNSUPPORTED_VARIANT_PATTERNS: tuple[re.Pattern[str], ...] = tuple(
     re.compile(pattern)
@@ -147,7 +155,7 @@ class RuleBasedComparableFilter(IComparableFilter):
 
     def __init__(self) -> None:
         """Initialize the rule-based filter."""
-        pass
+        self._platform_matcher = PlatformLexicalMatcher()
 
     def is_valid_comparable(
         self,
@@ -166,36 +174,65 @@ class RuleBasedComparableFilter(IComparableFilter):
         # Normalize text for matching
         normalized_text = self._normalize_text(f"{listing.title} {listing.description}")
 
-        # Rule 1: Reject unmodeled editions and incomplete physical variants
+        # Rule 1: Reject conflicting product-platform signals.
+        if self._has_conflicting_product_platforms(target_game, normalized_text):
+            return False
+
+        # Rule 2: Reject unmodeled editions and incomplete physical variants
         if self._has_unsupported_variant(normalized_text):
             return False
 
-        # Rule 2: Reject consoles (without clear game context)
+        # Rule 3: Reject consoles (without clear game context)
         if self._is_console_only(normalized_text):
             return False
 
-        # Rule 3: Reject controllers
+        # Rule 4: Reject controllers
         if self._contains_keywords(normalized_text, self.CONTROLLER_KEYWORDS):
             return False
 
-        # Rule 4: Reject accessories
+        # Rule 5: Reject accessories
         if self._contains_keywords(normalized_text, self.ACCESSORY_KEYWORDS):
             return False
 
-        # Rule 5: Reject accounts
+        # Rule 6: Reject accounts
         if self._contains_keywords(normalized_text, self.ACCOUNT_KEYWORDS):
             return False
 
-        # Rule 6: Reject empty boxes
+        # Rule 7: Reject empty boxes
         if self._is_empty_box(normalized_text):
             return False
 
-        # Rule 7: Reject bundles/lots
+        # Rule 8: Reject bundles/lots
         if self._contains_keywords(normalized_text, self.BUNDLE_KEYWORDS):
             return False
 
-        # Rule 8: Verify game match
+        # Rule 9: Verify game match
         return self._is_correct_game(target_game, listing)
+
+    def _has_conflicting_product_platforms(
+        self,
+        target_game: DetectedGame,
+        normalized_text: str,
+    ) -> bool:
+        mentions = tuple(
+            mention
+            for mention in self._platform_matcher.find_mentions(normalized_text)
+            if not self._is_compatibility_mention(normalized_text, mention)
+        )
+        product_platforms = {mention.platform for mention in mentions}
+        if not product_platforms:
+            return False
+        return (
+            len(product_platforms) != 1
+            or target_game.platform not in product_platforms
+        )
+
+    @staticmethod
+    def _is_compatibility_mention(
+        text: str,
+        mention: PlatformMention,
+    ) -> bool:
+        return _COMPATIBILITY_PREFIX.search(text[: mention.start]) is not None
 
     @staticmethod
     def _has_unsupported_variant(text: str) -> bool:
