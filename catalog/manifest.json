@@ -1,7 +1,13 @@
 {
   "schema_version": 1,
-  "catalog_version": 1,
+  "catalog_version": 6,
   "sources": [
-    "platforms/ps4.json"
+    "platforms/ps3.json",
+    "platforms/ps4.json",
+    "platforms/ps5.json",
+    "platforms/xbox_360.json",
+    "platforms/xbox_one.json",
+    "platforms/xbox_series.json",
+    "platforms/switch.json"
   ]
 }

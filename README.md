@@ -71,7 +71,10 @@ capas se encuentra en [`ARCHITECTURE.md`](ARCHITECTURE.md).
 El motor de análisis y la CLI operativa están implementados y cubiertos por
 tests offline. Los candidatos `ignored` y `ambiguous` son resultados esperados
 del routing y se muestran separados de los fallos técnicos en terminal y JSON
-schema v2. El catálogo productivo sigue limitado a PS4; P4.6 abordará el soporte
-multiplataforma real. Quedan pendientes la persistencia histórica, la
-programación de ejecuciones, notificaciones, búsqueda de mercado completo,
-aliases seguros, liquidez, calibración y una futura API/dashboard.
+schema v2. La estructura versionada del catálogo declara siete plataformas;
+PS4 contiene 50 juegos reales, PS5 incorpora 145, Xbox One incorpora 146 y
+Xbox Series incorpora 120, mientras PS3, Xbox 360 y Nintendo Switch permanecen
+pendientes de datos curados.
+Quedan pendientes la persistencia
+histórica, la programación de ejecuciones, notificaciones, búsqueda de mercado
+completo, aliases seguros, liquidez, calibración y una futura API/dashboard.

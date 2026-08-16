@@ -58,8 +58,11 @@ paralelo.
 
 El catálogo canónico está expuesto en Domain mediante `GameCatalogEntry` e
 `IGameCatalog`. `PackagedGameCatalog`, en Infrastructure, valida y entrega un
-snapshot inmutable del recurso empaquetado: actualmente 50 entradas, todas
-PS4.
+snapshot inmutable del recurso empaquetado. El manifiesto versionado declara
+PS3, PS4, PS5, Xbox 360, Xbox One, Xbox Series y Nintendo Switch; actualmente
+PS4 contiene 50 juegos reales, PS5 incorpora 145, Xbox One incorpora 146 y Xbox
+Series incorpora 120. PS3, Xbox 360 y Nintendo Switch continúan pendientes de
+datos curados.
 
 `DefaultSearchPlanGenerator` vive en Application e implementa la estrategia
 `CANONICAL_ONLY`. Resuelve targets por nombre canónico normalizado y
@@ -136,9 +139,10 @@ inspección.
 
 Esta frontera evita contaminar una futura persistencia histórica con anuncios
 que no representan el producto valorado. No se ha implementado SQLite ni
-persistencia. El catálogo productivo continúa limitado a 50 juegos PS4; las
-menciones de otras plataformas solo se reconocen para routing seguro. P4.6,
-soporte multiplataforma real, es el siguiente milestone.
+persistencia. P4.6 ya dispone de una estructura de catálogo con siete
+plataformas declaradas y 461 juegos reales: 50 para PS4, 145 para PS5, 146 para
+Xbox One y 120 para Xbox Series. PS3, Xbox 360 y Nintendo Switch permanecen
+vacías hasta sus respectivas incorporaciones de datos curados.
 
 ## P0 Wallapop Real Integration
 

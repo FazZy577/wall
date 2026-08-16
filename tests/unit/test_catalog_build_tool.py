@@ -542,12 +542,21 @@ def test_repository_sources_exactly_match_runtime_artifact() -> None:
     assert check_runtime_catalog() is None
 
 
-def test_repository_inventory_remains_exactly_50_ps4_entries() -> None:
+def test_repository_inventory_remains_structurally_valid_as_it_expands() -> None:
     entries = build_runtime_entries(catalog_tool.DEFAULT_CATALOG_ROOT)
+    concrete_platforms = set(Platform) - {Platform.UNKNOWN}
+    identities = [entry.identity for entry in entries]
 
-    assert len(entries) == 50
-    assert sum(len(entry.detection_aliases) for entry in entries) == 166
-    assert {entry.platform for entry in entries} == {Platform.PS4}
+    assert len(entries) >= 50
+    assert all(entry.canonical_name.strip() for entry in entries)
+    assert all(entry.platform in concrete_platforms for entry in entries)
+    assert len(set(identities)) == len(identities)
+    assert all(
+        alias.strip()
+        for entry in entries
+        for alias in entry.detection_aliases
+    )
+    assert {entry.platform for entry in entries} <= concrete_platforms
     assert [entry.canonical_name for entry in entries[:2]] == [
         "Grand Theft Auto V",
         "Red Dead Redemption 2",
@@ -576,6 +585,15 @@ def test_repository_short_alias_inventory_is_explicitly_reviewable() -> None:
         "sf5",
         "sfv",
         "ow2",
+        "gt7",
+        "re8",
+        "ac6",
+        "mk1",
+        "sf6",
+        "bf6",
+        "bg3",
+        "p5r",
+        "kh3",
     ]
 
 

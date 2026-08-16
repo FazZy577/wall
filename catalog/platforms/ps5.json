@@ -1,0 +1,947 @@
+{
+  "platform": "PS5",
+  "games": [
+    {
+      "canonical_name": "Marvel's Spider-Man 2",
+      "aliases": [
+        "spiderman 2",
+        "spider man 2",
+        "spiderman2",
+        "spider-man 2 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Marvel's Spider-Man: Miles Morales",
+      "aliases": [
+        "miles morales",
+        "spiderman miles morales",
+        "spider man miles morales"
+      ]
+    },
+    {
+      "canonical_name": "Marvel's Spider-Man Remastered",
+      "aliases": [
+        "spiderman remastered",
+        "spider man ps5"
+      ]
+    },
+    {
+      "canonical_name": "God of War Ragnarök",
+      "aliases": [
+        "gow ragnarok",
+        "god of war ragnarok",
+        "ragnarok ps5"
+      ]
+    },
+    {
+      "canonical_name": "God of War",
+      "aliases": [
+        "god of war ps5",
+        "gow 2018"
+      ]
+    },
+    {
+      "canonical_name": "Horizon Forbidden West",
+      "aliases": [
+        "horizon fw",
+        "horizon forbidden west ps5"
+      ]
+    },
+    {
+      "canonical_name": "Horizon Forbidden West: Burning Shores",
+      "aliases": [
+        "burning shores",
+        "horizon burning shores"
+      ]
+    },
+    {
+      "canonical_name": "Horizon Zero Dawn Remastered",
+      "aliases": [
+        "horizon zero dawn ps5",
+        "hzd remastered"
+      ]
+    },
+    {
+      "canonical_name": "Gran Turismo 7",
+      "aliases": [
+        "gt7",
+        "gran turismo 7 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Ratchet & Clank: Rift Apart",
+      "aliases": [
+        "rift apart",
+        "ratchet and clank rift apart"
+      ]
+    },
+    {
+      "canonical_name": "Demon's Souls",
+      "aliases": [
+        "demons souls ps5",
+        "demon souls remake"
+      ]
+    },
+    {
+      "canonical_name": "Returnal",
+      "aliases": [
+        "returnal ps5"
+      ]
+    },
+    {
+      "canonical_name": "The Last of Us Part I",
+      "aliases": [
+        "tlou 1 remake",
+        "the last of us part 1",
+        "last of us remake ps5"
+      ]
+    },
+    {
+      "canonical_name": "The Last of Us Part II Remastered",
+      "aliases": [
+        "tlou 2 remastered",
+        "the last of us part 2 remastered"
+      ]
+    },
+    {
+      "canonical_name": "Ghost of Tsushima Director's Cut",
+      "aliases": [
+        "ghost of tsushima ps5",
+        "got director's cut"
+      ]
+    },
+    {
+      "canonical_name": "Ghost of Yotei",
+      "aliases": [
+        "ghost of yotei ps5"
+      ]
+    },
+    {
+      "canonical_name": "Final Fantasy XVI",
+      "aliases": [
+        "ff16",
+        "final fantasy 16"
+      ]
+    },
+    {
+      "canonical_name": "Final Fantasy VII Rebirth",
+      "aliases": [
+        "ff7 rebirth",
+        "final fantasy 7 rebirth"
+      ]
+    },
+    {
+      "canonical_name": "Final Fantasy VII Remake Intergrade",
+      "aliases": [
+        "ff7 remake",
+        "final fantasy 7 remake ps5"
+      ]
+    },
+    {
+      "canonical_name": "Astro Bot",
+      "aliases": [
+        "astro bot ps5",
+        "astrobot"
+      ]
+    },
+    {
+      "canonical_name": "Death Stranding 2: On the Beach",
+      "aliases": [
+        "death stranding 2",
+        "ds2 kojima"
+      ]
+    },
+    {
+      "canonical_name": "Death Stranding Director's Cut",
+      "aliases": [
+        "death stranding ps5"
+      ]
+    },
+    {
+      "canonical_name": "Stellar Blade",
+      "aliases": [
+        "stellar blade ps5"
+      ]
+    },
+    {
+      "canonical_name": "Helldivers 2",
+      "aliases": [
+        "helldivers ii",
+        "helldivers 2 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Rise of the Ronin",
+      "aliases": [
+        "rise of the ronin ps5"
+      ]
+    },
+    {
+      "canonical_name": "Until Dawn",
+      "aliases": [
+        "until dawn remake",
+        "until dawn ps5"
+      ]
+    },
+    {
+      "canonical_name": "Days Gone",
+      "aliases": [
+        "days gone ps5"
+      ]
+    },
+    {
+      "canonical_name": "Sackboy: A Big Adventure",
+      "aliases": [
+        "sackboy",
+        "sackboy big adventure"
+      ]
+    },
+    {
+      "canonical_name": "Crash Bandicoot 4: It's About Time",
+      "aliases": [
+        "crash 4",
+        "crash bandicoot 4"
+      ]
+    },
+    {
+      "canonical_name": "Kena: Bridge of Spirits",
+      "aliases": [
+        "kena bridge of spirits"
+      ]
+    },
+    {
+      "canonical_name": "Sifu",
+      "aliases": [
+        "sifu ps5"
+      ]
+    },
+    {
+      "canonical_name": "Deathloop",
+      "aliases": [
+        "deathloop ps5"
+      ]
+    },
+    {
+      "canonical_name": "Ghostwire: Tokyo",
+      "aliases": [
+        "ghostwire tokyo"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil Village",
+      "aliases": [
+        "re village",
+        "resident evil 8",
+        "re8"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil 4 Remake",
+      "aliases": [
+        "re4 remake",
+        "resident evil 4 remake ps5"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil 2 Remake",
+      "aliases": [
+        "re2 remake"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil 3 Remake",
+      "aliases": [
+        "re3 remake"
+      ]
+    },
+    {
+      "canonical_name": "Resident Evil Requiem",
+      "aliases": [
+        "re requiem",
+        "resident evil 9"
+      ]
+    },
+    {
+      "canonical_name": "Dead Space Remake",
+      "aliases": [
+        "dead space ps5",
+        "dead space remake 2023"
+      ]
+    },
+    {
+      "canonical_name": "Silent Hill 2 Remake",
+      "aliases": [
+        "silent hill 2 remake ps5"
+      ]
+    },
+    {
+      "canonical_name": "Alan Wake 2",
+      "aliases": [
+        "alan wake ii"
+      ]
+    },
+    {
+      "canonical_name": "Elden Ring",
+      "aliases": [
+        "elden ring ps5"
+      ]
+    },
+    {
+      "canonical_name": "Elden Ring: Shadow of the Erdtree",
+      "aliases": [
+        "shadow of the erdtree",
+        "elden ring dlc"
+      ]
+    },
+    {
+      "canonical_name": "Dark Souls Remastered",
+      "aliases": [
+        "dark souls ps5"
+      ]
+    },
+    {
+      "canonical_name": "Sekiro: Shadows Die Twice",
+      "aliases": [
+        "sekiro ps5"
+      ]
+    },
+    {
+      "canonical_name": "Armored Core VI: Fires of Rubicon",
+      "aliases": [
+        "armored core 6",
+        "ac6"
+      ]
+    },
+    {
+      "canonical_name": "Lies of P",
+      "aliases": [
+        "lies of p ps5"
+      ]
+    },
+    {
+      "canonical_name": "Wo Long: Fallen Dynasty",
+      "aliases": [
+        "wo long"
+      ]
+    },
+    {
+      "canonical_name": "Cyberpunk 2077",
+      "aliases": [
+        "cyberpunk",
+        "cyberpunk 2077 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Cyberpunk 2077: Phantom Liberty",
+      "aliases": [
+        "phantom liberty",
+        "cyberpunk phantom liberty"
+      ]
+    },
+    {
+      "canonical_name": "Grand Theft Auto V",
+      "aliases": [
+        "gta 5 ps5",
+        "gta v ps5",
+        "gta5 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+      "aliases": [
+        "gta trilogy",
+        "gta trilogy definitive edition"
+      ]
+    },
+    {
+      "canonical_name": "Red Dead Redemption 2",
+      "aliases": [
+        "rdr2 ps5",
+        "red dead redemption 2 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Red Dead Redemption",
+      "aliases": [
+        "rdr1 ps5",
+        "red dead redemption remaster ps5"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Valhalla",
+      "aliases": [
+        "ac valhalla",
+        "assassins creed valhalla"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Mirage",
+      "aliases": [
+        "ac mirage",
+        "assassins creed mirage"
+      ]
+    },
+    {
+      "canonical_name": "Assassin's Creed Shadows",
+      "aliases": [
+        "ac shadows",
+        "assassins creed shadows"
+      ]
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Fallen Order",
+      "aliases": [
+        "jedi fallen order"
+      ]
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Survivor",
+      "aliases": [
+        "jedi survivor"
+      ]
+    },
+    {
+      "canonical_name": "Hogwarts Legacy",
+      "aliases": [
+        "hogwarts legacy ps5"
+      ]
+    },
+    {
+      "canonical_name": "It Takes Two",
+      "aliases": [
+        "it takes two ps5"
+      ]
+    },
+    {
+      "canonical_name": "Split Fiction",
+      "aliases": [
+        "split fiction ps5"
+      ]
+    },
+    {
+      "canonical_name": "A Plague Tale: Requiem",
+      "aliases": [
+        "plague tale requiem"
+      ]
+    },
+    {
+      "canonical_name": "A Plague Tale: Innocence",
+      "aliases": [
+        "plague tale innocence"
+      ]
+    },
+    {
+      "canonical_name": "Dying Light 2: Stay Human",
+      "aliases": [
+        "dying light 2"
+      ]
+    },
+    {
+      "canonical_name": "Far Cry 6",
+      "aliases": [
+        "far cry 6 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Watch Dogs: Legion",
+      "aliases": [
+        "watch dogs legion"
+      ]
+    },
+    {
+      "canonical_name": "Metal Gear Solid Delta: Snake Eater",
+      "aliases": [
+        "mgs delta",
+        "metal gear solid delta"
+      ]
+    },
+    {
+      "canonical_name": "Metal Gear Solid: Master Collection Vol. 1",
+      "aliases": [
+        "mgs master collection"
+      ]
+    },
+    {
+      "canonical_name": "Mortal Kombat 1",
+      "aliases": [
+        "mk1",
+        "mortal kombat 1 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Mortal Kombat 11",
+      "aliases": [
+        "mk11",
+        "mortal kombat 11 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Street Fighter 6",
+      "aliases": [
+        "sf6",
+        "street fighter vi"
+      ]
+    },
+    {
+      "canonical_name": "Tekken 8",
+      "aliases": [
+        "tekken 8 ps5"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports FC 24",
+      "aliases": [
+        "fc24",
+        "fifa 24",
+        "ea fc 24"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports FC 25",
+      "aliases": [
+        "fc25",
+        "fifa 25",
+        "ea fc 25"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports FC 26",
+      "aliases": [
+        "fc26",
+        "fifa 26",
+        "ea fc 26"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare II",
+      "aliases": [
+        "cod mw2 2022",
+        "modern warfare 2 2022"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare III",
+      "aliases": [
+        "cod mw3 2023",
+        "modern warfare 3 2023"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Vanguard",
+      "aliases": [
+        "cod vanguard"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops Cold War",
+      "aliases": [
+        "cod cold war",
+        "bo cold war"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 6",
+      "aliases": [
+        "cod bo6",
+        "black ops 6"
+      ]
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 7",
+      "aliases": [
+        "cod bo7",
+        "black ops 7"
+      ]
+    },
+    {
+      "canonical_name": "Battlefield 2042",
+      "aliases": [
+        "bf2042",
+        "battlefield 2042 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Battlefield 6",
+      "aliases": [
+        "bf6",
+        "battlefield 6 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Diablo IV",
+      "aliases": [
+        "diablo 4",
+        "diablo iv ps5"
+      ]
+    },
+    {
+      "canonical_name": "Diablo II: Resurrected",
+      "aliases": [
+        "diablo 2 resurrected"
+      ]
+    },
+    {
+      "canonical_name": "Baldur's Gate 3",
+      "aliases": [
+        "bg3",
+        "baldurs gate 3"
+      ]
+    },
+    {
+      "canonical_name": "Monster Hunter Wilds",
+      "aliases": [
+        "mh wilds",
+        "monster hunter wilds ps5"
+      ]
+    },
+    {
+      "canonical_name": "Monster Hunter Rise",
+      "aliases": [
+        "mh rise ps5"
+      ]
+    },
+    {
+      "canonical_name": "Dragon's Dogma 2",
+      "aliases": [
+        "dragons dogma 2"
+      ]
+    },
+    {
+      "canonical_name": "Persona 3 Reload",
+      "aliases": [
+        "p3 reload",
+        "persona 3 reload ps5"
+      ]
+    },
+    {
+      "canonical_name": "Persona 5 Royal",
+      "aliases": [
+        "p5r",
+        "persona 5 royal ps5"
+      ]
+    },
+    {
+      "canonical_name": "Like a Dragon: Infinite Wealth",
+      "aliases": [
+        "yakuza infinite wealth",
+        "like a dragon infinite wealth"
+      ]
+    },
+    {
+      "canonical_name": "Yakuza: Like a Dragon",
+      "aliases": [
+        "yakuza like a dragon ps5"
+      ]
+    },
+    {
+      "canonical_name": "NieR: Automata",
+      "aliases": [
+        "nier automata ps5"
+      ]
+    },
+    {
+      "canonical_name": "NieR Replicant ver.1.22474487139...",
+      "aliases": [
+        "nier replicant ps5"
+      ]
+    },
+    {
+      "canonical_name": "Kingdom Hearts III",
+      "aliases": [
+        "kh3",
+        "kingdom hearts 3"
+      ]
+    },
+    {
+      "canonical_name": "Tales of Arise",
+      "aliases": [
+        "tales of arise ps5"
+      ]
+    },
+    {
+      "canonical_name": "Crimson Desert",
+      "aliases": [
+        "crimson desert ps5"
+      ]
+    },
+    {
+      "canonical_name": "Black Myth: Wukong",
+      "aliases": [
+        "black myth wukong ps5",
+        "wukong ps5"
+      ]
+    },
+    {
+      "canonical_name": "Stray",
+      "aliases": [
+        "stray ps5"
+      ]
+    },
+    {
+      "canonical_name": "Cult of the Lamb",
+      "aliases": [
+        "cult of the lamb ps5"
+      ]
+    },
+    {
+      "canonical_name": "Hades",
+      "aliases": [
+        "hades ps5"
+      ]
+    },
+    {
+      "canonical_name": "Hades II",
+      "aliases": [
+        "hades 2"
+      ]
+    },
+    {
+      "canonical_name": "Arc Raiders",
+      "aliases": [
+        "arc raiders ps5"
+      ]
+    },
+    {
+      "canonical_name": "Marvel's Guardians of the Galaxy",
+      "aliases": [
+        "guardians of the galaxy ps5"
+      ]
+    },
+    {
+      "canonical_name": "Marvel's Avengers",
+      "aliases": [
+        "avengers game ps5"
+      ]
+    },
+    {
+      "canonical_name": "Suicide Squad: Kill the Justice League",
+      "aliases": [
+        "suicide squad kill the justice league"
+      ]
+    },
+    {
+      "canonical_name": "Hitman World of Assassination",
+      "aliases": [
+        "hitman 3",
+        "hitman iii"
+      ]
+    },
+    {
+      "canonical_name": "Mafia: Definitive Edition",
+      "aliases": [
+        "mafia definitive edition ps5"
+      ]
+    },
+    {
+      "canonical_name": "Mafia: The Old Country",
+      "aliases": [
+        "mafia old country"
+      ]
+    },
+    {
+      "canonical_name": "Immortals of Aveum",
+      "aliases": [
+        "immortals of aveum ps5"
+      ]
+    },
+    {
+      "canonical_name": "Forspoken",
+      "aliases": [
+        "forspoken ps5"
+      ]
+    },
+    {
+      "canonical_name": "Sonic Frontiers",
+      "aliases": [
+        "sonic frontiers ps5"
+      ]
+    },
+    {
+      "canonical_name": "Sonic Superstars",
+      "aliases": [
+        "sonic superstars ps5"
+      ]
+    },
+    {
+      "canonical_name": "Crash Team Rumble",
+      "aliases": [
+        "crash team rumble ps5"
+      ]
+    },
+    {
+      "canonical_name": "Rainbow Six Siege",
+      "aliases": [
+        "r6 siege",
+        "rainbow six siege ps5"
+      ]
+    },
+    {
+      "canonical_name": "Rainbow Six Extraction",
+      "aliases": [
+        "r6 extraction"
+      ]
+    },
+    {
+      "canonical_name": "Overwatch 2",
+      "aliases": [
+        "ow2 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Outriders",
+      "aliases": [
+        "outriders ps5"
+      ]
+    },
+    {
+      "canonical_name": "Little Nightmares II",
+      "aliases": [
+        "little nightmares 2 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Tiny Tina's Wonderlands",
+      "aliases": [
+        "tiny tinas wonderlands"
+      ]
+    },
+    {
+      "canonical_name": "Borderlands 3",
+      "aliases": [
+        "borderlands 3 ps5"
+      ]
+    },
+    {
+      "canonical_name": "Cities: Skylines II",
+      "aliases": [
+        "cities skylines 2"
+      ]
+    },
+    {
+      "canonical_name": "F1 23",
+      "aliases": [
+        "f1 23 ps5"
+      ]
+    },
+    {
+      "canonical_name": "F1 24",
+      "aliases": [
+        "f1 24 ps5"
+      ]
+    },
+    {
+      "canonical_name": "F1 25",
+      "aliases": [
+        "f1 25 ps5"
+      ]
+    },
+    {
+      "canonical_name": "EA Sports WRC",
+      "aliases": [
+        "wrc ea sports"
+      ]
+    },
+    {
+      "canonical_name": "Need for Speed Unbound",
+      "aliases": [
+        "nfs unbound"
+      ]
+    },
+    {
+      "canonical_name": "Need for Speed Heat",
+      "aliases": [
+        "nfs heat ps5"
+      ]
+    },
+    {
+      "canonical_name": "WWE 2K24",
+      "aliases": [
+        "wwe 2k24 ps5"
+      ]
+    },
+    {
+      "canonical_name": "WWE 2K25",
+      "aliases": [
+        "wwe 2k25 ps5"
+      ]
+    },
+    {
+      "canonical_name": "UFC 5",
+      "aliases": [
+        "ea sports ufc 5"
+      ]
+    },
+    {
+      "canonical_name": "UFC 6",
+      "aliases": [
+        "ea sports ufc 6"
+      ]
+    },
+    {
+      "canonical_name": "NBA 2K24",
+      "aliases": [
+        "nba 2k24 ps5"
+      ]
+    },
+    {
+      "canonical_name": "NBA 2K25",
+      "aliases": [
+        "nba 2k25 ps5"
+      ]
+    },
+    {
+      "canonical_name": "NBA 2K26",
+      "aliases": [
+        "nba 2k26 ps5"
+      ]
+    },
+    {
+      "canonical_name": "MLB The Show 23",
+      "aliases": [
+        "mlb the show 23"
+      ]
+    },
+    {
+      "canonical_name": "MLB The Show 26",
+      "aliases": [
+        "mlb the show 26"
+      ]
+    },
+    {
+      "canonical_name": "Minecraft",
+      "aliases": [
+        "minecraft ps5"
+      ]
+    },
+    {
+      "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+      "aliases": [
+        "lego star wars skywalker saga"
+      ]
+    },
+    {
+      "canonical_name": "Doom Eternal",
+      "aliases": [
+        "doom eternal ps5"
+      ]
+    },
+    {
+      "canonical_name": "Doom: The Dark Ages",
+      "aliases": [
+        "doom dark ages"
+      ]
+    },
+    {
+      "canonical_name": "Wolfenstein: Youngblood",
+      "aliases": [
+        "wolfenstein youngblood ps5"
+      ]
+    },
+    {
+      "canonical_name": "Metro Exodus",
+      "aliases": [
+        "metro exodus ps5"
+      ]
+    }
+  ]
+}

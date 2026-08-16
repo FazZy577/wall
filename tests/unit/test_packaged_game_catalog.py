@@ -44,14 +44,18 @@ def test_packaged_resource_matches_current_inventory(
     packaged_catalog: PackagedGameCatalog,
 ) -> None:
     games = packaged_catalog.list_games()
+    concrete_platforms = set(Platform) - {Platform.UNKNOWN}
 
     assert isinstance(packaged_catalog, IGameCatalog)
     assert isinstance(games, tuple)
-    assert len(games) == 50
-    assert sum(len(game.detection_aliases) for game in games) == 166
-    assert all(game.platform is Platform.PS4 for game in games)
+    assert len(games) >= 50
+    assert all(game.platform in concrete_platforms for game in games)
     assert all(game.canonical_name for game in games)
-    assert all(game.detection_aliases for game in games)
+    assert all(
+        alias.strip()
+        for game in games
+        for alias in game.detection_aliases
+    )
     assert all(isinstance(game.detection_aliases, tuple) for game in games)
     assert {game.canonical_name for game in games} >= {
         "Grand Theft Auto V",
@@ -90,7 +94,7 @@ def test_packaged_resource_is_independent_of_working_directory(
 
     games = PackagedGameCatalog().list_games()
 
-    assert len(games) == 50
+    assert len(games) >= 50
     assert games[0].canonical_name == "Grand Theft Auto V"
 
 

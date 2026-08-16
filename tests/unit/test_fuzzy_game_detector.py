@@ -16,24 +16,33 @@ PROJECT_ROOT = Path(__file__).parents[2]
 DETECTOR_PATH = PROJECT_ROOT / "src/infrastructure/detectors/fuzzy_game_detector.py"
 
 SHORT_ALIAS_CASES = (
-    ("bo6", "Call of Duty: Black Ops 6"),
-    ("mw3", "Call of Duty: Modern Warfare III"),
-    ("mw2", "Call of Duty: Modern Warfare II"),
-    ("gow", "God of War"),
-    ("hzd", "Horizon Zero Dawn"),
-    ("hfw", "Horizon Forbidden West"),
-    ("got", "Ghost of Tsushima"),
-    ("re2", "Resident Evil 2"),
-    ("re3", "Resident Evil 3"),
-    ("re8", "Resident Evil Village"),
-    ("ds3", "Dark Souls III"),
-    ("gts", "Gran Turismo Sport"),
-    ("gt7", "Gran Turismo 7"),
-    ("bf5", "Battlefield V"),
-    ("bfv", "Battlefield V"),
-    ("sf5", "Street Fighter V"),
-    ("sfv", "Street Fighter V"),
-    ("ow2", "Overwatch 2"),
+    ("bo6", "Call of Duty: Black Ops 6", Platform.PS4),
+    ("mw3", "Call of Duty: Modern Warfare III", Platform.PS4),
+    ("mw2", "Call of Duty: Modern Warfare II", Platform.PS4),
+    ("gow", "God of War", Platform.PS4),
+    ("hzd", "Horizon Zero Dawn", Platform.PS4),
+    ("hfw", "Horizon Forbidden West", Platform.PS4),
+    ("got", "Ghost of Tsushima", Platform.PS4),
+    ("re2", "Resident Evil 2", Platform.PS4),
+    ("re3", "Resident Evil 3", Platform.PS4),
+    ("re8", "Resident Evil Village", Platform.PS4),
+    ("ds3", "Dark Souls III", Platform.PS4),
+    ("gts", "Gran Turismo Sport", Platform.PS4),
+    ("gt7", "Gran Turismo 7", Platform.PS4),
+    ("bf5", "Battlefield V", Platform.PS4),
+    ("bfv", "Battlefield V", Platform.PS4),
+    ("sf5", "Street Fighter V", Platform.PS4),
+    ("sfv", "Street Fighter V", Platform.PS4),
+    ("ow2", "Overwatch 2", Platform.PS4),
+    ("gt7", "Gran Turismo 7", Platform.PS5),
+    ("re8", "Resident Evil Village", Platform.PS5),
+    ("ac6", "Armored Core VI: Fires of Rubicon", Platform.PS5),
+    ("mk1", "Mortal Kombat 1", Platform.PS5),
+    ("sf6", "Street Fighter 6", Platform.PS5),
+    ("bf6", "Battlefield 6", Platform.PS5),
+    ("bg3", "Baldur's Gate 3", Platform.PS5),
+    ("p5r", "Persona 5 Royal", Platform.PS5),
+    ("kh3", "Kingdom Hearts III", Platform.PS5),
 )
 
 
@@ -336,15 +345,21 @@ class TestFuzzyGameDetector:
         assert ghost.confidence == 1.0
         assert ghost.detection_method is DetectionMethod.EXACT_MATCH
 
-    @pytest.mark.parametrize(("alias", "canonical_name"), SHORT_ALIAS_CASES)
+    @pytest.mark.parametrize(
+        ("alias", "canonical_name", "platform"), SHORT_ALIAS_CASES
+    )
     def test_every_short_catalog_alias_matches_when_lexically_isolated(
         self,
         detector: FuzzyGameDetector,
         alias: str,
         canonical_name: str,
+        platform: Platform,
     ) -> None:
         games = detector.detect_games(
-            ListingText(title=f"vendo {alias} para ps4", description="")
+            ListingText(
+                title=f"vendo {alias} para {platform.value}",
+                description="",
+            )
         )
 
         match = next(game for game in games if game.canonical_name == canonical_name)
@@ -352,15 +367,21 @@ class TestFuzzyGameDetector:
         assert match.confidence == 1.0
         assert match.detection_method is DetectionMethod.EXACT_MATCH
 
-    @pytest.mark.parametrize(("alias", "canonical_name"), SHORT_ALIAS_CASES)
+    @pytest.mark.parametrize(
+        ("alias", "canonical_name", "platform"), SHORT_ALIAS_CASES
+    )
     def test_every_short_catalog_alias_is_rejected_inside_larger_token(
         self,
         detector: FuzzyGameDetector,
         alias: str,
         canonical_name: str,
+        platform: Platform,
     ) -> None:
         games = detector.detect_games(
-            ListingText(title=f"vendo x{alias}x para ps4", description="")
+            ListingText(
+                title=f"vendo x{alias}x para {platform.value}",
+                description="",
+            )
         )
 
         assert canonical_name not in {game.canonical_name for game in games}
@@ -374,7 +395,9 @@ class TestFuzzyGameDetector:
             for alias in game.detection_aliases:
                 normalized_alias = detector._normalize_text(alias)
                 if " " not in normalized_alias and len(normalized_alias) <= 3:
-                    actual.append((normalized_alias, game.canonical_name))
+                    actual.append(
+                        (normalized_alias, game.canonical_name, game.platform)
+                    )
 
         assert tuple(actual) == SHORT_ALIAS_CASES
 

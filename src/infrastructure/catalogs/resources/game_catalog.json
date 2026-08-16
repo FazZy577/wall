@@ -464,5 +464,2989 @@
       "overwatch ii",
       "ow2"
     ]
+  },
+  {
+    "canonical_name": "Marvel's Spider-Man 2",
+    "platform": "PS5",
+    "aliases": [
+      "spiderman 2",
+      "spider man 2",
+      "spiderman2",
+      "spider-man 2 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Spider-Man: Miles Morales",
+    "platform": "PS5",
+    "aliases": [
+      "miles morales",
+      "spiderman miles morales",
+      "spider man miles morales"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Spider-Man Remastered",
+    "platform": "PS5",
+    "aliases": [
+      "spiderman remastered",
+      "spider man ps5"
+    ]
+  },
+  {
+    "canonical_name": "God of War Ragnarök",
+    "platform": "PS5",
+    "aliases": [
+      "gow ragnarok",
+      "god of war ragnarok",
+      "ragnarok ps5"
+    ]
+  },
+  {
+    "canonical_name": "God of War",
+    "platform": "PS5",
+    "aliases": [
+      "god of war ps5",
+      "gow 2018"
+    ]
+  },
+  {
+    "canonical_name": "Horizon Forbidden West",
+    "platform": "PS5",
+    "aliases": [
+      "horizon fw",
+      "horizon forbidden west ps5"
+    ]
+  },
+  {
+    "canonical_name": "Horizon Forbidden West: Burning Shores",
+    "platform": "PS5",
+    "aliases": [
+      "burning shores",
+      "horizon burning shores"
+    ]
+  },
+  {
+    "canonical_name": "Horizon Zero Dawn Remastered",
+    "platform": "PS5",
+    "aliases": [
+      "horizon zero dawn ps5",
+      "hzd remastered"
+    ]
+  },
+  {
+    "canonical_name": "Gran Turismo 7",
+    "platform": "PS5",
+    "aliases": [
+      "gt7",
+      "gran turismo 7 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Ratchet & Clank: Rift Apart",
+    "platform": "PS5",
+    "aliases": [
+      "rift apart",
+      "ratchet and clank rift apart"
+    ]
+  },
+  {
+    "canonical_name": "Demon's Souls",
+    "platform": "PS5",
+    "aliases": [
+      "demons souls ps5",
+      "demon souls remake"
+    ]
+  },
+  {
+    "canonical_name": "Returnal",
+    "platform": "PS5",
+    "aliases": [
+      "returnal ps5"
+    ]
+  },
+  {
+    "canonical_name": "The Last of Us Part I",
+    "platform": "PS5",
+    "aliases": [
+      "tlou 1 remake",
+      "the last of us part 1",
+      "last of us remake ps5"
+    ]
+  },
+  {
+    "canonical_name": "The Last of Us Part II Remastered",
+    "platform": "PS5",
+    "aliases": [
+      "tlou 2 remastered",
+      "the last of us part 2 remastered"
+    ]
+  },
+  {
+    "canonical_name": "Ghost of Tsushima Director's Cut",
+    "platform": "PS5",
+    "aliases": [
+      "ghost of tsushima ps5",
+      "got director's cut"
+    ]
+  },
+  {
+    "canonical_name": "Ghost of Yotei",
+    "platform": "PS5",
+    "aliases": [
+      "ghost of yotei ps5"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XVI",
+    "platform": "PS5",
+    "aliases": [
+      "ff16",
+      "final fantasy 16"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy VII Rebirth",
+    "platform": "PS5",
+    "aliases": [
+      "ff7 rebirth",
+      "final fantasy 7 rebirth"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy VII Remake Intergrade",
+    "platform": "PS5",
+    "aliases": [
+      "ff7 remake",
+      "final fantasy 7 remake ps5"
+    ]
+  },
+  {
+    "canonical_name": "Astro Bot",
+    "platform": "PS5",
+    "aliases": [
+      "astro bot ps5",
+      "astrobot"
+    ]
+  },
+  {
+    "canonical_name": "Death Stranding 2: On the Beach",
+    "platform": "PS5",
+    "aliases": [
+      "death stranding 2",
+      "ds2 kojima"
+    ]
+  },
+  {
+    "canonical_name": "Death Stranding Director's Cut",
+    "platform": "PS5",
+    "aliases": [
+      "death stranding ps5"
+    ]
+  },
+  {
+    "canonical_name": "Stellar Blade",
+    "platform": "PS5",
+    "aliases": [
+      "stellar blade ps5"
+    ]
+  },
+  {
+    "canonical_name": "Helldivers 2",
+    "platform": "PS5",
+    "aliases": [
+      "helldivers ii",
+      "helldivers 2 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Rise of the Ronin",
+    "platform": "PS5",
+    "aliases": [
+      "rise of the ronin ps5"
+    ]
+  },
+  {
+    "canonical_name": "Until Dawn",
+    "platform": "PS5",
+    "aliases": [
+      "until dawn remake",
+      "until dawn ps5"
+    ]
+  },
+  {
+    "canonical_name": "Days Gone",
+    "platform": "PS5",
+    "aliases": [
+      "days gone ps5"
+    ]
+  },
+  {
+    "canonical_name": "Sackboy: A Big Adventure",
+    "platform": "PS5",
+    "aliases": [
+      "sackboy",
+      "sackboy big adventure"
+    ]
+  },
+  {
+    "canonical_name": "Crash Bandicoot 4: It's About Time",
+    "platform": "PS5",
+    "aliases": [
+      "crash 4",
+      "crash bandicoot 4"
+    ]
+  },
+  {
+    "canonical_name": "Kena: Bridge of Spirits",
+    "platform": "PS5",
+    "aliases": [
+      "kena bridge of spirits"
+    ]
+  },
+  {
+    "canonical_name": "Sifu",
+    "platform": "PS5",
+    "aliases": [
+      "sifu ps5"
+    ]
+  },
+  {
+    "canonical_name": "Deathloop",
+    "platform": "PS5",
+    "aliases": [
+      "deathloop ps5"
+    ]
+  },
+  {
+    "canonical_name": "Ghostwire: Tokyo",
+    "platform": "PS5",
+    "aliases": [
+      "ghostwire tokyo"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil Village",
+    "platform": "PS5",
+    "aliases": [
+      "re village",
+      "resident evil 8",
+      "re8"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 4 Remake",
+    "platform": "PS5",
+    "aliases": [
+      "re4 remake",
+      "resident evil 4 remake ps5"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 2 Remake",
+    "platform": "PS5",
+    "aliases": [
+      "re2 remake"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 3 Remake",
+    "platform": "PS5",
+    "aliases": [
+      "re3 remake"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil Requiem",
+    "platform": "PS5",
+    "aliases": [
+      "re requiem",
+      "resident evil 9"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space Remake",
+    "platform": "PS5",
+    "aliases": [
+      "dead space ps5",
+      "dead space remake 2023"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill 2 Remake",
+    "platform": "PS5",
+    "aliases": [
+      "silent hill 2 remake ps5"
+    ]
+  },
+  {
+    "canonical_name": "Alan Wake 2",
+    "platform": "PS5",
+    "aliases": [
+      "alan wake ii"
+    ]
+  },
+  {
+    "canonical_name": "Elden Ring",
+    "platform": "PS5",
+    "aliases": [
+      "elden ring ps5"
+    ]
+  },
+  {
+    "canonical_name": "Elden Ring: Shadow of the Erdtree",
+    "platform": "PS5",
+    "aliases": [
+      "shadow of the erdtree",
+      "elden ring dlc"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls Remastered",
+    "platform": "PS5",
+    "aliases": [
+      "dark souls ps5"
+    ]
+  },
+  {
+    "canonical_name": "Sekiro: Shadows Die Twice",
+    "platform": "PS5",
+    "aliases": [
+      "sekiro ps5"
+    ]
+  },
+  {
+    "canonical_name": "Armored Core VI: Fires of Rubicon",
+    "platform": "PS5",
+    "aliases": [
+      "armored core 6",
+      "ac6"
+    ]
+  },
+  {
+    "canonical_name": "Lies of P",
+    "platform": "PS5",
+    "aliases": [
+      "lies of p ps5"
+    ]
+  },
+  {
+    "canonical_name": "Wo Long: Fallen Dynasty",
+    "platform": "PS5",
+    "aliases": [
+      "wo long"
+    ]
+  },
+  {
+    "canonical_name": "Cyberpunk 2077",
+    "platform": "PS5",
+    "aliases": [
+      "cyberpunk",
+      "cyberpunk 2077 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Cyberpunk 2077: Phantom Liberty",
+    "platform": "PS5",
+    "aliases": [
+      "phantom liberty",
+      "cyberpunk phantom liberty"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto V",
+    "platform": "PS5",
+    "aliases": [
+      "gta 5 ps5",
+      "gta v ps5",
+      "gta5 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+    "platform": "PS5",
+    "aliases": [
+      "gta trilogy",
+      "gta trilogy definitive edition"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption 2",
+    "platform": "PS5",
+    "aliases": [
+      "rdr2 ps5",
+      "red dead redemption 2 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption",
+    "platform": "PS5",
+    "aliases": [
+      "rdr1 ps5",
+      "red dead redemption remaster ps5"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Valhalla",
+    "platform": "PS5",
+    "aliases": [
+      "ac valhalla",
+      "assassins creed valhalla"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Mirage",
+    "platform": "PS5",
+    "aliases": [
+      "ac mirage",
+      "assassins creed mirage"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Shadows",
+    "platform": "PS5",
+    "aliases": [
+      "ac shadows",
+      "assassins creed shadows"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Fallen Order",
+    "platform": "PS5",
+    "aliases": [
+      "jedi fallen order"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Survivor",
+    "platform": "PS5",
+    "aliases": [
+      "jedi survivor"
+    ]
+  },
+  {
+    "canonical_name": "Hogwarts Legacy",
+    "platform": "PS5",
+    "aliases": [
+      "hogwarts legacy ps5"
+    ]
+  },
+  {
+    "canonical_name": "It Takes Two",
+    "platform": "PS5",
+    "aliases": [
+      "it takes two ps5"
+    ]
+  },
+  {
+    "canonical_name": "Split Fiction",
+    "platform": "PS5",
+    "aliases": [
+      "split fiction ps5"
+    ]
+  },
+  {
+    "canonical_name": "A Plague Tale: Requiem",
+    "platform": "PS5",
+    "aliases": [
+      "plague tale requiem"
+    ]
+  },
+  {
+    "canonical_name": "A Plague Tale: Innocence",
+    "platform": "PS5",
+    "aliases": [
+      "plague tale innocence"
+    ]
+  },
+  {
+    "canonical_name": "Dying Light 2: Stay Human",
+    "platform": "PS5",
+    "aliases": [
+      "dying light 2"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 6",
+    "platform": "PS5",
+    "aliases": [
+      "far cry 6 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs: Legion",
+    "platform": "PS5",
+    "aliases": [
+      "watch dogs legion"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid Delta: Snake Eater",
+    "platform": "PS5",
+    "aliases": [
+      "mgs delta",
+      "metal gear solid delta"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid: Master Collection Vol. 1",
+    "platform": "PS5",
+    "aliases": [
+      "mgs master collection"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat 1",
+    "platform": "PS5",
+    "aliases": [
+      "mk1",
+      "mortal kombat 1 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat 11",
+    "platform": "PS5",
+    "aliases": [
+      "mk11",
+      "mortal kombat 11 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter 6",
+    "platform": "PS5",
+    "aliases": [
+      "sf6",
+      "street fighter vi"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 8",
+    "platform": "PS5",
+    "aliases": [
+      "tekken 8 ps5"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 24",
+    "platform": "PS5",
+    "aliases": [
+      "fc24",
+      "fifa 24",
+      "ea fc 24"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 25",
+    "platform": "PS5",
+    "aliases": [
+      "fc25",
+      "fifa 25",
+      "ea fc 25"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 26",
+    "platform": "PS5",
+    "aliases": [
+      "fc26",
+      "fifa 26",
+      "ea fc 26"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare II",
+    "platform": "PS5",
+    "aliases": [
+      "cod mw2 2022",
+      "modern warfare 2 2022"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare III",
+    "platform": "PS5",
+    "aliases": [
+      "cod mw3 2023",
+      "modern warfare 3 2023"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Vanguard",
+    "platform": "PS5",
+    "aliases": [
+      "cod vanguard"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops Cold War",
+    "platform": "PS5",
+    "aliases": [
+      "cod cold war",
+      "bo cold war"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 6",
+    "platform": "PS5",
+    "aliases": [
+      "cod bo6",
+      "black ops 6"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 7",
+    "platform": "PS5",
+    "aliases": [
+      "cod bo7",
+      "black ops 7"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 2042",
+    "platform": "PS5",
+    "aliases": [
+      "bf2042",
+      "battlefield 2042 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 6",
+    "platform": "PS5",
+    "aliases": [
+      "bf6",
+      "battlefield 6 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Diablo IV",
+    "platform": "PS5",
+    "aliases": [
+      "diablo 4",
+      "diablo iv ps5"
+    ]
+  },
+  {
+    "canonical_name": "Diablo II: Resurrected",
+    "platform": "PS5",
+    "aliases": [
+      "diablo 2 resurrected"
+    ]
+  },
+  {
+    "canonical_name": "Baldur's Gate 3",
+    "platform": "PS5",
+    "aliases": [
+      "bg3",
+      "baldurs gate 3"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter Wilds",
+    "platform": "PS5",
+    "aliases": [
+      "mh wilds",
+      "monster hunter wilds ps5"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter Rise",
+    "platform": "PS5",
+    "aliases": [
+      "mh rise ps5"
+    ]
+  },
+  {
+    "canonical_name": "Dragon's Dogma 2",
+    "platform": "PS5",
+    "aliases": [
+      "dragons dogma 2"
+    ]
+  },
+  {
+    "canonical_name": "Persona 3 Reload",
+    "platform": "PS5",
+    "aliases": [
+      "p3 reload",
+      "persona 3 reload ps5"
+    ]
+  },
+  {
+    "canonical_name": "Persona 5 Royal",
+    "platform": "PS5",
+    "aliases": [
+      "p5r",
+      "persona 5 royal ps5"
+    ]
+  },
+  {
+    "canonical_name": "Like a Dragon: Infinite Wealth",
+    "platform": "PS5",
+    "aliases": [
+      "yakuza infinite wealth",
+      "like a dragon infinite wealth"
+    ]
+  },
+  {
+    "canonical_name": "Yakuza: Like a Dragon",
+    "platform": "PS5",
+    "aliases": [
+      "yakuza like a dragon ps5"
+    ]
+  },
+  {
+    "canonical_name": "NieR: Automata",
+    "platform": "PS5",
+    "aliases": [
+      "nier automata ps5"
+    ]
+  },
+  {
+    "canonical_name": "NieR Replicant ver.1.22474487139...",
+    "platform": "PS5",
+    "aliases": [
+      "nier replicant ps5"
+    ]
+  },
+  {
+    "canonical_name": "Kingdom Hearts III",
+    "platform": "PS5",
+    "aliases": [
+      "kh3",
+      "kingdom hearts 3"
+    ]
+  },
+  {
+    "canonical_name": "Tales of Arise",
+    "platform": "PS5",
+    "aliases": [
+      "tales of arise ps5"
+    ]
+  },
+  {
+    "canonical_name": "Crimson Desert",
+    "platform": "PS5",
+    "aliases": [
+      "crimson desert ps5"
+    ]
+  },
+  {
+    "canonical_name": "Black Myth: Wukong",
+    "platform": "PS5",
+    "aliases": [
+      "black myth wukong ps5",
+      "wukong ps5"
+    ]
+  },
+  {
+    "canonical_name": "Stray",
+    "platform": "PS5",
+    "aliases": [
+      "stray ps5"
+    ]
+  },
+  {
+    "canonical_name": "Cult of the Lamb",
+    "platform": "PS5",
+    "aliases": [
+      "cult of the lamb ps5"
+    ]
+  },
+  {
+    "canonical_name": "Hades",
+    "platform": "PS5",
+    "aliases": [
+      "hades ps5"
+    ]
+  },
+  {
+    "canonical_name": "Hades II",
+    "platform": "PS5",
+    "aliases": [
+      "hades 2"
+    ]
+  },
+  {
+    "canonical_name": "Arc Raiders",
+    "platform": "PS5",
+    "aliases": [
+      "arc raiders ps5"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Guardians of the Galaxy",
+    "platform": "PS5",
+    "aliases": [
+      "guardians of the galaxy ps5"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Avengers",
+    "platform": "PS5",
+    "aliases": [
+      "avengers game ps5"
+    ]
+  },
+  {
+    "canonical_name": "Suicide Squad: Kill the Justice League",
+    "platform": "PS5",
+    "aliases": [
+      "suicide squad kill the justice league"
+    ]
+  },
+  {
+    "canonical_name": "Hitman World of Assassination",
+    "platform": "PS5",
+    "aliases": [
+      "hitman 3",
+      "hitman iii"
+    ]
+  },
+  {
+    "canonical_name": "Mafia: Definitive Edition",
+    "platform": "PS5",
+    "aliases": [
+      "mafia definitive edition ps5"
+    ]
+  },
+  {
+    "canonical_name": "Mafia: The Old Country",
+    "platform": "PS5",
+    "aliases": [
+      "mafia old country"
+    ]
+  },
+  {
+    "canonical_name": "Immortals of Aveum",
+    "platform": "PS5",
+    "aliases": [
+      "immortals of aveum ps5"
+    ]
+  },
+  {
+    "canonical_name": "Forspoken",
+    "platform": "PS5",
+    "aliases": [
+      "forspoken ps5"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Frontiers",
+    "platform": "PS5",
+    "aliases": [
+      "sonic frontiers ps5"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Superstars",
+    "platform": "PS5",
+    "aliases": [
+      "sonic superstars ps5"
+    ]
+  },
+  {
+    "canonical_name": "Crash Team Rumble",
+    "platform": "PS5",
+    "aliases": [
+      "crash team rumble ps5"
+    ]
+  },
+  {
+    "canonical_name": "Rainbow Six Siege",
+    "platform": "PS5",
+    "aliases": [
+      "r6 siege",
+      "rainbow six siege ps5"
+    ]
+  },
+  {
+    "canonical_name": "Rainbow Six Extraction",
+    "platform": "PS5",
+    "aliases": [
+      "r6 extraction"
+    ]
+  },
+  {
+    "canonical_name": "Overwatch 2",
+    "platform": "PS5",
+    "aliases": [
+      "ow2 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Outriders",
+    "platform": "PS5",
+    "aliases": [
+      "outriders ps5"
+    ]
+  },
+  {
+    "canonical_name": "Little Nightmares II",
+    "platform": "PS5",
+    "aliases": [
+      "little nightmares 2 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Tiny Tina's Wonderlands",
+    "platform": "PS5",
+    "aliases": [
+      "tiny tinas wonderlands"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 3",
+    "platform": "PS5",
+    "aliases": [
+      "borderlands 3 ps5"
+    ]
+  },
+  {
+    "canonical_name": "Cities: Skylines II",
+    "platform": "PS5",
+    "aliases": [
+      "cities skylines 2"
+    ]
+  },
+  {
+    "canonical_name": "F1 23",
+    "platform": "PS5",
+    "aliases": [
+      "f1 23 ps5"
+    ]
+  },
+  {
+    "canonical_name": "F1 24",
+    "platform": "PS5",
+    "aliases": [
+      "f1 24 ps5"
+    ]
+  },
+  {
+    "canonical_name": "F1 25",
+    "platform": "PS5",
+    "aliases": [
+      "f1 25 ps5"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports WRC",
+    "platform": "PS5",
+    "aliases": [
+      "wrc ea sports"
+    ]
+  },
+  {
+    "canonical_name": "Need for Speed Unbound",
+    "platform": "PS5",
+    "aliases": [
+      "nfs unbound"
+    ]
+  },
+  {
+    "canonical_name": "Need for Speed Heat",
+    "platform": "PS5",
+    "aliases": [
+      "nfs heat ps5"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K24",
+    "platform": "PS5",
+    "aliases": [
+      "wwe 2k24 ps5"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K25",
+    "platform": "PS5",
+    "aliases": [
+      "wwe 2k25 ps5"
+    ]
+  },
+  {
+    "canonical_name": "UFC 5",
+    "platform": "PS5",
+    "aliases": [
+      "ea sports ufc 5"
+    ]
+  },
+  {
+    "canonical_name": "UFC 6",
+    "platform": "PS5",
+    "aliases": [
+      "ea sports ufc 6"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K24",
+    "platform": "PS5",
+    "aliases": [
+      "nba 2k24 ps5"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K25",
+    "platform": "PS5",
+    "aliases": [
+      "nba 2k25 ps5"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K26",
+    "platform": "PS5",
+    "aliases": [
+      "nba 2k26 ps5"
+    ]
+  },
+  {
+    "canonical_name": "MLB The Show 23",
+    "platform": "PS5",
+    "aliases": [
+      "mlb the show 23"
+    ]
+  },
+  {
+    "canonical_name": "MLB The Show 26",
+    "platform": "PS5",
+    "aliases": [
+      "mlb the show 26"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft",
+    "platform": "PS5",
+    "aliases": [
+      "minecraft ps5"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+    "platform": "PS5",
+    "aliases": [
+      "lego star wars skywalker saga"
+    ]
+  },
+  {
+    "canonical_name": "Doom Eternal",
+    "platform": "PS5",
+    "aliases": [
+      "doom eternal ps5"
+    ]
+  },
+  {
+    "canonical_name": "Doom: The Dark Ages",
+    "platform": "PS5",
+    "aliases": [
+      "doom dark ages"
+    ]
+  },
+  {
+    "canonical_name": "Wolfenstein: Youngblood",
+    "platform": "PS5",
+    "aliases": [
+      "wolfenstein youngblood ps5"
+    ]
+  },
+  {
+    "canonical_name": "Metro Exodus",
+    "platform": "PS5",
+    "aliases": [
+      "metro exodus ps5"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto V",
+    "platform": "Xbox One",
+    "aliases": [
+      "gta 5 xbox one",
+      "gta v xbox one",
+      "gta5 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "rdr2 xbox one",
+      "red dead redemption 2 xbox"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption",
+    "platform": "Xbox One",
+    "aliases": [
+      "rdr1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft",
+    "platform": "Xbox One",
+    "aliases": [
+      "minecraft xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Fallout 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "fallout 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "The Elder Scrolls V: Skyrim Special Edition",
+    "platform": "Xbox One",
+    "aliases": [
+      "skyrim se",
+      "skyrim special edition",
+      "skyrim xbox one"
+    ]
+  },
+  {
+    "canonical_name": "The Witcher 3: Wild Hunt",
+    "platform": "Xbox One",
+    "aliases": [
+      "witcher 3",
+      "the witcher 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls III",
+    "platform": "Xbox One",
+    "aliases": [
+      "dark souls 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Halo 5: Guardians",
+    "platform": "Xbox One",
+    "aliases": [
+      "halo 5",
+      "halo 5 guardians"
+    ]
+  },
+  {
+    "canonical_name": "Halo: The Master Chief Collection",
+    "platform": "Xbox One",
+    "aliases": [
+      "halo mcc",
+      "halo master chief collection"
+    ]
+  },
+  {
+    "canonical_name": "Halo Wars 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "halo wars 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "gears 4",
+      "gears of war 4"
+    ]
+  },
+  {
+    "canonical_name": "Gears 5",
+    "platform": "Xbox One",
+    "aliases": [
+      "gears of war 5",
+      "gears5"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War: Ultimate Edition",
+    "platform": "Xbox One",
+    "aliases": [
+      "gears ultimate edition"
+    ]
+  },
+  {
+    "canonical_name": "Forza Horizon 3",
+    "platform": "Xbox One",
+    "aliases": [
+      "forza horizon 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Forza Horizon 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "forza horizon 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport 6",
+    "platform": "Xbox One",
+    "aliases": [
+      "forza motorsport 6"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport 7",
+    "platform": "Xbox One",
+    "aliases": [
+      "forza motorsport 7"
+    ]
+  },
+  {
+    "canonical_name": "Sea of Thieves",
+    "platform": "Xbox One",
+    "aliases": [
+      "sea of thieves xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Sunset Overdrive",
+    "platform": "Xbox One",
+    "aliases": [
+      "sunset overdrive xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Titanfall",
+    "platform": "Xbox One",
+    "aliases": [
+      "titanfall xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Titanfall 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "titanfall 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Ori and the Blind Forest",
+    "platform": "Xbox One",
+    "aliases": [
+      "ori blind forest"
+    ]
+  },
+  {
+    "canonical_name": "Ori and the Will of the Wisps",
+    "platform": "Xbox One",
+    "aliases": [
+      "ori will of the wisps"
+    ]
+  },
+  {
+    "canonical_name": "State of Decay 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "state of decay 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Quantum Break",
+    "platform": "Xbox One",
+    "aliases": [
+      "quantum break xbox one"
+    ]
+  },
+  {
+    "canonical_name": "ReCore",
+    "platform": "Xbox One",
+    "aliases": [
+      "recore xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Rare Replay",
+    "platform": "Xbox One",
+    "aliases": [
+      "rare replay xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Cuphead",
+    "platform": "Xbox One",
+    "aliases": [
+      "cuphead xbox one"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 24",
+    "platform": "Xbox One",
+    "aliases": [
+      "fc24 xbox one",
+      "fifa 24 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 23",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 23 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 22",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 22 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 21",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 21 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 20",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 20 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 19",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 19 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 18",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 18 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 17",
+    "platform": "Xbox One",
+    "aliases": [
+      "fifa 17 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare (2019)",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod mw 2019",
+      "modern warfare 2019"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare II",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod mw2 2022 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 3",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod bo3",
+      "black ops 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod bo4",
+      "black ops 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops Cold War",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod cold war xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: WWII",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod ww2",
+      "call of duty ww2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Infinite Warfare",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod infinite warfare"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Ghosts",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod ghosts xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Advanced Warfare",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod advanced warfare"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Vanguard",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod vanguard xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 1",
+    "platform": "Xbox One",
+    "aliases": [
+      "bf1 xbox one",
+      "battlefield 1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "bf4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield V",
+    "platform": "Xbox One",
+    "aliases": [
+      "bfv xbox one",
+      "battlefield 5 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Destiny",
+    "platform": "Xbox One",
+    "aliases": [
+      "destiny 1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Destiny 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "destiny 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "PlayerUnknown's Battlegrounds",
+    "platform": "Xbox One",
+    "aliases": [
+      "pubg xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Overwatch",
+    "platform": "Xbox One",
+    "aliases": [
+      "overwatch xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Rainbow Six Siege",
+    "platform": "Xbox One",
+    "aliases": [
+      "r6 siege xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Tom Clancy's The Division",
+    "platform": "Xbox One",
+    "aliases": [
+      "the division xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Tom Clancy's The Division 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "the division 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Battlefront",
+    "platform": "Xbox One",
+    "aliases": [
+      "star wars battlefront 2015"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Battlefront II",
+    "platform": "Xbox One",
+    "aliases": [
+      "star wars battlefront 2 2017"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Fallen Order",
+    "platform": "Xbox One",
+    "aliases": [
+      "jedi fallen order xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Unity",
+    "platform": "Xbox One",
+    "aliases": [
+      "ac unity xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Syndicate",
+    "platform": "Xbox One",
+    "aliases": [
+      "ac syndicate xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Origins",
+    "platform": "Xbox One",
+    "aliases": [
+      "ac origins xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Odyssey",
+    "platform": "Xbox One",
+    "aliases": [
+      "ac odyssey xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Valhalla",
+    "platform": "Xbox One",
+    "aliases": [
+      "ac valhalla xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs",
+    "platform": "Xbox One",
+    "aliases": [
+      "watch dogs 1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "watch dogs 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs: Legion",
+    "platform": "Xbox One",
+    "aliases": [
+      "watch dogs legion xbox one"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K20",
+    "platform": "Xbox One",
+    "aliases": [
+      "nba 2k20 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K21",
+    "platform": "Xbox One",
+    "aliases": [
+      "nba 2k21 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K22",
+    "platform": "Xbox One",
+    "aliases": [
+      "nba 2k22 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K19",
+    "platform": "Xbox One",
+    "aliases": [
+      "wwe 2k19 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K20",
+    "platform": "Xbox One",
+    "aliases": [
+      "wwe 2k20 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K22",
+    "platform": "Xbox One",
+    "aliases": [
+      "wwe 2k22 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 20",
+    "platform": "Xbox One",
+    "aliases": [
+      "madden 20 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 21",
+    "platform": "Xbox One",
+    "aliases": [
+      "madden 21 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 22",
+    "platform": "Xbox One",
+    "aliases": [
+      "madden 22 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "far cry 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry Primal",
+    "platform": "Xbox One",
+    "aliases": [
+      "far cry primal xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 5",
+    "platform": "Xbox One",
+    "aliases": [
+      "far cry 5 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry New Dawn",
+    "platform": "Xbox One",
+    "aliases": [
+      "far cry new dawn xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 6",
+    "platform": "Xbox One",
+    "aliases": [
+      "far cry 6 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid V: The Phantom Pain",
+    "platform": "Xbox One",
+    "aliases": [
+      "mgs5 xbox one",
+      "mgs v phantom pain"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 7: Biohazard",
+    "platform": "Xbox One",
+    "aliases": [
+      "re7 xbox one",
+      "resident evil 7 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 2 Remake",
+    "platform": "Xbox One",
+    "aliases": [
+      "re2 remake xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 3 Remake",
+    "platform": "Xbox One",
+    "aliases": [
+      "re3 remake xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil Village",
+    "platform": "Xbox One",
+    "aliases": [
+      "re village xbox one",
+      "resident evil 8 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Middle-earth: Shadow of Mordor",
+    "platform": "Xbox One",
+    "aliases": [
+      "shadow of mordor xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Middle-earth: Shadow of War",
+    "platform": "Xbox One",
+    "aliases": [
+      "shadow of war xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham Knight",
+    "platform": "Xbox One",
+    "aliases": [
+      "arkham knight xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Return to Arkham",
+    "platform": "Xbox One",
+    "aliases": [
+      "return to arkham xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat X",
+    "platform": "Xbox One",
+    "aliases": [
+      "mkx xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat 11",
+    "platform": "Xbox One",
+    "aliases": [
+      "mk11 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Injustice 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "injustice 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Injustice: Gods Among Us Ultimate Edition",
+    "platform": "Xbox One",
+    "aliases": [
+      "injustice 1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Just Cause 3",
+    "platform": "Xbox One",
+    "aliases": [
+      "just cause 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Just Cause 4",
+    "platform": "Xbox One",
+    "aliases": [
+      "just cause 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Tom Clancy's Rainbow Six Extraction",
+    "platform": "Xbox One",
+    "aliases": [
+      "r6 extraction xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Dying Light",
+    "platform": "Xbox One",
+    "aliases": [
+      "dying light 1 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Dying Light 2: Stay Human",
+    "platform": "Xbox One",
+    "aliases": [
+      "dying light 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Hitman 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "hitman 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Hitman 3",
+    "platform": "Xbox One",
+    "aliases": [
+      "hitman 3 xbox one",
+      "hitman world of assassination xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Kingdom Hearts III",
+    "platform": "Xbox One",
+    "aliases": [
+      "kh3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "NieR: Automata",
+    "platform": "Xbox One",
+    "aliases": [
+      "nier automata xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Dragon's Dogma: Dark Arisen",
+    "platform": "Xbox One",
+    "aliases": [
+      "dragons dogma dark arisen xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter World",
+    "platform": "Xbox One",
+    "aliases": [
+      "mh world xbox one",
+      "monster hunter world xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Sekiro: Shadows Die Twice",
+    "platform": "Xbox One",
+    "aliases": [
+      "sekiro xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Elden Ring",
+    "platform": "Xbox One",
+    "aliases": [
+      "elden ring xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Diablo III: Eternal Collection",
+    "platform": "Xbox One",
+    "aliases": [
+      "diablo 3 eternal collection"
+    ]
+  },
+  {
+    "canonical_name": "Diablo IV",
+    "platform": "Xbox One",
+    "aliases": [
+      "diablo 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "borderlands 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 3",
+    "platform": "Xbox One",
+    "aliases": [
+      "borderlands 3 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Cyberpunk 2077",
+    "platform": "Xbox One",
+    "aliases": [
+      "cyberpunk 2077 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Doom (2016)",
+    "platform": "Xbox One",
+    "aliases": [
+      "doom 2016 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Doom Eternal",
+    "platform": "Xbox One",
+    "aliases": [
+      "doom eternal xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Wolfenstein: The New Order",
+    "platform": "Xbox One",
+    "aliases": [
+      "wolfenstein new order xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Wolfenstein II: The New Colossus",
+    "platform": "Xbox One",
+    "aliases": [
+      "wolfenstein 2 new colossus"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Guardians of the Galaxy",
+    "platform": "Xbox One",
+    "aliases": [
+      "guardians of the galaxy xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Avengers",
+    "platform": "Xbox One",
+    "aliases": [
+      "avengers game xbox one"
+    ]
+  },
+  {
+    "canonical_name": "It Takes Two",
+    "platform": "Xbox One",
+    "aliases": [
+      "it takes two xbox one"
+    ]
+  },
+  {
+    "canonical_name": "A Way Out",
+    "platform": "Xbox One",
+    "aliases": [
+      "a way out xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Hogwarts Legacy",
+    "platform": "Xbox One",
+    "aliases": [
+      "hogwarts legacy xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Survivor",
+    "platform": "Xbox One",
+    "aliases": [
+      "jedi survivor xbox one"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+    "platform": "Xbox One",
+    "aliases": [
+      "lego star wars skywalker saga xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Crash Bandicoot 4: It's About Time",
+    "platform": "Xbox One",
+    "aliases": [
+      "crash 4 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+    "platform": "Xbox One",
+    "aliases": [
+      "gta trilogy xbox one"
+    ]
+  },
+  {
+    "canonical_name": "F1 2020",
+    "platform": "Xbox One",
+    "aliases": [
+      "f1 2020 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "F1 2021",
+    "platform": "Xbox One",
+    "aliases": [
+      "f1 2021 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "F1 22",
+    "platform": "Xbox One",
+    "aliases": [
+      "f1 22 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports WRC",
+    "platform": "Xbox One",
+    "aliases": [
+      "wrc ea sports xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Need for Speed Heat",
+    "platform": "Xbox One",
+    "aliases": [
+      "nfs heat xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Need for Speed Payback",
+    "platform": "Xbox One",
+    "aliases": [
+      "nfs payback xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 7",
+    "platform": "Xbox One",
+    "aliases": [
+      "tekken 7 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter V",
+    "platform": "Xbox One",
+    "aliases": [
+      "sfv xbox one",
+      "street fighter 5 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Life is Strange",
+    "platform": "Xbox One",
+    "aliases": [
+      "life is strange xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Life is Strange 2",
+    "platform": "Xbox One",
+    "aliases": [
+      "life is strange 2 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Forces",
+    "platform": "Xbox One",
+    "aliases": [
+      "sonic forces xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Frontiers",
+    "platform": "Xbox One",
+    "aliases": [
+      "sonic frontiers xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Rocket League",
+    "platform": "Xbox One",
+    "aliases": [
+      "rocket league xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Fallout 76",
+    "platform": "Xbox One",
+    "aliases": [
+      "fallout 76 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Anthem",
+    "platform": "Xbox One",
+    "aliases": [
+      "anthem xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Days Gone",
+    "platform": "Xbox One",
+    "aliases": [
+      "days gone xbox one"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 25",
+    "platform": "Xbox One",
+    "aliases": [
+      "fc25 xbox one",
+      "fifa 25 xbox one",
+      "ea fc 25 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 26",
+    "platform": "Xbox One",
+    "aliases": [
+      "fc26 xbox one",
+      "fifa 26 xbox one",
+      "ea fc 26 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 7",
+    "platform": "Xbox One",
+    "aliases": [
+      "cod bo7 xbox one",
+      "black ops 7 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K26",
+    "platform": "Xbox One",
+    "aliases": [
+      "nba 2k26 xbox one"
+    ]
+  },
+  {
+    "canonical_name": "Halo Infinite",
+    "platform": "Xbox Series",
+    "aliases": [
+      "halo infinite xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Forza Horizon 5",
+    "platform": "Xbox Series",
+    "aliases": [
+      "forza horizon 5 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport",
+    "platform": "Xbox Series",
+    "aliases": [
+      "forza motorsport 2023"
+    ]
+  },
+  {
+    "canonical_name": "Starfield",
+    "platform": "Xbox Series",
+    "aliases": [
+      "starfield xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Hi-Fi Rush",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hifi rush",
+      "hi fi rush"
+    ]
+  },
+  {
+    "canonical_name": "Senua's Saga: Hellblade II",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hellblade 2",
+      "hellblade ii"
+    ]
+  },
+  {
+    "canonical_name": "Hellblade: Senua's Sacrifice",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hellblade 1 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Microsoft Flight Simulator",
+    "platform": "Xbox Series",
+    "aliases": [
+      "flight simulator xbox series"
+    ]
+  },
+  {
+    "canonical_name": "South of Midnight",
+    "platform": "Xbox Series",
+    "aliases": [
+      "south of midnight xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Avowed",
+    "platform": "Xbox Series",
+    "aliases": [
+      "avowed xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Indiana Jones and the Great Circle",
+    "platform": "Xbox Series",
+    "aliases": [
+      "indiana jones great circle"
+    ]
+  },
+  {
+    "canonical_name": "Grounded",
+    "platform": "Xbox Series",
+    "aliases": [
+      "grounded xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Pentiment",
+    "platform": "Xbox Series",
+    "aliases": [
+      "pentiment xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Age of Empires IV",
+    "platform": "Xbox Series",
+    "aliases": [
+      "aoe4 xbox series",
+      "age of empires 4"
+    ]
+  },
+  {
+    "canonical_name": "Psychonauts 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "psychonauts 2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "As Dusk Falls",
+    "platform": "Xbox Series",
+    "aliases": [
+      "as dusk falls xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Gears 5",
+    "platform": "Xbox Series",
+    "aliases": [
+      "gears of war 5 xbox series",
+      "gears5 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Gears Tactics",
+    "platform": "Xbox Series",
+    "aliases": [
+      "gears tactics xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Sea of Thieves",
+    "platform": "Xbox Series",
+    "aliases": [
+      "sea of thieves xbox series"
+    ]
+  },
+  {
+    "canonical_name": "State of Decay 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "state of decay 2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Ori and the Will of the Wisps",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ori will of the wisps xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto V",
+    "platform": "Xbox Series",
+    "aliases": [
+      "gta 5 xbox series",
+      "gta v xbox series",
+      "gta5 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+    "platform": "Xbox Series",
+    "aliases": [
+      "gta trilogy xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "rdr2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption",
+    "platform": "Xbox Series",
+    "aliases": [
+      "rdr1 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Cyberpunk 2077",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cyberpunk 2077 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Cyberpunk 2077: Phantom Liberty",
+    "platform": "Xbox Series",
+    "aliases": [
+      "phantom liberty xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Elden Ring",
+    "platform": "Xbox Series",
+    "aliases": [
+      "elden ring xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Elden Ring: Shadow of the Erdtree",
+    "platform": "Xbox Series",
+    "aliases": [
+      "shadow of the erdtree xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil Village",
+    "platform": "Xbox Series",
+    "aliases": [
+      "re village xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 4 Remake",
+    "platform": "Xbox Series",
+    "aliases": [
+      "re4 remake xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil Requiem",
+    "platform": "Xbox Series",
+    "aliases": [
+      "re requiem xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space Remake",
+    "platform": "Xbox Series",
+    "aliases": [
+      "dead space remake xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill 2 Remake",
+    "platform": "Xbox Series",
+    "aliases": [
+      "silent hill 2 remake xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Alan Wake 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "alan wake ii xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Valhalla",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ac valhalla xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Mirage",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ac mirage xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed Shadows",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ac shadows xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Fallen Order",
+    "platform": "Xbox Series",
+    "aliases": [
+      "jedi fallen order xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Jedi: Survivor",
+    "platform": "Xbox Series",
+    "aliases": [
+      "jedi survivor xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars Outlaws",
+    "platform": "Xbox Series",
+    "aliases": [
+      "star wars outlaws xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Hogwarts Legacy",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hogwarts legacy xbox series"
+    ]
+  },
+  {
+    "canonical_name": "It Takes Two",
+    "platform": "Xbox Series",
+    "aliases": [
+      "it takes two xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Split Fiction",
+    "platform": "Xbox Series",
+    "aliases": [
+      "split fiction xbox series"
+    ]
+  },
+  {
+    "canonical_name": "A Plague Tale: Requiem",
+    "platform": "Xbox Series",
+    "aliases": [
+      "plague tale requiem xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Dying Light 2: Stay Human",
+    "platform": "Xbox Series",
+    "aliases": [
+      "dying light 2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 6",
+    "platform": "Xbox Series",
+    "aliases": [
+      "far cry 6 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs: Legion",
+    "platform": "Xbox Series",
+    "aliases": [
+      "watch dogs legion xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat 1",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mk1 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter 6",
+    "platform": "Xbox Series",
+    "aliases": [
+      "sf6 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 8",
+    "platform": "Xbox Series",
+    "aliases": [
+      "tekken 8 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 24",
+    "platform": "Xbox Series",
+    "aliases": [
+      "fc24 xbox series",
+      "fifa 24 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 25",
+    "platform": "Xbox Series",
+    "aliases": [
+      "fc25 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 26",
+    "platform": "Xbox Series",
+    "aliases": [
+      "fc26 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare II",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cod mw2 2022 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare III",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cod mw3 2023 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 6",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cod bo6 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops 7",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cod bo7 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 2042",
+    "platform": "Xbox Series",
+    "aliases": [
+      "bf2042 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 6",
+    "platform": "Xbox Series",
+    "aliases": [
+      "bf6 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Diablo IV",
+    "platform": "Xbox Series",
+    "aliases": [
+      "diablo 4 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Baldur's Gate 3",
+    "platform": "Xbox Series",
+    "aliases": [
+      "bg3 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter Wilds",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mh wilds xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter World",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mh world xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Dragon's Dogma 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "dragons dogma 2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Persona 3 Reload",
+    "platform": "Xbox Series",
+    "aliases": [
+      "p3 reload xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Persona 5 Royal",
+    "platform": "Xbox Series",
+    "aliases": [
+      "p5r xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Like a Dragon: Infinite Wealth",
+    "platform": "Xbox Series",
+    "aliases": [
+      "like a dragon infinite wealth xbox series"
+    ]
+  },
+  {
+    "canonical_name": "NieR: Automata",
+    "platform": "Xbox Series",
+    "aliases": [
+      "nier automata xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Kingdom Hearts III",
+    "platform": "Xbox Series",
+    "aliases": [
+      "kh3 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Tales of Arise",
+    "platform": "Xbox Series",
+    "aliases": [
+      "tales of arise xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Crimson Desert",
+    "platform": "Xbox Series",
+    "aliases": [
+      "crimson desert xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Stray",
+    "platform": "Xbox Series",
+    "aliases": [
+      "stray xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Cult of the Lamb",
+    "platform": "Xbox Series",
+    "aliases": [
+      "cult of the lamb xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Hades",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hades xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Hades II",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hades 2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Arc Raiders",
+    "platform": "Xbox Series",
+    "aliases": [
+      "arc raiders xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Guardians of the Galaxy",
+    "platform": "Xbox Series",
+    "aliases": [
+      "guardians of the galaxy xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Marvel's Avengers",
+    "platform": "Xbox Series",
+    "aliases": [
+      "avengers game xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Suicide Squad: Kill the Justice League",
+    "platform": "Xbox Series",
+    "aliases": [
+      "suicide squad kill the justice league xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Hitman World of Assassination",
+    "platform": "Xbox Series",
+    "aliases": [
+      "hitman 3 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Mafia: Definitive Edition",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mafia definitive edition xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Mafia: The Old Country",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mafia old country xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Frontiers",
+    "platform": "Xbox Series",
+    "aliases": [
+      "sonic frontiers xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Superstars",
+    "platform": "Xbox Series",
+    "aliases": [
+      "sonic superstars xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Rainbow Six Siege",
+    "platform": "Xbox Series",
+    "aliases": [
+      "r6 siege xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Rainbow Six Extraction",
+    "platform": "Xbox Series",
+    "aliases": [
+      "r6 extraction xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Overwatch 2",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ow2 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Tiny Tina's Wonderlands",
+    "platform": "Xbox Series",
+    "aliases": [
+      "tiny tinas wonderlands xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 3",
+    "platform": "Xbox Series",
+    "aliases": [
+      "borderlands 3 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "F1 23",
+    "platform": "Xbox Series",
+    "aliases": [
+      "f1 23 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "F1 24",
+    "platform": "Xbox Series",
+    "aliases": [
+      "f1 24 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "F1 25",
+    "platform": "Xbox Series",
+    "aliases": [
+      "f1 25 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports WRC",
+    "platform": "Xbox Series",
+    "aliases": [
+      "wrc ea sports xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Need for Speed Unbound",
+    "platform": "Xbox Series",
+    "aliases": [
+      "nfs unbound xbox series"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K24",
+    "platform": "Xbox Series",
+    "aliases": [
+      "wwe 2k24 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K25",
+    "platform": "Xbox Series",
+    "aliases": [
+      "wwe 2k25 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "UFC 5",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ea sports ufc 5 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K24",
+    "platform": "Xbox Series",
+    "aliases": [
+      "nba 2k24 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K25",
+    "platform": "Xbox Series",
+    "aliases": [
+      "nba 2k25 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K26",
+    "platform": "Xbox Series",
+    "aliases": [
+      "nba 2k26 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 24",
+    "platform": "Xbox Series",
+    "aliases": [
+      "madden 24 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 25",
+    "platform": "Xbox Series",
+    "aliases": [
+      "madden 25 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 26",
+    "platform": "Xbox Series",
+    "aliases": [
+      "madden 26 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "MLB The Show 23",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mlb the show 23 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "MLB The Show 26",
+    "platform": "Xbox Series",
+    "aliases": [
+      "mlb the show 26 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft",
+    "platform": "Xbox Series",
+    "aliases": [
+      "minecraft xbox series"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+    "platform": "Xbox Series",
+    "aliases": [
+      "lego star wars skywalker saga xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Doom Eternal",
+    "platform": "Xbox Series",
+    "aliases": [
+      "doom eternal xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Doom: The Dark Ages",
+    "platform": "Xbox Series",
+    "aliases": [
+      "doom dark ages xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Metro Exodus",
+    "platform": "Xbox Series",
+    "aliases": [
+      "metro exodus xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Crash Bandicoot 4: It's About Time",
+    "platform": "Xbox Series",
+    "aliases": [
+      "crash 4 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Ghostwire: Tokyo",
+    "platform": "Xbox Series",
+    "aliases": [
+      "ghostwire tokyo xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Deathloop",
+    "platform": "Xbox Series",
+    "aliases": [
+      "deathloop xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Lies of P",
+    "platform": "Xbox Series",
+    "aliases": [
+      "lies of p xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Armored Core VI: Fires of Rubicon",
+    "platform": "Xbox Series",
+    "aliases": [
+      "armored core 6 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Wo Long: Fallen Dynasty",
+    "platform": "Xbox Series",
+    "aliases": [
+      "wo long xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Immortals of Aveum",
+    "platform": "Xbox Series",
+    "aliases": [
+      "immortals of aveum xbox series"
+    ]
+  },
+  {
+    "canonical_name": "A Way Out",
+    "platform": "Xbox Series",
+    "aliases": [
+      "a way out xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 7",
+    "platform": "Xbox Series",
+    "aliases": [
+      "tekken 7 xbox series"
+    ]
   }
 ]
