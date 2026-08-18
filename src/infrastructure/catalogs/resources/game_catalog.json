@@ -1,6 +1,1008 @@
 [
   {
     "canonical_name": "Grand Theft Auto V",
+    "platform": "PS3",
+    "aliases": [
+      "gta 5 ps3",
+      "gta v ps3",
+      "gta5 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto IV",
+    "platform": "PS3",
+    "aliases": [
+      "gta 4 ps3",
+      "gta iv ps3"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: San Andreas",
+    "platform": "PS3",
+    "aliases": [
+      "gta san andreas ps3"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption",
+    "platform": "PS3",
+    "aliases": [
+      "rdr1 ps3",
+      "red dead redemption ps3"
+    ]
+  },
+  {
+    "canonical_name": "Gran Turismo 5",
+    "platform": "PS3",
+    "aliases": [
+      "gt5 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Gran Turismo 6",
+    "platform": "PS3",
+    "aliases": [
+      "gt6 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Uncharted: Drake's Fortune",
+    "platform": "PS3",
+    "aliases": [
+      "uncharted 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Uncharted 2: Among Thieves",
+    "platform": "PS3",
+    "aliases": [
+      "uncharted 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Uncharted 3: Drake's Deception",
+    "platform": "PS3",
+    "aliases": [
+      "uncharted 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "The Last of Us",
+    "platform": "PS3",
+    "aliases": [
+      "tlou ps3",
+      "the last of us ps3"
+    ]
+  },
+  {
+    "canonical_name": "God of War III",
+    "platform": "PS3",
+    "aliases": [
+      "god of war 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "God of War: Ascension",
+    "platform": "PS3",
+    "aliases": [
+      "god of war ascension ps3"
+    ]
+  },
+  {
+    "canonical_name": "God of War Collection",
+    "platform": "PS3",
+    "aliases": [
+      "god of war collection ps3"
+    ]
+  },
+  {
+    "canonical_name": "LittleBigPlanet",
+    "platform": "PS3",
+    "aliases": [
+      "littlebigplanet 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "LittleBigPlanet 2",
+    "platform": "PS3",
+    "aliases": [
+      "littlebigplanet 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "LittleBigPlanet 3",
+    "platform": "PS3",
+    "aliases": [
+      "littlebigplanet 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Killzone 2",
+    "platform": "PS3",
+    "aliases": [
+      "killzone 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Killzone 3",
+    "platform": "PS3",
+    "aliases": [
+      "killzone 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Resistance: Fall of Man",
+    "platform": "PS3",
+    "aliases": [
+      "resistance 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Resistance 2",
+    "platform": "PS3",
+    "aliases": [
+      "resistance 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Resistance 3",
+    "platform": "PS3",
+    "aliases": [
+      "resistance 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "inFamous",
+    "platform": "PS3",
+    "aliases": [
+      "infamous 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "inFamous 2",
+    "platform": "PS3",
+    "aliases": [
+      "infamous 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Heavy Rain",
+    "platform": "PS3",
+    "aliases": [
+      "heavy rain ps3"
+    ]
+  },
+  {
+    "canonical_name": "Beyond: Two Souls",
+    "platform": "PS3",
+    "aliases": [
+      "beyond two souls ps3"
+    ]
+  },
+  {
+    "canonical_name": "Ratchet & Clank Future: Tools of Destruction",
+    "platform": "PS3",
+    "aliases": [
+      "ratchet clank tools of destruction"
+    ]
+  },
+  {
+    "canonical_name": "Ratchet & Clank: A Crack in Time",
+    "platform": "PS3",
+    "aliases": [
+      "ratchet clank crack in time"
+    ]
+  },
+  {
+    "canonical_name": "Ratchet & Clank: All 4 One",
+    "platform": "PS3",
+    "aliases": [
+      "ratchet clank all 4 one"
+    ]
+  },
+  {
+    "canonical_name": "MotorStorm",
+    "platform": "PS3",
+    "aliases": [
+      "motorstorm ps3"
+    ]
+  },
+  {
+    "canonical_name": "Twisted Metal",
+    "platform": "PS3",
+    "aliases": [
+      "twisted metal ps3"
+    ]
+  },
+  {
+    "canonical_name": "Journey",
+    "platform": "PS3",
+    "aliases": [
+      "journey ps3"
+    ]
+  },
+  {
+    "canonical_name": "Demon's Souls",
+    "platform": "PS3",
+    "aliases": [
+      "demons souls ps3"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid 4: Guns of the Patriots",
+    "platform": "PS3",
+    "aliases": [
+      "mgs4 ps3",
+      "metal gear solid 4"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid: Peace Walker HD Edition",
+    "platform": "PS3",
+    "aliases": [
+      "mgs peace walker hd"
+    ]
+  },
+  {
+    "canonical_name": "Metal Gear Solid HD Collection",
+    "platform": "PS3",
+    "aliases": [
+      "mgs hd collection"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty 4: Modern Warfare",
+    "platform": "PS3",
+    "aliases": [
+      "cod4 mw ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare 2",
+    "platform": "PS3",
+    "aliases": [
+      "cod mw2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare 3",
+    "platform": "PS3",
+    "aliases": [
+      "cod mw3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops",
+    "platform": "PS3",
+    "aliases": [
+      "cod black ops 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops II",
+    "platform": "PS3",
+    "aliases": [
+      "cod black ops 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Ghosts",
+    "platform": "PS3",
+    "aliases": [
+      "cod ghosts ps3"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: World at War",
+    "platform": "PS3",
+    "aliases": [
+      "cod world at war ps3"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 3",
+    "platform": "PS3",
+    "aliases": [
+      "bf3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 4",
+    "platform": "PS3",
+    "aliases": [
+      "bf4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield: Bad Company 2",
+    "platform": "PS3",
+    "aliases": [
+      "bad company 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed",
+    "platform": "PS3",
+    "aliases": [
+      "ac 1 ps3",
+      "assassins creed 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed II",
+    "platform": "PS3",
+    "aliases": [
+      "ac 2 ps3",
+      "assassins creed 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed: Brotherhood",
+    "platform": "PS3",
+    "aliases": [
+      "ac brotherhood ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed: Revelations",
+    "platform": "PS3",
+    "aliases": [
+      "ac revelations ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed III",
+    "platform": "PS3",
+    "aliases": [
+      "ac 3 ps3",
+      "assassins creed 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed IV: Black Flag",
+    "platform": "PS3",
+    "aliases": [
+      "ac black flag ps3",
+      "assassins creed 4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 14",
+    "platform": "PS3",
+    "aliases": [
+      "fifa 14 ps3"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 15",
+    "platform": "PS3",
+    "aliases": [
+      "fifa 15 ps3"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 16",
+    "platform": "PS3",
+    "aliases": [
+      "fifa 16 ps3"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 17",
+    "platform": "PS3",
+    "aliases": [
+      "fifa 17 ps3"
+    ]
+  },
+  {
+    "canonical_name": "PES 2013",
+    "platform": "PS3",
+    "aliases": [
+      "pes 2013 ps3",
+      "pro evolution soccer 2013"
+    ]
+  },
+  {
+    "canonical_name": "The Elder Scrolls V: Skyrim",
+    "platform": "PS3",
+    "aliases": [
+      "skyrim ps3"
+    ]
+  },
+  {
+    "canonical_name": "Fallout 3",
+    "platform": "PS3",
+    "aliases": [
+      "fallout 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Fallout: New Vegas",
+    "platform": "PS3",
+    "aliases": [
+      "fallout new vegas ps3"
+    ]
+  },
+  {
+    "canonical_name": "Mass Effect 2",
+    "platform": "PS3",
+    "aliases": [
+      "mass effect 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Mass Effect 3",
+    "platform": "PS3",
+    "aliases": [
+      "mass effect 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space",
+    "platform": "PS3",
+    "aliases": [
+      "dead space 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space 2",
+    "platform": "PS3",
+    "aliases": [
+      "dead space 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space 3",
+    "platform": "PS3",
+    "aliases": [
+      "dead space 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham Asylum",
+    "platform": "PS3",
+    "aliases": [
+      "arkham asylum ps3"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham City",
+    "platform": "PS3",
+    "aliases": [
+      "arkham city ps3"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham Origins",
+    "platform": "PS3",
+    "aliases": [
+      "arkham origins ps3"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat",
+    "platform": "PS3",
+    "aliases": [
+      "mortal kombat 2011 ps3",
+      "mk 2011 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter IV",
+    "platform": "PS3",
+    "aliases": [
+      "street fighter 4 ps3",
+      "sf4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 6",
+    "platform": "PS3",
+    "aliases": [
+      "tekken 6 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls",
+    "platform": "PS3",
+    "aliases": [
+      "dark souls 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls II",
+    "platform": "PS3",
+    "aliases": [
+      "dark souls 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "BioShock",
+    "platform": "PS3",
+    "aliases": [
+      "bioshock 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "BioShock 2",
+    "platform": "PS3",
+    "aliases": [
+      "bioshock 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "BioShock Infinite",
+    "platform": "PS3",
+    "aliases": [
+      "bioshock infinite ps3"
+    ]
+  },
+  {
+    "canonical_name": "Portal 2",
+    "platform": "PS3",
+    "aliases": [
+      "portal 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands",
+    "platform": "PS3",
+    "aliases": [
+      "borderlands 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 2",
+    "platform": "PS3",
+    "aliases": [
+      "borderlands 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 3",
+    "platform": "PS3",
+    "aliases": [
+      "far cry 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Just Cause 2",
+    "platform": "PS3",
+    "aliases": [
+      "just cause 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row 2",
+    "platform": "PS3",
+    "aliases": [
+      "saints row 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row: The Third",
+    "platform": "PS3",
+    "aliases": [
+      "saints row 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row IV",
+    "platform": "PS3",
+    "aliases": [
+      "saints row 4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Complete Saga",
+    "platform": "PS3",
+    "aliases": [
+      "lego star wars complete saga ps3"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Batman 2: DC Super Heroes",
+    "platform": "PS3",
+    "aliases": [
+      "lego batman 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Marvel Super Heroes",
+    "platform": "PS3",
+    "aliases": [
+      "lego marvel super heroes ps3"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft: PlayStation 3 Edition",
+    "platform": "PS3",
+    "aliases": [
+      "minecraft ps3"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K14",
+    "platform": "PS3",
+    "aliases": [
+      "wwe 2k14 ps3"
+    ]
+  },
+  {
+    "canonical_name": "WWE '13",
+    "platform": "PS3",
+    "aliases": [
+      "wwe 13 ps3"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K13",
+    "platform": "PS3",
+    "aliases": [
+      "nba 2k13 ps3"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K14",
+    "platform": "PS3",
+    "aliases": [
+      "nba 2k14 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Guitar Hero III: Legends of Rock",
+    "platform": "PS3",
+    "aliases": [
+      "guitar hero 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Guitar Hero World Tour",
+    "platform": "PS3",
+    "aliases": [
+      "guitar hero world tour ps3"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band",
+    "platform": "PS3",
+    "aliases": [
+      "rock band 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band 2",
+    "platform": "PS3",
+    "aliases": [
+      "rock band 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band 3",
+    "platform": "PS3",
+    "aliases": [
+      "rock band 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Age: Origins",
+    "platform": "PS3",
+    "aliases": [
+      "dragon age origins ps3"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Age II",
+    "platform": "PS3",
+    "aliases": [
+      "dragon age 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XIII",
+    "platform": "PS3",
+    "aliases": [
+      "ff13 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XIII-2",
+    "platform": "PS3",
+    "aliases": [
+      "ff13-2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XIV: A Realm Reborn",
+    "platform": "PS3",
+    "aliases": [
+      "ff14 realm reborn ps3"
+    ]
+  },
+  {
+    "canonical_name": "Naruto Shippuden: Ultimate Ninja Storm 3",
+    "platform": "PS3",
+    "aliases": [
+      "naruto ultimate ninja storm 3"
+    ]
+  },
+  {
+    "canonical_name": "Naruto Shippuden: Ultimate Ninja Storm Revolution",
+    "platform": "PS3",
+    "aliases": [
+      "naruto ninja storm revolution"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Ball Z: Budokai Tenkaichi 3",
+    "platform": "PS3",
+    "aliases": [
+      "dbz budokai tenkaichi 3"
+    ]
+  },
+  {
+    "canonical_name": "Persona 5",
+    "platform": "PS3",
+    "aliases": [
+      "persona 5 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Persona 4 Arena",
+    "platform": "PS3",
+    "aliases": [
+      "persona 4 arena ps3"
+    ]
+  },
+  {
+    "canonical_name": "Catherine",
+    "platform": "PS3",
+    "aliases": [
+      "catherine ps3"
+    ]
+  },
+  {
+    "canonical_name": "Yakuza 5",
+    "platform": "PS3",
+    "aliases": [
+      "yakuza 5 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Yakuza 3",
+    "platform": "PS3",
+    "aliases": [
+      "yakuza 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 5",
+    "platform": "PS3",
+    "aliases": [
+      "re5 ps3",
+      "resident evil 5 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 6",
+    "platform": "PS3",
+    "aliases": [
+      "re6 ps3",
+      "resident evil 6 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill: Homecoming",
+    "platform": "PS3",
+    "aliases": [
+      "silent hill homecoming ps3"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill: Downpour",
+    "platform": "PS3",
+    "aliases": [
+      "silent hill downpour ps3"
+    ]
+  },
+  {
+    "canonical_name": "Devil May Cry 4",
+    "platform": "PS3",
+    "aliases": [
+      "dmc4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "DmC: Devil May Cry",
+    "platform": "PS3",
+    "aliases": [
+      "dmc devil may cry ps3"
+    ]
+  },
+  {
+    "canonical_name": "Bayonetta",
+    "platform": "PS3",
+    "aliases": [
+      "bayonetta ps3"
+    ]
+  },
+  {
+    "canonical_name": "Vanquish",
+    "platform": "PS3",
+    "aliases": [
+      "vanquish ps3"
+    ]
+  },
+  {
+    "canonical_name": "Sleeping Dogs",
+    "platform": "PS3",
+    "aliases": [
+      "sleeping dogs ps3"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs",
+    "platform": "PS3",
+    "aliases": [
+      "watch dogs 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Tomb Raider (2013)",
+    "platform": "PS3",
+    "aliases": [
+      "tomb raider 2013 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Sly Cooper: Thieves in Time",
+    "platform": "PS3",
+    "aliases": [
+      "sly cooper thieves in time"
+    ]
+  },
+  {
+    "canonical_name": "Sly 3: Honor Among Thieves",
+    "platform": "PS3",
+    "aliases": [
+      "sly 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Jak and Daxter Collection",
+    "platform": "PS3",
+    "aliases": [
+      "jak and daxter collection ps3"
+    ]
+  },
+  {
+    "canonical_name": "God Hand",
+    "platform": "PS3",
+    "aliases": [
+      "god hand ps3"
+    ]
+  },
+  {
+    "canonical_name": "Ni No Kuni: Wrath of the White Witch",
+    "platform": "PS3",
+    "aliases": [
+      "ni no kuni ps3"
+    ]
+  },
+  {
+    "canonical_name": "Tales of Xillia",
+    "platform": "PS3",
+    "aliases": [
+      "tales of xillia ps3"
+    ]
+  },
+  {
+    "canonical_name": "Tales of Graces f",
+    "platform": "PS3",
+    "aliases": [
+      "tales of graces f ps3"
+    ]
+  },
+  {
+    "canonical_name": "Disgaea 4: A Promise Unforgotten",
+    "platform": "PS3",
+    "aliases": [
+      "disgaea 4 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Puppeteer",
+    "platform": "PS3",
+    "aliases": [
+      "puppeteer ps3"
+    ]
+  },
+  {
+    "canonical_name": "Beyond Good & Evil HD",
+    "platform": "PS3",
+    "aliases": [
+      "beyond good and evil hd ps3"
+    ]
+  },
+  {
+    "canonical_name": "The Walking Dead: The Game",
+    "platform": "PS3",
+    "aliases": [
+      "walking dead telltale ps3"
+    ]
+  },
+  {
+    "canonical_name": "Tales from the Borderlands",
+    "platform": "PS3",
+    "aliases": [
+      "tales from the borderlands ps3"
+    ]
+  },
+  {
+    "canonical_name": "Diablo III",
+    "platform": "PS3",
+    "aliases": [
+      "diablo 3 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Rayman Origins",
+    "platform": "PS3",
+    "aliases": [
+      "rayman origins ps3"
+    ]
+  },
+  {
+    "canonical_name": "Rayman Legends",
+    "platform": "PS3",
+    "aliases": [
+      "rayman legends ps3"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 2",
+    "platform": "PS3",
+    "aliases": [
+      "far cry 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Prototype",
+    "platform": "PS3",
+    "aliases": [
+      "prototype 1 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Prototype 2",
+    "platform": "PS3",
+    "aliases": [
+      "prototype 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars: The Force Unleashed",
+    "platform": "PS3",
+    "aliases": [
+      "star wars force unleashed ps3"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars: The Force Unleashed II",
+    "platform": "PS3",
+    "aliases": [
+      "star wars force unleashed 2 ps3"
+    ]
+  },
+  {
+    "canonical_name": "F1 2013",
+    "platform": "PS3",
+    "aliases": [
+      "f1 2013 ps3"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto V",
     "platform": "PS4",
     "aliases": [
       "gta 5",
@@ -1550,6 +2552,896 @@
     "platform": "PS5",
     "aliases": [
       "metro exodus ps5"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod black ops 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Black Ops",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod black ops 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod mw3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Modern Warfare 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod mw2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty 4: Modern Warfare",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod4 mw xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: World at War",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod world at war xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Ghosts",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod ghosts xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Call of Duty: Advanced Warfare",
+    "platform": "Xbox 360",
+    "aliases": [
+      "cod advanced warfare xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Halo 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "halo 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Halo Reach",
+    "platform": "Xbox 360",
+    "aliases": [
+      "halo reach xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Halo 4",
+    "platform": "Xbox 360",
+    "aliases": [
+      "halo 4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Halo Wars",
+    "platform": "Xbox 360",
+    "aliases": [
+      "halo wars xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Halo 3: ODST",
+    "platform": "Xbox 360",
+    "aliases": [
+      "halo odst xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto V",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gta 5 xbox 360",
+      "gta v xbox 360",
+      "gta5 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto IV",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gta 4 xbox 360",
+      "gta iv xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: San Andreas",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gta san andreas xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "The Elder Scrolls V: Skyrim",
+    "platform": "Xbox 360",
+    "aliases": [
+      "skyrim xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Red Dead Redemption",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rdr1 xbox 360",
+      "red dead redemption xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft: Xbox 360 Edition",
+    "platform": "Xbox 360",
+    "aliases": [
+      "minecraft xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gears of war 1 xbox 360",
+      "gears 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gears 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gears 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Gears of War: Judgment",
+    "platform": "Xbox 360",
+    "aliases": [
+      "gears judgment xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "forza motorsport 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "forza motorsport 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Forza Motorsport 4",
+    "platform": "Xbox 360",
+    "aliases": [
+      "forza motorsport 4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Forza Horizon",
+    "platform": "Xbox 360",
+    "aliases": [
+      "forza horizon 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Fable II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fable 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Fable III",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fable 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Alan Wake",
+    "platform": "Xbox 360",
+    "aliases": [
+      "alan wake xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Kinect Adventures!",
+    "platform": "Xbox 360",
+    "aliases": [
+      "kinect adventures xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Kinect Sports",
+    "platform": "Xbox 360",
+    "aliases": [
+      "kinect sports xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Kinect Sports: Season Two",
+    "platform": "Xbox 360",
+    "aliases": [
+      "kinect sports season two"
+    ]
+  },
+  {
+    "canonical_name": "Left 4 Dead",
+    "platform": "Xbox 360",
+    "aliases": [
+      "left 4 dead 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Left 4 Dead 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "left 4 dead 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Viva Piñata",
+    "platform": "Xbox 360",
+    "aliases": [
+      "viva pinata xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bf3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield 4",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bf4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Battlefield: Bad Company 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bad company 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Fallout 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fallout 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Fallout: New Vegas",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fallout new vegas xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Mass Effect",
+    "platform": "Xbox 360",
+    "aliases": [
+      "mass effect 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Mass Effect 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "mass effect 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Mass Effect 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "mass effect 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac 1 xbox 360",
+      "assassins creed 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac 2 xbox 360",
+      "assassins creed 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed: Brotherhood",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac brotherhood xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed: Revelations",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac revelations xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed III",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac 3 xbox 360",
+      "assassins creed 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed IV: Black Flag",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ac black flag xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 14",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fifa 14 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 15",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fifa 15 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 16",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fifa 16 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 17",
+    "platform": "Xbox 360",
+    "aliases": [
+      "fifa 17 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "PES 2013",
+    "platform": "Xbox 360",
+    "aliases": [
+      "pes 2013 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "BioShock",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bioshock 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "BioShock 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bioshock 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "BioShock Infinite",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bioshock infinite xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dead space 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dead space 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dead Space 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dead space 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham Asylum",
+    "platform": "Xbox 360",
+    "aliases": [
+      "arkham asylum xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham City",
+    "platform": "Xbox 360",
+    "aliases": [
+      "arkham city xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Batman: Arkham Origins",
+    "platform": "Xbox 360",
+    "aliases": [
+      "arkham origins xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Portal 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "portal 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands",
+    "platform": "Xbox 360",
+    "aliases": [
+      "borderlands 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Borderlands 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "borderlands 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dark souls 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dark Souls II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dark souls 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Just Cause 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "just cause 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "saints row 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row: The Third",
+    "platform": "Xbox 360",
+    "aliases": [
+      "saints row 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Saints Row IV",
+    "platform": "Xbox 360",
+    "aliases": [
+      "saints row 4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Tomb Raider (2013)",
+    "platform": "Xbox 360",
+    "aliases": [
+      "tomb raider 2013 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Watch Dogs",
+    "platform": "Xbox 360",
+    "aliases": [
+      "watch dogs 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Sleeping Dogs",
+    "platform": "Xbox 360",
+    "aliases": [
+      "sleeping dogs xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Complete Saga",
+    "platform": "Xbox 360",
+    "aliases": [
+      "lego star wars complete saga xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Batman 2: DC Super Heroes",
+    "platform": "Xbox 360",
+    "aliases": [
+      "lego batman 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Marvel Super Heroes",
+    "platform": "Xbox 360",
+    "aliases": [
+      "lego marvel super heroes xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rock band 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rock band 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Rock Band 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rock band 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Guitar Hero III: Legends of Rock",
+    "platform": "Xbox 360",
+    "aliases": [
+      "guitar hero 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Guitar Hero World Tour",
+    "platform": "Xbox 360",
+    "aliases": [
+      "guitar hero world tour xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "WWE 2K14",
+    "platform": "Xbox 360",
+    "aliases": [
+      "wwe 2k14 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "WWE '13",
+    "platform": "Xbox 360",
+    "aliases": [
+      "wwe 13 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K13",
+    "platform": "Xbox 360",
+    "aliases": [
+      "nba 2k13 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K14",
+    "platform": "Xbox 360",
+    "aliases": [
+      "nba 2k14 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Diablo III",
+    "platform": "Xbox 360",
+    "aliases": [
+      "diablo 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Age: Origins",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dragon age origins xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Age II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dragon age 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XIII",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ff13 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Final Fantasy XIII-2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ff13-2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Persona 4 Arena",
+    "platform": "Xbox 360",
+    "aliases": [
+      "persona 4 arena xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 5",
+    "platform": "Xbox 360",
+    "aliases": [
+      "re5 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Resident Evil 6",
+    "platform": "Xbox 360",
+    "aliases": [
+      "re6 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill: Homecoming",
+    "platform": "Xbox 360",
+    "aliases": [
+      "silent hill homecoming xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Silent Hill: Downpour",
+    "platform": "Xbox 360",
+    "aliases": [
+      "silent hill downpour xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Devil May Cry 4",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dmc4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "DmC: Devil May Cry",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dmc devil may cry xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Bayonetta",
+    "platform": "Xbox 360",
+    "aliases": [
+      "bayonetta xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Vanquish",
+    "platform": "Xbox 360",
+    "aliases": [
+      "vanquish xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat",
+    "platform": "Xbox 360",
+    "aliases": [
+      "mortal kombat 2011 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter IV",
+    "platform": "Xbox 360",
+    "aliases": [
+      "street fighter 4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Tekken 6",
+    "platform": "Xbox 360",
+    "aliases": [
+      "tekken 6 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "far cry 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Far Cry 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "far cry 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Prototype",
+    "platform": "Xbox 360",
+    "aliases": [
+      "prototype 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Prototype 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "prototype 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars: The Force Unleashed",
+    "platform": "Xbox 360",
+    "aliases": [
+      "star wars force unleashed xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Star Wars: The Force Unleashed II",
+    "platform": "Xbox 360",
+    "aliases": [
+      "star wars force unleashed 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Rayman Origins",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rayman origins xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Rayman Legends",
+    "platform": "Xbox 360",
+    "aliases": [
+      "rayman legends xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "F1 2013",
+    "platform": "Xbox 360",
+    "aliases": [
+      "f1 2013 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Ni No Kuni: Wrath of the White Witch",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ni no kuni xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Naruto Shippuden: Ultimate Ninja Storm 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "naruto ultimate ninja storm 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Ball Z: Budokai Tenkaichi 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dbz budokai tenkaichi 3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Crackdown",
+    "platform": "Xbox 360",
+    "aliases": [
+      "crackdown xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Crackdown 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "crackdown 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Perfect Dark Zero",
+    "platform": "Xbox 360",
+    "aliases": [
+      "perfect dark zero xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Project Gotham Racing 3",
+    "platform": "Xbox 360",
+    "aliases": [
+      "pgr3 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Project Gotham Racing 4",
+    "platform": "Xbox 360",
+    "aliases": [
+      "pgr4 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dead Rising",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dead rising 1 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Dead Rising 2",
+    "platform": "Xbox 360",
+    "aliases": [
+      "dead rising 2 xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Lost Planet: Extreme Condition",
+    "platform": "Xbox 360",
+    "aliases": [
+      "lost planet xbox 360"
+    ]
+  },
+  {
+    "canonical_name": "Ace Combat 6: Fires of Liberation",
+    "platform": "Xbox 360",
+    "aliases": [
+      "ace combat 6 xbox 360"
     ]
   },
   {
@@ -3447,6 +5339,852 @@
     "platform": "Xbox Series",
     "aliases": [
       "tekken 7 xbox series"
+    ]
+  },
+  {
+    "canonical_name": "Mario Kart 8 Deluxe",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario kart 8 deluxe switch",
+      "mk8 deluxe"
+    ]
+  },
+  {
+    "canonical_name": "Animal Crossing: New Horizons",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "animal crossing new horizons",
+      "acnh"
+    ]
+  },
+  {
+    "canonical_name": "Super Smash Bros. Ultimate",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "smash bros ultimate",
+      "smash ultimate"
+    ]
+  },
+  {
+    "canonical_name": "The Legend of Zelda: Breath of the Wild",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "botw",
+      "zelda breath of the wild"
+    ]
+  },
+  {
+    "canonical_name": "The Legend of Zelda: Tears of the Kingdom",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "totk",
+      "zelda tears of the kingdom"
+    ]
+  },
+  {
+    "canonical_name": "The Legend of Zelda: Skyward Sword HD",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "zelda skyward sword hd"
+    ]
+  },
+  {
+    "canonical_name": "The Legend of Zelda: Link's Awakening",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "zelda links awakening switch"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario Odyssey",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario odyssey"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario Party",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario party switch"
+    ]
+  },
+  {
+    "canonical_name": "Mario Party Superstars",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario party superstars switch"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario 3D World + Bowser's Fury",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario 3d world bowsers fury"
+    ]
+  },
+  {
+    "canonical_name": "New Super Mario Bros. U Deluxe",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "new super mario bros u deluxe"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario Maker 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario maker 2"
+    ]
+  },
+  {
+    "canonical_name": "Mario Golf: Super Rush",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario golf super rush"
+    ]
+  },
+  {
+    "canonical_name": "Mario Tennis Aces",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario tennis aces switch"
+    ]
+  },
+  {
+    "canonical_name": "Mario Strikers: Battle League",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario strikers battle league"
+    ]
+  },
+  {
+    "canonical_name": "Paper Mario: The Origami King",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "paper mario origami king"
+    ]
+  },
+  {
+    "canonical_name": "Luigi's Mansion 3",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "luigis mansion 3"
+    ]
+  },
+  {
+    "canonical_name": "Ring Fit Adventure",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "ring fit adventure switch"
+    ]
+  },
+  {
+    "canonical_name": "Nintendo Switch Sports",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "switch sports"
+    ]
+  },
+  {
+    "canonical_name": "1-2-Switch",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "1 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Sword",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon espada",
+      "pokemon sword switch"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Shield",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon escudo",
+      "pokemon shield switch"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Scarlet",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon escarlata",
+      "pokemon scarlet switch"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Violet",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon purpura",
+      "pokemon violet switch"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Let's Go, Pikachu!",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon lets go pikachu"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Let's Go, Eevee!",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon lets go eevee"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Brilliant Diamond",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon diamante brillante"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Shining Pearl",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon perla reluciente"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Legends: Arceus",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon legends arceus"
+    ]
+  },
+  {
+    "canonical_name": "Detective Pikachu Returns",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "detective pikachu returns switch"
+    ]
+  },
+  {
+    "canonical_name": "Splatoon 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "splatoon 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Splatoon 3",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "splatoon 3 switch"
+    ]
+  },
+  {
+    "canonical_name": "Kirby and the Forgotten Land",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "kirby forgotten land"
+    ]
+  },
+  {
+    "canonical_name": "Kirby's Return to Dream Land Deluxe",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "kirby return to dream land deluxe"
+    ]
+  },
+  {
+    "canonical_name": "Kirby Star Allies",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "kirby star allies switch"
+    ]
+  },
+  {
+    "canonical_name": "Metroid Dread",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "metroid dread switch"
+    ]
+  },
+  {
+    "canonical_name": "Metroid Prime Remastered",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "metroid prime remastered switch"
+    ]
+  },
+  {
+    "canonical_name": "Fire Emblem: Three Houses",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fire emblem three houses"
+    ]
+  },
+  {
+    "canonical_name": "Fire Emblem Engage",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fire emblem engage switch"
+    ]
+  },
+  {
+    "canonical_name": "Xenoblade Chronicles 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "xenoblade chronicles 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Xenoblade Chronicles 3",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "xenoblade chronicles 3 switch"
+    ]
+  },
+  {
+    "canonical_name": "Xenoblade Chronicles: Definitive Edition",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "xenoblade definitive edition"
+    ]
+  },
+  {
+    "canonical_name": "Bayonetta 3",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "bayonetta 3 switch"
+    ]
+  },
+  {
+    "canonical_name": "Bayonetta 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "bayonetta 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Pikmin 3 Deluxe",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pikmin 3 deluxe switch"
+    ]
+  },
+  {
+    "canonical_name": "Pikmin 4",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pikmin 4 switch"
+    ]
+  },
+  {
+    "canonical_name": "Mario + Rabbids Kingdom Battle",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario rabbids kingdom battle"
+    ]
+  },
+  {
+    "canonical_name": "Mario + Rabbids Sparks of Hope",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario rabbids sparks of hope"
+    ]
+  },
+  {
+    "canonical_name": "WarioWare: Get It Together!",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "warioware get it together"
+    ]
+  },
+  {
+    "canonical_name": "Mario Kart Live: Home Circuit",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario kart live home circuit"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario Bros. Wonder",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario wonder",
+      "super mario bros wonder"
+    ]
+  },
+  {
+    "canonical_name": "Donkey Kong Country: Tropical Freeze",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "donkey kong tropical freeze switch"
+    ]
+  },
+  {
+    "canonical_name": "Yoshi's Crafted World",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "yoshis crafted world"
+    ]
+  },
+  {
+    "canonical_name": "Astral Chain",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "astral chain switch"
+    ]
+  },
+  {
+    "canonical_name": "Fitness Boxing",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fitness boxing switch"
+    ]
+  },
+  {
+    "canonical_name": "Just Dance 2023",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "just dance 2023 switch"
+    ]
+  },
+  {
+    "canonical_name": "Just Dance 2024",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "just dance 2024 switch"
+    ]
+  },
+  {
+    "canonical_name": "Minecraft",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "minecraft switch"
+    ]
+  },
+  {
+    "canonical_name": "The Witcher 3: Wild Hunt",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "witcher 3 switch"
+    ]
+  },
+  {
+    "canonical_name": "The Elder Scrolls V: Skyrim",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "skyrim switch"
+    ]
+  },
+  {
+    "canonical_name": "Diablo III: Eternal Collection",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "diablo 3 eternal collection switch"
+    ]
+  },
+  {
+    "canonical_name": "DOOM (2016)",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "doom 2016 switch"
+    ]
+  },
+  {
+    "canonical_name": "L.A. Noire",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "la noire switch"
+    ]
+  },
+  {
+    "canonical_name": "Rocket League",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "rocket league switch"
+    ]
+  },
+  {
+    "canonical_name": "Overcooked! 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "overcooked 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Stardew Valley",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "stardew valley switch"
+    ]
+  },
+  {
+    "canonical_name": "Terraria",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "terraria switch"
+    ]
+  },
+  {
+    "canonical_name": "Hollow Knight",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "hollow knight switch"
+    ]
+  },
+  {
+    "canonical_name": "Cuphead",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "cuphead switch"
+    ]
+  },
+  {
+    "canonical_name": "Untitled Goose Game",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "untitled goose game switch"
+    ]
+  },
+  {
+    "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "lego star wars skywalker saga switch"
+    ]
+  },
+  {
+    "canonical_name": "Crash Bandicoot 4: It's About Time",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "crash 4 switch"
+    ]
+  },
+  {
+    "canonical_name": "Crash Team Racing Nitro-Fueled",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "crash team racing switch",
+      "ctr nitro fueled"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Frontiers",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "sonic frontiers switch"
+    ]
+  },
+  {
+    "canonical_name": "Sonic Superstars",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "sonic superstars switch"
+    ]
+  },
+  {
+    "canonical_name": "Mortal Kombat 11",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mk11 switch"
+    ]
+  },
+  {
+    "canonical_name": "Street Fighter 6",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "sf6 switch"
+    ]
+  },
+  {
+    "canonical_name": "EA Sports FC 24 (Legacy Edition)",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fc24 switch legacy edition",
+      "fifa 24 switch"
+    ]
+  },
+  {
+    "canonical_name": "FIFA 23 (Legacy Edition)",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fifa 23 switch legacy edition"
+    ]
+  },
+  {
+    "canonical_name": "NBA 2K23",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "nba 2k23 switch"
+    ]
+  },
+  {
+    "canonical_name": "Madden NFL 23",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "madden 23 switch"
+    ]
+  },
+  {
+    "canonical_name": "Hyrule Warriors: Age of Calamity",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "hyrule warriors age of calamity"
+    ]
+  },
+  {
+    "canonical_name": "The Legend of Zelda: Echoes of Wisdom",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "zelda echoes of wisdom"
+    ]
+  },
+  {
+    "canonical_name": "Persona 5 Royal",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "persona 5 royal switch"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Quest XI S",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "dragon quest 11 s switch"
+    ]
+  },
+  {
+    "canonical_name": "Dragon Quest Treasures",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "dragon quest treasures switch"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter Rise",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "monster hunter rise switch"
+    ]
+  },
+  {
+    "canonical_name": "Monster Hunter Generations Ultimate",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mh generations ultimate"
+    ]
+  },
+  {
+    "canonical_name": "Octopath Traveler",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "octopath traveler switch"
+    ]
+  },
+  {
+    "canonical_name": "Octopath Traveler II",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "octopath traveler 2"
+    ]
+  },
+  {
+    "canonical_name": "Triangle Strategy",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "triangle strategy switch"
+    ]
+  },
+  {
+    "canonical_name": "Fire Emblem Warriors: Three Hopes",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "fire emblem warriors three hopes"
+    ]
+  },
+  {
+    "canonical_name": "Xenoblade Chronicles 3: Future Redeemed",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "xenoblade 3 future redeemed"
+    ]
+  },
+  {
+    "canonical_name": "Advance Wars 1+2: Re-Boot Camp",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "advance wars reboot camp"
+    ]
+  },
+  {
+    "canonical_name": "Kirby's Dream Buffet",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "kirby dream buffet switch"
+    ]
+  },
+  {
+    "canonical_name": "Super Kirby Clash",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "super kirby clash switch"
+    ]
+  },
+  {
+    "canonical_name": "Kirby Fighters 2",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "kirby fighters 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "New Pokémon Snap",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "new pokemon snap"
+    ]
+  },
+  {
+    "canonical_name": "Pokémon Mystery Dungeon: Rescue Team DX",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "pokemon mystery dungeon rescue team dx"
+    ]
+  },
+  {
+    "canonical_name": "Luigi's Mansion 2 HD",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "luigis mansion 2 hd"
+    ]
+  },
+  {
+    "canonical_name": "Super Mario RPG",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario rpg switch",
+      "super mario rpg switch"
+    ]
+  },
+  {
+    "canonical_name": "Paper Mario: The Thousand-Year Door",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "paper mario thousand year door switch"
+    ]
+  },
+  {
+    "canonical_name": "Mario vs. Donkey Kong",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "mario vs donkey kong switch"
+    ]
+  },
+  {
+    "canonical_name": "Princess Peach: Showtime!",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "princess peach showtime"
+    ]
+  },
+  {
+    "canonical_name": "WarioWare: Move It!",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "warioware move it"
+    ]
+  },
+  {
+    "canonical_name": "Endless Ocean Luminous",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "endless ocean luminous switch"
+    ]
+  },
+  {
+    "canonical_name": "Tomodachi Life",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "tomodachi life switch"
+    ]
+  },
+  {
+    "canonical_name": "Big Brain Academy: Brain vs. Brain",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "big brain academy switch"
+    ]
+  },
+  {
+    "canonical_name": "Clubhouse Games: 51 Worldwide Classics",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "clubhouse games 51"
+    ]
+  },
+  {
+    "canonical_name": "Miitopia",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "miitopia switch"
+    ]
+  },
+  {
+    "canonical_name": "Story of Seasons: A Wonderful Life",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "story of seasons wonderful life"
+    ]
+  },
+  {
+    "canonical_name": "Assassin's Creed: The Rebel Collection",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "ac rebel collection switch"
+    ]
+  },
+  {
+    "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "gta trilogy switch"
+    ]
+  },
+  {
+    "canonical_name": "Just Cause 3",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "just cause 3 switch"
+    ]
+  },
+  {
+    "canonical_name": "Wolfenstein II: The New Colossus",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "wolfenstein 2 switch"
+    ]
+  },
+  {
+    "canonical_name": "Bravely Default II",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "bravely default 2"
+    ]
+  },
+  {
+    "canonical_name": "Shin Megami Tensei V",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "smt5 switch"
+    ]
+  },
+  {
+    "canonical_name": "Xenoblade Chronicles X: Definitive Edition",
+    "platform": "Nintendo Switch",
+    "aliases": [
+      "xenoblade x definitive edition"
     ]
   }
 ]

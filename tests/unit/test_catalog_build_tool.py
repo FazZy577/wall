@@ -559,7 +559,7 @@ def test_repository_inventory_remains_structurally_valid_as_it_expands() -> None
     assert {entry.platform for entry in entries} <= concrete_platforms
     assert [entry.canonical_name for entry in entries[:2]] == [
         "Grand Theft Auto V",
-        "Red Dead Redemption 2",
+        "Grand Theft Auto IV",
     ]
 
 

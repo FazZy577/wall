@@ -72,9 +72,12 @@ El motor de análisis y la CLI operativa están implementados y cubiertos por
 tests offline. Los candidatos `ignored` y `ambiguous` son resultados esperados
 del routing y se muestran separados de los fallos técnicos en terminal y JSON
 schema v2. La estructura versionada del catálogo declara siete plataformas;
-PS4 contiene 50 juegos reales, PS5 incorpora 145, Xbox One incorpora 146 y
-Xbox Series incorpora 120, mientras PS3, Xbox 360 y Nintendo Switch permanecen
-pendientes de datos curados.
+PS3 contiene 141 juegos reales, PS4 contiene 50, PS5 incorpora 145, Xbox 360
+incorpora 126, Xbox One incorpora 146, Xbox Series incorpora 120 y Nintendo
+Switch incorpora 119. Las siete plataformas del roadmap disponen ya de datos
+reales. El catálogo Nintendo corresponde exclusivamente a Switch original;
+Switch 2 queda fuera de alcance hasta decidir si requiere un valor propio en
+`Platform`.
 Quedan pendientes la persistencia
 histórica, la programación de ejecuciones, notificaciones, búsqueda de mercado
 completo, aliases seguros, liquidez, calibración y una futura API/dashboard.
