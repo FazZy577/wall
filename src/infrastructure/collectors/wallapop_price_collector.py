@@ -6,12 +6,19 @@ to collect valid comparable listings.
 
 import logging
 import re
+from collections.abc import Iterator, Mapping, Sequence
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from application.interfaces.listing_observation_recorder import (
+    IListingObservationRecorder,
+    ListingObservation,
+    NullListingObservationRecorder,
+)
 from domain.currency import validate_currency_code
 from domain.entities.comparable_listing import ComparableListing
-from domain.entities.detected_game import DetectedGame, Platform
+from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.entities.game_identity import GameIdentity
 from domain.interfaces.comparable_filter import ComparableFilterInput, IComparableFilter
 from domain.interfaces.game_detector import IGameDetector, ListingText
@@ -40,6 +47,9 @@ class WallapopPriceCollector(IPriceCollector):
         marketplace_search: IMarketplaceSearch,
         game_detector: IGameDetector,
         comparable_filter: IComparableFilter,
+        *,
+        verified_search_aliases: Mapping[GameIdentity, Sequence[str]] | None = None,
+        observation_recorder: IListingObservationRecorder | None = None,
     ) -> None:
         """Initialize price collector.
 
@@ -47,10 +57,26 @@ class WallapopPriceCollector(IPriceCollector):
             marketplace_search: Marketplace listing search implementation
             game_detector: Game detection implementation
             comparable_filter: Comparable filtering implementation
+            verified_search_aliases: Optional fallback names keyed by resolved
+                identity. Each name is independently checked by the detector;
+                fallbacks are tried only when earlier queries yield no comparables.
         """
         self.marketplace_search = marketplace_search
+        self.observation_recorder = (
+            observation_recorder if observation_recorder is not None
+            else NullListingObservationRecorder()
+        )
         self.game_detector = game_detector
         self.comparable_filter = comparable_filter
+        self._verified_search_aliases: dict[GameIdentity, tuple[str, ...]] = {}
+        for identity, aliases in (verified_search_aliases or {}).items():
+            if not isinstance(identity, GameIdentity):
+                raise TypeError("search alias keys must be GameIdentity")
+            if isinstance(aliases, (str, bytes)) or not isinstance(aliases, Sequence):
+                raise TypeError("search aliases must be a sequence of names")
+            if any(not isinstance(alias, str) or not alias.strip() for alias in aliases):
+                raise ValueError("search aliases must be non-empty strings")
+            self._verified_search_aliases[identity] = tuple(" ".join(alias.split()) for alias in aliases)
 
     async def collect_comparables(
         self,
@@ -75,10 +101,23 @@ class WallapopPriceCollector(IPriceCollector):
             Exception: The original technical exception from the injected
                 marketplace search operation.
         """
-        # Step 1: Generate search query
-        search_query = self._generate_search_query(game)
-        logger.info(f"Searching for '{search_query}' (game: {game.canonical_name})")
+        for search_query in self._search_queries(game):
+            comparables = await self._collect_for_query(
+                game, search_query, latitude, longitude, max_results
+            )
+            if comparables:
+                return comparables
+        return []
 
+    async def _collect_for_query(
+        self,
+        game: DetectedGame,
+        search_query: str,
+        latitude: float,
+        longitude: float,
+        max_results: int | None,
+    ) -> list[ComparableListing]:
+        logger.info("Searching for %r (game: %s)", search_query, game.canonical_name)
         # Step 2: Search Wallapop. Whole-operation failures propagate so
         # application scanners can distinguish them from a successful empty search.
         raw_listings = await self.marketplace_search.search_listings(
@@ -102,7 +141,7 @@ class WallapopPriceCollector(IPriceCollector):
                 continue
 
             try:
-                comparable = self._process_listing(raw_listing, game)
+                comparable = self._process_listing(raw_listing, game, source_query=search_query)
                 if comparable:
                     comparables.append(comparable)
                     logger.debug(
@@ -136,82 +175,51 @@ class WallapopPriceCollector(IPriceCollector):
                 )
                 continue
 
+        # Storage failures must reach the scanner, not the malformed-item handler.
+        for comparable in comparables:
+            await self.observation_recorder.record_observation(ListingObservation(
+                listing_id=comparable.listing_id, title=comparable.title,
+                description=comparable.description, price=comparable.price,
+                currency=comparable.currency, observed_at=datetime.now(UTC),
+                status="resolved", detected_games=(comparable.detected_game,),
+                source_query=comparable.source_query, role="comparable",
+            ))
         logger.info(f"Collected {len(comparables)} valid comparables for {game.canonical_name}")
         return comparables
 
     def _generate_search_query(self, game: DetectedGame) -> str:
-        """Generate search query from game.
+        """Use the resolved name, preserving every title token and subtitle."""
+        GameIdentity.from_game(game)
+        return self._append_platform(" ".join(game.canonical_name.split()), game.platform)
 
-        Uses the best alias for the game (shortest, most common).
-        For example, "GTA V" instead of "Grand Theft Auto V".
+    def _search_queries(self, game: DetectedGame) -> Iterator[str]:
+        """Try the canonical query first, then independently verified aliases.
 
-        Args:
-            game: Target game
-
-        Returns:
-            Search query string
+        Seller matched_text is never used as query authority. An optional alias
+        registry is copied at construction, and each fallback must resolve via
+        the injected detector to exactly this identity before any search is sent.
         """
-        # A market query must always retain the target platform dimension.
-        GameIdentity(game.canonical_name, game.platform)
-
-        # Use the matched_text if it's already a good query
-        # Otherwise, try to extract a good alias from canonical name
-
-        # If matched_text is short and looks good, use it
-        matched_word_count = len(game.matched_text.split())
-        if 0 < matched_word_count <= 3:
-            search_terms = game.matched_text
-        else:
-            search_terms = self._generate_concise_game_terms(game.canonical_name)
-
-        return self._append_platform(search_terms, game.platform)
-
-    @staticmethod
-    def _generate_concise_game_terms(canonical_name: str) -> str:
-        """Generate deterministic game terms without dropping identity."""
-
-        # Otherwise, try to create a concise query from canonical name
-        # Handle common patterns:
-        # "Grand Theft Auto V" -> "GTA V"
-        # "Call of Duty: Black Ops 6" -> "COD Black Ops 6"
-        # "EA Sports FC 24" -> "FC 24"
-
-        canonical = canonical_name.lower()
-
-        # GTA
-        if "grand theft auto" in canonical:
-            # Extract version (V, 5, IV, etc.)
-            version = ""
-            if " v" in canonical or canonical.endswith("v"):
-                version = "V"
-            elif " 5" in canonical or canonical.endswith("5"):
-                version = "5"
-            elif " iv" in canonical:
-                version = "IV"
-            elif " 4" in canonical:
-                version = "4"
-            return f"GTA {version}".strip() if version else "GTA"
-
-        # Call of Duty
-        if "call of duty" in canonical:
-            # Extract the rest (e.g., "Black Ops 6", "Modern Warfare III")
-            rest = canonical.replace("call of duty", "").strip()
-            rest = rest.lstrip(":").strip()
-            return f"COD {rest}" if rest else "COD"
-
-        # EA Sports FC / FIFA
-        if "ea sports fc" in canonical or "fifa" in canonical:
-            # Extract year
-            year_match = re.search(r"\b(20\d{2}|2[0-9])\b", canonical)
-            if year_match:
-                year = year_match.group(1)
-                if "fifa" in canonical:
-                    return f"FIFA {year}"
-                else:
-                    return f"FC {year}"
-            return "FIFA" if "fifa" in canonical else "FC"
-
-        return canonical_name
+        canonical = self._generate_search_query(game)
+        yield canonical
+        identity = GameIdentity.from_game(game)
+        seen = {canonical.casefold()}
+        for alias in self._verified_search_aliases.get(identity, ()):
+            query = self._append_platform(alias, game.platform)
+            if query.casefold() in seen:
+                continue
+            seen.add(query.casefold())
+            detected = self.game_detector.detect_games(ListingText(query, ""))
+            if len(detected) != 1:
+                continue
+            candidate = detected[0]
+            if candidate.detection_method is not DetectionMethod.EXACT_MATCH:
+                continue
+            try:
+                candidate_identity = GameIdentity.from_game(candidate)
+            except (TypeError, ValueError):
+                continue
+            if candidate_identity == identity:
+                yield query
 
     @staticmethod
     def _append_platform(search_terms: str, platform: Platform) -> str:
@@ -229,6 +237,8 @@ class WallapopPriceCollector(IPriceCollector):
         self,
         raw_listing: dict[str, Any],
         target_game: DetectedGame,
+        *,
+        source_query: str | None = None,
     ) -> ComparableListing | None:
         """Process a single raw listing.
 
@@ -275,17 +285,11 @@ class WallapopPriceCollector(IPriceCollector):
         detected_games = self.game_detector.detect_games(listing_text)
 
         # Check if the complete target identity is detected.
-        target_identity = GameIdentity(
-            target_game.canonical_name,
-            target_game.platform,
-        )
+        target_identity = GameIdentity.from_game(target_game)
         target_detected = None
         for detected_game in detected_games:
             try:
-                detected_identity = GameIdentity(
-                    detected_game.canonical_name,
-                    detected_game.platform,
-                )
+                detected_identity = GameIdentity.from_game(detected_game)
             except (TypeError, ValueError):
                 continue
             if detected_identity == target_identity:
@@ -297,7 +301,9 @@ class WallapopPriceCollector(IPriceCollector):
 
         # Filter with comparable filter
         listing_obj = ComparableFilterInput(
-            title=title, description=description, price=price_decimal
+            title=title, description=description, price=price_decimal,
+            detected_games=tuple(detected_games),
+            currency=currency,
         )
         is_valid = self.comparable_filter.is_valid_comparable(target_game, listing_obj)
 
@@ -316,4 +322,5 @@ class WallapopPriceCollector(IPriceCollector):
             detected_game=target_detected,
             url=url,
             raw_listing=raw_listing,
+            source_query=source_query,
         )

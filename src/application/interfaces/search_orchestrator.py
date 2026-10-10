@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from application.interfaces.candidate_search import (
     CandidateItemFailure,
+    QueryScan,
     SearchQuery,
 )
 from application.interfaces.lot_opportunity_scanner import LotScanResult
@@ -89,6 +90,10 @@ class CandidateRoutingFailureKind(StrEnum):
     CANDIDATE_CLASSIFICATION_ERROR = "candidate_classification_error"
     INDIVIDUAL_SCANNER_ERROR = "individual_scanner_error"
     LOT_SCANNER_ERROR = "lot_scanner_error"
+    OBSERVATION_STORAGE_ERROR = "observation_storage_error"
+    SCAN_STORAGE_ERROR = "scan_storage_error"
+    METADATA_RESOLUTION_ERROR = "metadata_resolution_error"
+    METADATA_MAINTENANCE_ERROR = "metadata_maintenance_error"
 
 
 @dataclass(frozen=True)
@@ -106,7 +111,11 @@ class CandidateRoutingFailure:
             raise TypeError("kind must be CandidateRoutingFailureKind")
         _require_non_empty_string("reason", self.reason)
 
-        if self.kind is CandidateRoutingFailureKind.INDIVIDUAL_SCANNER_ERROR:
+        if self.kind in {
+            CandidateRoutingFailureKind.INDIVIDUAL_SCANNER_ERROR,
+            CandidateRoutingFailureKind.SCAN_STORAGE_ERROR,
+            CandidateRoutingFailureKind.METADATA_MAINTENANCE_ERROR,
+        }:
             if self.listing_id is not None:
                 raise ValueError(
                     "listing_id must be None for INDIVIDUAL_SCANNER_ERROR"
@@ -168,6 +177,7 @@ class SearchOrchestrationResult:
     created_at: datetime
     ignored_candidates: tuple[CandidateRoutingRecord, ...] = ()
     ambiguous_candidates: tuple[CandidateRoutingRecord, ...] = ()
+    query_scans: tuple[QueryScan, ...] = ()
 
     def __post_init__(self) -> None:
         lot_results = tuple(self.lot_results)
@@ -176,6 +186,10 @@ class SearchOrchestrationResult:
         routing_failures = tuple(self.routing_failures)
         ignored_candidates = tuple(self.ignored_candidates)
         ambiguous_candidates = tuple(self.ambiguous_candidates)
+        query_scans = tuple(self.query_scans)
+        if any(not isinstance(scan, QueryScan) for scan in query_scans):
+            raise TypeError("query_scans must contain only QueryScan")
+        object.__setattr__(self, "query_scans", query_scans)
         object.__setattr__(self, "lot_results", lot_results)
         object.__setattr__(self, "query_failures", query_failures)
         object.__setattr__(self, "item_failures", item_failures)

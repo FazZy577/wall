@@ -4,7 +4,7 @@ import math
 from collections.abc import Sequence
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
@@ -147,12 +147,20 @@ class SearchTargetConfig(_StrictFrozenConfigModel):
 
 
 class SearchConfig(_StrictFrozenConfigModel):
-    """Deterministic search-plan generation configuration."""
+    """Canonical-title or category-discovery search configuration."""
 
     strategy: SearchPlanGenerationStrategy = SearchPlanGenerationStrategy.CANONICAL_ONLY
     max_queries: int
     max_results_per_query: int
-    targets: tuple[SearchTargetConfig, ...]
+    targets: tuple[SearchTargetConfig, ...] = ()
+    discovery_platforms: tuple[Platform, ...] = ()
+
+    @field_validator("discovery_platforms", mode="before")
+    @classmethod
+    def _parse_discovery_platforms(cls, value: object) -> tuple[Platform, ...]:
+        if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+            raise ValueError("discovery_platforms must be a sequence")
+        return tuple(SearchTargetConfig._parse_platform(platform) for platform in value)
 
     @field_validator("strategy", mode="before")
     @classmethod
@@ -191,15 +199,17 @@ class SearchConfig(_StrictFrozenConfigModel):
             raise ValueError("targets must be a sequence")
         return tuple(value)
 
-    @field_validator("targets")
-    @classmethod
-    def _require_targets(
-        cls,
-        value: tuple[SearchTargetConfig, ...],
-    ) -> tuple[SearchTargetConfig, ...]:
-        if not value:
+    @model_validator(mode="after")
+    def _validate_search_mode(self) -> Self:
+        if self.strategy is SearchPlanGenerationStrategy.CANONICAL_ONLY and not self.targets:
             raise ValueError("targets must contain at least one target")
-        return value
+        if self.strategy is SearchPlanGenerationStrategy.CANONICAL_ONLY and self.discovery_platforms:
+            raise ValueError("discovery_platforms require discovery strategy")
+        if self.strategy is SearchPlanGenerationStrategy.DISCOVERY and self.targets:
+            raise ValueError("discovery does not accept game targets")
+        if len(self.discovery_platforms) > 20:
+            raise ValueError("discovery_platforms must contain at most 20 platforms")
+        return self
 
 
 class CurrencyEconomicsConfig(_StrictFrozenConfigModel):
@@ -362,6 +372,41 @@ class SafetyConfig(_StrictFrozenConfigModel):
         return value
 
 
+class PersistenceConfig(_StrictFrozenConfigModel):
+    """Opt-in SQLite observation storage; paths are relative to the config file."""
+
+    enabled: bool = False
+    seed_catalog: bool = True
+    database_path: Path | None = None
+
+    @field_validator("database_path", mode="before")
+    @classmethod
+    def _parse_database_path(cls, value: object) -> Path | None:
+        if value is None or isinstance(value, Path):
+            return value
+        if isinstance(value, str) and value.strip():
+            return Path(value)
+        raise ValueError("database_path must be a non-empty path")
+
+    @model_validator(mode="after")
+    def _require_enabled_path(self) -> Self:
+        if self.enabled and self.database_path is None:
+            raise ValueError("database_path is required when persistence is enabled")
+        return self
+
+
+class MetadataConfig(_StrictFrozenConfigModel):
+    """Explicit opt-in; credentials are read only from environment variables."""
+
+    enabled: bool = False
+    provider: Literal["igdb"] = "igdb"
+    max_queries_per_scan: int = Field(default=20, ge=1, le=200)
+    maintenance_limit: int = Field(default=5, ge=0, le=100)
+    metadata_ttl_seconds: int = Field(default=604800, ge=60, le=31536000)
+    pending_retry_seconds: int = Field(default=86400, ge=60, le=31536000)
+    error_retry_seconds: int = Field(default=300, ge=30, le=86400)
+
+
 class AppConfig(_StrictFrozenConfigModel):
     """Complete immutable configuration snapshot for one future CLI run."""
 
@@ -370,11 +415,23 @@ class AppConfig(_StrictFrozenConfigModel):
     search: SearchConfig
     economics: EconomicsConfig
     output: OutputConfig = Field(default_factory=OutputConfig)
+    persistence: PersistenceConfig = Field(default_factory=PersistenceConfig)
+    metadata: MetadataConfig = Field(default_factory=MetadataConfig)
     safety: SafetyConfig
 
     @model_validator(mode="after")
     def _validate_operational_constraints(self) -> Self:
-        if len(self.search.targets) > self.safety.max_targets:
+        if not self.persistence.seed_catalog and not self.persistence.enabled:
+            raise ValueError("seed_catalog=false requires persistence.enabled=true")
+        if self.metadata.enabled and not self.persistence.enabled:
+            raise ValueError("metadata requires persistence.enabled=true")
+        if (
+            self.persistence.enabled
+            and self.output.json_path is not None
+            and self.persistence.database_path == self.output.json_path
+        ):
+            raise ValueError("persistence.database_path and output.json_path must differ")
+        if max(len(self.search.targets), len(self.search.discovery_platforms)) > self.safety.max_targets:
             raise ValueError("search targets exceed safety.max_targets")
         if not self.output.terminal and self.output.json_path is None:
             raise ValueError(

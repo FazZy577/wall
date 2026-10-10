@@ -1,125 +1,972 @@
 {
   "platform": "Xbox Series",
   "games": [
-    {"canonical_name": "Halo Infinite", "aliases": ["halo infinite xbox series"]},
-    {"canonical_name": "Forza Horizon 5", "aliases": ["forza horizon 5 xbox series"]},
-    {"canonical_name": "Forza Motorsport", "aliases": ["forza motorsport 2023"]},
-    {"canonical_name": "Starfield", "aliases": ["starfield xbox series"]},
-    {"canonical_name": "Hi-Fi Rush", "aliases": ["hifi rush", "hi fi rush"]},
-    {"canonical_name": "Senua's Saga: Hellblade II", "aliases": ["hellblade 2", "hellblade ii"]},
-    {"canonical_name": "Hellblade: Senua's Sacrifice", "aliases": ["hellblade 1 xbox series"]},
-    {"canonical_name": "Microsoft Flight Simulator", "aliases": ["flight simulator xbox series"]},
-    {"canonical_name": "South of Midnight", "aliases": ["south of midnight xbox series"]},
-    {"canonical_name": "Avowed", "aliases": ["avowed xbox series"]},
-    {"canonical_name": "Indiana Jones and the Great Circle", "aliases": ["indiana jones great circle"]},
-    {"canonical_name": "Grounded", "aliases": ["grounded xbox series"]},
-    {"canonical_name": "Pentiment", "aliases": ["pentiment xbox series"]},
-    {"canonical_name": "Age of Empires IV", "aliases": ["aoe4 xbox series", "age of empires 4"]},
-    {"canonical_name": "Psychonauts 2", "aliases": ["psychonauts 2 xbox series"]},
-    {"canonical_name": "As Dusk Falls", "aliases": ["as dusk falls xbox series"]},
-    {"canonical_name": "Gears 5", "aliases": ["gears of war 5 xbox series", "gears5 xbox series"]},
-    {"canonical_name": "Gears Tactics", "aliases": ["gears tactics xbox series"]},
-    {"canonical_name": "Sea of Thieves", "aliases": ["sea of thieves xbox series"]},
-    {"canonical_name": "State of Decay 2", "aliases": ["state of decay 2 xbox series"]},
-    {"canonical_name": "Ori and the Will of the Wisps", "aliases": ["ori will of the wisps xbox series"]},
-    {"canonical_name": "Grand Theft Auto V", "aliases": ["gta 5 xbox series", "gta v xbox series", "gta5 xbox series"]},
-    {"canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition", "aliases": ["gta trilogy xbox series"]},
-    {"canonical_name": "Red Dead Redemption 2", "aliases": ["rdr2 xbox series"]},
-    {"canonical_name": "Red Dead Redemption", "aliases": ["rdr1 xbox series"]},
-    {"canonical_name": "Cyberpunk 2077", "aliases": ["cyberpunk 2077 xbox series"]},
-    {"canonical_name": "Cyberpunk 2077: Phantom Liberty", "aliases": ["phantom liberty xbox series"]},
-    {"canonical_name": "Elden Ring", "aliases": ["elden ring xbox series"]},
-    {"canonical_name": "Elden Ring: Shadow of the Erdtree", "aliases": ["shadow of the erdtree xbox series"]},
-    {"canonical_name": "Resident Evil Village", "aliases": ["re village xbox series"]},
-    {"canonical_name": "Resident Evil 4 Remake", "aliases": ["re4 remake xbox series"]},
-    {"canonical_name": "Resident Evil Requiem", "aliases": ["re requiem xbox series"]},
-    {"canonical_name": "Dead Space Remake", "aliases": ["dead space remake xbox series"]},
-    {"canonical_name": "Silent Hill 2 Remake", "aliases": ["silent hill 2 remake xbox series"]},
-    {"canonical_name": "Alan Wake 2", "aliases": ["alan wake ii xbox series"]},
-    {"canonical_name": "Assassin's Creed Valhalla", "aliases": ["ac valhalla xbox series"]},
-    {"canonical_name": "Assassin's Creed Mirage", "aliases": ["ac mirage xbox series"]},
-    {"canonical_name": "Assassin's Creed Shadows", "aliases": ["ac shadows xbox series"]},
-    {"canonical_name": "Star Wars Jedi: Fallen Order", "aliases": ["jedi fallen order xbox series"]},
-    {"canonical_name": "Star Wars Jedi: Survivor", "aliases": ["jedi survivor xbox series"]},
-    {"canonical_name": "Star Wars Outlaws", "aliases": ["star wars outlaws xbox series"]},
-    {"canonical_name": "Hogwarts Legacy", "aliases": ["hogwarts legacy xbox series"]},
-    {"canonical_name": "It Takes Two", "aliases": ["it takes two xbox series"]},
-    {"canonical_name": "Split Fiction", "aliases": ["split fiction xbox series"]},
-    {"canonical_name": "A Plague Tale: Requiem", "aliases": ["plague tale requiem xbox series"]},
-    {"canonical_name": "Dying Light 2: Stay Human", "aliases": ["dying light 2 xbox series"]},
-    {"canonical_name": "Far Cry 6", "aliases": ["far cry 6 xbox series"]},
-    {"canonical_name": "Watch Dogs: Legion", "aliases": ["watch dogs legion xbox series"]},
-    {"canonical_name": "Mortal Kombat 1", "aliases": ["mk1 xbox series"]},
-    {"canonical_name": "Street Fighter 6", "aliases": ["sf6 xbox series"]},
-    {"canonical_name": "Tekken 8", "aliases": ["tekken 8 xbox series"]},
-    {"canonical_name": "EA Sports FC 24", "aliases": ["fc24 xbox series", "fifa 24 xbox series"]},
-    {"canonical_name": "EA Sports FC 25", "aliases": ["fc25 xbox series"]},
-    {"canonical_name": "EA Sports FC 26", "aliases": ["fc26 xbox series"]},
-    {"canonical_name": "Call of Duty: Modern Warfare II", "aliases": ["cod mw2 2022 xbox series"]},
-    {"canonical_name": "Call of Duty: Modern Warfare III", "aliases": ["cod mw3 2023 xbox series"]},
-    {"canonical_name": "Call of Duty: Black Ops 6", "aliases": ["cod bo6 xbox series"]},
-    {"canonical_name": "Call of Duty: Black Ops 7", "aliases": ["cod bo7 xbox series"]},
-    {"canonical_name": "Battlefield 2042", "aliases": ["bf2042 xbox series"]},
-    {"canonical_name": "Battlefield 6", "aliases": ["bf6 xbox series"]},
-    {"canonical_name": "Diablo IV", "aliases": ["diablo 4 xbox series"]},
-    {"canonical_name": "Baldur's Gate 3", "aliases": ["bg3 xbox series"]},
-    {"canonical_name": "Monster Hunter Wilds", "aliases": ["mh wilds xbox series"]},
-    {"canonical_name": "Monster Hunter World", "aliases": ["mh world xbox series"]},
-    {"canonical_name": "Dragon's Dogma 2", "aliases": ["dragons dogma 2 xbox series"]},
-    {"canonical_name": "Persona 3 Reload", "aliases": ["p3 reload xbox series"]},
-    {"canonical_name": "Persona 5 Royal", "aliases": ["p5r xbox series"]},
-    {"canonical_name": "Like a Dragon: Infinite Wealth", "aliases": ["like a dragon infinite wealth xbox series"]},
-    {"canonical_name": "NieR: Automata", "aliases": ["nier automata xbox series"]},
-    {"canonical_name": "Kingdom Hearts III", "aliases": ["kh3 xbox series"]},
-    {"canonical_name": "Tales of Arise", "aliases": ["tales of arise xbox series"]},
-    {"canonical_name": "Crimson Desert", "aliases": ["crimson desert xbox series"]},
-    {"canonical_name": "Stray", "aliases": ["stray xbox series"]},
-    {"canonical_name": "Cult of the Lamb", "aliases": ["cult of the lamb xbox series"]},
-    {"canonical_name": "Hades", "aliases": ["hades xbox series"]},
-    {"canonical_name": "Hades II", "aliases": ["hades 2 xbox series"]},
-    {"canonical_name": "Arc Raiders", "aliases": ["arc raiders xbox series"]},
-    {"canonical_name": "Marvel's Guardians of the Galaxy", "aliases": ["guardians of the galaxy xbox series"]},
-    {"canonical_name": "Marvel's Avengers", "aliases": ["avengers game xbox series"]},
-    {"canonical_name": "Suicide Squad: Kill the Justice League", "aliases": ["suicide squad kill the justice league xbox series"]},
-    {"canonical_name": "Hitman World of Assassination", "aliases": ["hitman 3 xbox series"]},
-    {"canonical_name": "Mafia: Definitive Edition", "aliases": ["mafia definitive edition xbox series"]},
-    {"canonical_name": "Mafia: The Old Country", "aliases": ["mafia old country xbox series"]},
-    {"canonical_name": "Sonic Frontiers", "aliases": ["sonic frontiers xbox series"]},
-    {"canonical_name": "Sonic Superstars", "aliases": ["sonic superstars xbox series"]},
-    {"canonical_name": "Rainbow Six Siege", "aliases": ["r6 siege xbox series"]},
-    {"canonical_name": "Rainbow Six Extraction", "aliases": ["r6 extraction xbox series"]},
-    {"canonical_name": "Overwatch 2", "aliases": ["ow2 xbox series"]},
-    {"canonical_name": "Tiny Tina's Wonderlands", "aliases": ["tiny tinas wonderlands xbox series"]},
-    {"canonical_name": "Borderlands 3", "aliases": ["borderlands 3 xbox series"]},
-    {"canonical_name": "F1 23", "aliases": ["f1 23 xbox series"]},
-    {"canonical_name": "F1 24", "aliases": ["f1 24 xbox series"]},
-    {"canonical_name": "F1 25", "aliases": ["f1 25 xbox series"]},
-    {"canonical_name": "EA Sports WRC", "aliases": ["wrc ea sports xbox series"]},
-    {"canonical_name": "Need for Speed Unbound", "aliases": ["nfs unbound xbox series"]},
-    {"canonical_name": "WWE 2K24", "aliases": ["wwe 2k24 xbox series"]},
-    {"canonical_name": "WWE 2K25", "aliases": ["wwe 2k25 xbox series"]},
-    {"canonical_name": "UFC 5", "aliases": ["ea sports ufc 5 xbox series"]},
-    {"canonical_name": "NBA 2K24", "aliases": ["nba 2k24 xbox series"]},
-    {"canonical_name": "NBA 2K25", "aliases": ["nba 2k25 xbox series"]},
-    {"canonical_name": "NBA 2K26", "aliases": ["nba 2k26 xbox series"]},
-    {"canonical_name": "Madden NFL 24", "aliases": ["madden 24 xbox series"]},
-    {"canonical_name": "Madden NFL 25", "aliases": ["madden 25 xbox series"]},
-    {"canonical_name": "Madden NFL 26", "aliases": ["madden 26 xbox series"]},
-    {"canonical_name": "MLB The Show 23", "aliases": ["mlb the show 23 xbox series"]},
-    {"canonical_name": "MLB The Show 26", "aliases": ["mlb the show 26 xbox series"]},
-    {"canonical_name": "Minecraft", "aliases": ["minecraft xbox series"]},
-    {"canonical_name": "LEGO Star Wars: The Skywalker Saga", "aliases": ["lego star wars skywalker saga xbox series"]},
-    {"canonical_name": "Doom Eternal", "aliases": ["doom eternal xbox series"]},
-    {"canonical_name": "Doom: The Dark Ages", "aliases": ["doom dark ages xbox series"]},
-    {"canonical_name": "Metro Exodus", "aliases": ["metro exodus xbox series"]},
-    {"canonical_name": "Crash Bandicoot 4: It's About Time", "aliases": ["crash 4 xbox series"]},
-    {"canonical_name": "Ghostwire: Tokyo", "aliases": ["ghostwire tokyo xbox series"]},
-    {"canonical_name": "Deathloop", "aliases": ["deathloop xbox series"]},
-    {"canonical_name": "Lies of P", "aliases": ["lies of p xbox series"]},
-    {"canonical_name": "Armored Core VI: Fires of Rubicon", "aliases": ["armored core 6 xbox series"]},
-    {"canonical_name": "Wo Long: Fallen Dynasty", "aliases": ["wo long xbox series"]},
-    {"canonical_name": "Immortals of Aveum", "aliases": ["immortals of aveum xbox series"]},
-    {"canonical_name": "A Way Out", "aliases": ["a way out xbox series"]},
-    {"canonical_name": "Tekken 7", "aliases": ["tekken 7 xbox series"]}
+    {
+      "canonical_name": "Halo Infinite",
+      "aliases": [
+        "halo infinite xbox series"
+      ],
+      "game_id": "cc5d2240-4d61-4038-8833-a94c65341e8a",
+      "release_id": "c476ef67-abcc-43c0-825c-5a8f8d924e0f"
+    },
+    {
+      "canonical_name": "Forza Horizon 5",
+      "aliases": [
+        "forza horizon 5 xbox series"
+      ],
+      "game_id": "f7fe3cf8-198a-428e-96d6-d8a5ef90eef5",
+      "release_id": "a966d71e-cb37-43a9-a7b5-036f66b68c05"
+    },
+    {
+      "canonical_name": "Forza Motorsport",
+      "aliases": [
+        "forza motorsport 2023"
+      ],
+      "game_id": "710662c7-22e4-4f5b-9ca9-0721abdb306e",
+      "release_id": "d6e1aa3d-7e7c-49d3-85e0-c984990454d6"
+    },
+    {
+      "canonical_name": "Starfield",
+      "aliases": [
+        "starfield xbox series"
+      ],
+      "game_id": "ff39b964-4d67-4f90-9d73-4b2e49c7aee8",
+      "release_id": "388cd878-33ff-4b6a-b5dc-510c31b51aae"
+    },
+    {
+      "canonical_name": "Hi-Fi Rush",
+      "aliases": [
+        "hifi rush",
+        "hi fi rush"
+      ],
+      "game_id": "6fc89279-55b1-4994-93ca-55b01a652352",
+      "release_id": "2d33e6a9-b090-45d7-b5a9-b791d6da32c8"
+    },
+    {
+      "canonical_name": "Senua's Saga: Hellblade II",
+      "aliases": [
+        "hellblade 2",
+        "hellblade ii"
+      ],
+      "game_id": "c85355b0-eff7-47fe-aef3-51fd222ef4b4",
+      "release_id": "d1df06cf-3238-4b19-8fd0-18cdfec3ca60"
+    },
+    {
+      "canonical_name": "Hellblade: Senua's Sacrifice",
+      "aliases": [
+        "hellblade 1 xbox series"
+      ],
+      "game_id": "2ebf38c7-9a35-4aca-a849-e30bc379c892",
+      "release_id": "d4a50e91-9133-4dd8-970d-1c11a8a3304a"
+    },
+    {
+      "canonical_name": "Microsoft Flight Simulator",
+      "aliases": [
+        "flight simulator xbox series"
+      ],
+      "game_id": "491c0443-d324-4664-b675-62e9f391656b",
+      "release_id": "fcdd3b2f-bc77-4895-bba0-b440ca04dd9f"
+    },
+    {
+      "canonical_name": "South of Midnight",
+      "aliases": [
+        "south of midnight xbox series"
+      ],
+      "game_id": "f7550cc2-6605-4233-9204-096d44e0772c",
+      "release_id": "5162cd6a-7bc5-4ec7-8a09-7780e35980d6"
+    },
+    {
+      "canonical_name": "Avowed",
+      "aliases": [
+        "avowed xbox series"
+      ],
+      "game_id": "fd857967-72f1-4a79-b89d-a3668a97250d",
+      "release_id": "74b951d6-66f9-4e3c-ae2c-545679fb62d3"
+    },
+    {
+      "canonical_name": "Indiana Jones and the Great Circle",
+      "aliases": [
+        "indiana jones great circle"
+      ],
+      "game_id": "fa1bc065-fc12-4565-8795-6ab3074f2dd3",
+      "release_id": "7c949485-c226-4ea5-988c-aa2ed10dbd60"
+    },
+    {
+      "canonical_name": "Grounded",
+      "aliases": [
+        "grounded xbox series"
+      ],
+      "game_id": "aeba4841-5651-46b0-9adc-2becaa5da86a",
+      "release_id": "42c9e78b-7db7-4e1d-9db0-3411deda2ca7"
+    },
+    {
+      "canonical_name": "Pentiment",
+      "aliases": [
+        "pentiment xbox series"
+      ],
+      "game_id": "4849eac9-c1a3-4949-b25b-243223aec154",
+      "release_id": "f9c5a2af-6857-4ea6-af33-95952880db41"
+    },
+    {
+      "canonical_name": "Age of Empires IV",
+      "aliases": [
+        "aoe4 xbox series",
+        "age of empires 4"
+      ],
+      "game_id": "7e3e6d71-59e4-4f61-b860-37a3b483cfe4",
+      "release_id": "492f531c-e7ef-4320-bdc3-6dc1b447c195"
+    },
+    {
+      "canonical_name": "Psychonauts 2",
+      "aliases": [
+        "psychonauts 2 xbox series"
+      ],
+      "game_id": "c3bc8863-aa1a-41fb-ae6b-2a4985eaab2d",
+      "release_id": "44ac8030-936e-450f-9e65-f517d6ce3097"
+    },
+    {
+      "canonical_name": "As Dusk Falls",
+      "aliases": [
+        "as dusk falls xbox series"
+      ],
+      "game_id": "4407a28f-9ffc-4110-934f-3b59092e42f9",
+      "release_id": "a5cc2715-33bc-4330-9c9f-9238f6db5c29"
+    },
+    {
+      "canonical_name": "Gears 5",
+      "aliases": [
+        "gears of war 5 xbox series",
+        "gears5 xbox series"
+      ],
+      "game_id": "cb7f5567-4085-40c9-82a3-9eddfcca5fc0",
+      "release_id": "ae80d62b-d6dd-4e74-b674-f5335390984e"
+    },
+    {
+      "canonical_name": "Gears Tactics",
+      "aliases": [
+        "gears tactics xbox series"
+      ],
+      "game_id": "edeaf6bd-193e-45a8-8aef-98166161e452",
+      "release_id": "ec0be7c8-358d-4f28-8704-487426bd37d9"
+    },
+    {
+      "canonical_name": "Sea of Thieves",
+      "aliases": [
+        "sea of thieves xbox series"
+      ],
+      "game_id": "c8175374-4c2c-44fd-8943-8b0062af8e8f",
+      "release_id": "77f1009a-9148-4ef9-b166-605c8e2aa54a"
+    },
+    {
+      "canonical_name": "State of Decay 2",
+      "aliases": [
+        "state of decay 2 xbox series"
+      ],
+      "game_id": "84ffa8ca-f3ad-4489-b714-e8eeec758ad8",
+      "release_id": "7e38b8c4-a39f-41a1-9e68-01fc0812da2f"
+    },
+    {
+      "canonical_name": "Ori and the Will of the Wisps",
+      "aliases": [
+        "ori will of the wisps xbox series"
+      ],
+      "game_id": "98668ff2-8699-410e-a8be-1d4935134066",
+      "release_id": "8785a442-ab7d-4d10-9fe9-983be9314050"
+    },
+    {
+      "canonical_name": "Grand Theft Auto V",
+      "aliases": [
+        "gta 5 xbox series",
+        "gta v xbox series",
+        "gta5 xbox series"
+      ],
+      "game_id": "125ab7e5-0d5e-479d-b7ff-97b40a87da1c",
+      "release_id": "20d980ec-b9ab-4783-9c7a-1bf2f7d08d00"
+    },
+    {
+      "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+      "aliases": [
+        "gta trilogy xbox series"
+      ],
+      "game_id": "b6baf737-e261-4e33-a511-e232ee505238",
+      "release_id": "0b3fd519-332a-4c43-bd93-5a9f705ae108"
+    },
+    {
+      "canonical_name": "Red Dead Redemption 2",
+      "aliases": [
+        "rdr2 xbox series"
+      ],
+      "game_id": "3aaf07ca-50e9-4d58-a770-bde168c954b3",
+      "release_id": "feef30a9-ded4-49e6-bba9-3d881831c0e3"
+    },
+    {
+      "canonical_name": "Red Dead Redemption",
+      "aliases": [
+        "rdr1 xbox series"
+      ],
+      "game_id": "e60cc17c-884e-42a1-8055-bad7b0d31a20",
+      "release_id": "2a66ec0e-e732-415c-b709-7d271ac40d96"
+    },
+    {
+      "canonical_name": "Cyberpunk 2077",
+      "aliases": [
+        "cyberpunk 2077 xbox series"
+      ],
+      "game_id": "47a6e16b-e8e4-4468-b42a-03929b3ab393",
+      "release_id": "ef4ee0ce-d745-4e36-a8da-24ca4dbeabbc"
+    },
+    {
+      "canonical_name": "Cyberpunk 2077: Phantom Liberty",
+      "aliases": [
+        "phantom liberty xbox series"
+      ],
+      "game_id": "b72ee2e8-92e4-4cc0-a481-bb235a515500",
+      "release_id": "854a32dd-5a84-4cc5-b1b3-0c414730079f"
+    },
+    {
+      "canonical_name": "Elden Ring",
+      "aliases": [
+        "elden ring xbox series"
+      ],
+      "game_id": "5ca34fc9-8fac-4e76-b1e0-5da9e1bbeb76",
+      "release_id": "fd0332ee-3a55-44dc-a8e4-4d1952334654"
+    },
+    {
+      "canonical_name": "Elden Ring: Shadow of the Erdtree",
+      "aliases": [
+        "shadow of the erdtree xbox series"
+      ],
+      "game_id": "568ca748-2d81-42a4-a5e2-5b0c1fc04576",
+      "release_id": "b3baaa20-8e8c-44fd-849d-cfd27c96e51e"
+    },
+    {
+      "canonical_name": "Resident Evil Village",
+      "aliases": [
+        "re village xbox series"
+      ],
+      "game_id": "02a75c5a-b94c-4bd8-baaa-458d78fe56e9",
+      "release_id": "8a2d3938-2c25-4cbc-931a-287dbc003ef7"
+    },
+    {
+      "canonical_name": "Resident Evil 4 Remake",
+      "aliases": [
+        "re4 remake xbox series"
+      ],
+      "game_id": "89f9dd98-8ced-4100-a4c3-7b084e19ba3d",
+      "release_id": "31ad4e56-73a8-4b11-a10d-26b77fec68e6"
+    },
+    {
+      "canonical_name": "Resident Evil Requiem",
+      "aliases": [
+        "re requiem xbox series"
+      ],
+      "game_id": "0bd3433a-99cd-4838-ae50-d1948e126026",
+      "release_id": "1f18888f-0dd1-4756-9a82-6f19b0a54073"
+    },
+    {
+      "canonical_name": "Dead Space Remake",
+      "aliases": [
+        "dead space remake xbox series"
+      ],
+      "game_id": "52a9c216-ad2a-4647-995a-e04764f44914",
+      "release_id": "e6eab4d5-8a56-4fcf-b0aa-0448c7174a41"
+    },
+    {
+      "canonical_name": "Silent Hill 2 Remake",
+      "aliases": [
+        "silent hill 2 remake xbox series"
+      ],
+      "game_id": "ebdb5b67-76ba-4e14-a2de-366c309869b8",
+      "release_id": "013c94e7-3d43-4a4c-b8b2-525a0a52e6e8"
+    },
+    {
+      "canonical_name": "Alan Wake 2",
+      "aliases": [
+        "alan wake ii xbox series"
+      ],
+      "game_id": "e2d33f2c-2f0c-4fd1-a6a9-6a92f03cd8a9",
+      "release_id": "5c282ce1-2a75-4852-930f-b9d9b99e136d"
+    },
+    {
+      "canonical_name": "Assassin's Creed Valhalla",
+      "aliases": [
+        "ac valhalla xbox series"
+      ],
+      "game_id": "8ce59fb8-0129-47be-92aa-f2aa2781967d",
+      "release_id": "32161540-ddba-4635-9037-26a77d4491bc"
+    },
+    {
+      "canonical_name": "Assassin's Creed Mirage",
+      "aliases": [
+        "ac mirage xbox series"
+      ],
+      "game_id": "c1d4826c-f6d8-407c-805d-bba994eb0c82",
+      "release_id": "44a15844-3689-445d-b98c-60036b14b978"
+    },
+    {
+      "canonical_name": "Assassin's Creed Shadows",
+      "aliases": [
+        "ac shadows xbox series"
+      ],
+      "game_id": "d9f323ab-5760-4036-a1b1-7be5970a2283",
+      "release_id": "c92572f3-5201-402c-a288-d71b63a3a9fb"
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Fallen Order",
+      "aliases": [
+        "jedi fallen order xbox series"
+      ],
+      "game_id": "fe8771d1-eb7c-4987-867f-4ab388c20e17",
+      "release_id": "7a7543e3-0344-49e4-930c-d4e8c1f0fd32"
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Survivor",
+      "aliases": [
+        "jedi survivor xbox series"
+      ],
+      "game_id": "3d4dd0ea-64cc-4788-a180-4c3d49577f3a",
+      "release_id": "04729703-0243-4207-affd-0b7490b1578f"
+    },
+    {
+      "canonical_name": "Star Wars Outlaws",
+      "aliases": [
+        "star wars outlaws xbox series"
+      ],
+      "game_id": "d547cd64-1bbc-4e65-b692-d3fe24feb369",
+      "release_id": "ff492d68-da19-4df5-a19b-b86cdf5ccbf1"
+    },
+    {
+      "canonical_name": "Hogwarts Legacy",
+      "aliases": [
+        "hogwarts legacy xbox series"
+      ],
+      "game_id": "823b9ad8-500f-4b28-93e0-600da605af6b",
+      "release_id": "339ed43e-b221-4b6f-8691-e65695e41468"
+    },
+    {
+      "canonical_name": "It Takes Two",
+      "aliases": [
+        "it takes two xbox series"
+      ],
+      "game_id": "02a665ac-4506-4153-8d41-0af8dedf4e5c",
+      "release_id": "0d962ad2-cf7a-4c18-82e7-1acc0b072fee"
+    },
+    {
+      "canonical_name": "Split Fiction",
+      "aliases": [
+        "split fiction xbox series"
+      ],
+      "game_id": "adf5ef9e-5a73-4492-ac40-ea8f16624213",
+      "release_id": "01dd9556-2255-4df3-8d34-e391e0670478"
+    },
+    {
+      "canonical_name": "A Plague Tale: Requiem",
+      "aliases": [
+        "plague tale requiem xbox series"
+      ],
+      "game_id": "54f80d61-9681-40c0-bcc5-7ee416ab2fe5",
+      "release_id": "9e8a50ef-7927-454b-8ac8-5051277e58aa"
+    },
+    {
+      "canonical_name": "Dying Light 2: Stay Human",
+      "aliases": [
+        "dying light 2 xbox series"
+      ],
+      "game_id": "cd2a8d05-ca6c-4d33-977e-64e2dcad86f8",
+      "release_id": "6482c01c-a3f4-4010-b941-17dece4ebdc7"
+    },
+    {
+      "canonical_name": "Far Cry 6",
+      "aliases": [
+        "far cry 6 xbox series"
+      ],
+      "game_id": "17c9dea1-fbce-475d-9598-d2a5b818837d",
+      "release_id": "f6e520ab-47be-4d34-afa6-8b8c981b21fa"
+    },
+    {
+      "canonical_name": "Watch Dogs: Legion",
+      "aliases": [
+        "watch dogs legion xbox series"
+      ],
+      "game_id": "e14efc79-fe4f-46c4-8052-67f7adf8daeb",
+      "release_id": "a73e8de6-e87f-4080-aa03-4f2a1ad1cc5f"
+    },
+    {
+      "canonical_name": "Mortal Kombat 1",
+      "aliases": [
+        "mk1 xbox series"
+      ],
+      "game_id": "78901506-df41-4a8c-a60f-5bb679f65569",
+      "release_id": "7c7ba2a2-a0d0-41b5-bd00-7b60f9d7c94b"
+    },
+    {
+      "canonical_name": "Street Fighter 6",
+      "aliases": [
+        "sf6 xbox series"
+      ],
+      "game_id": "2826d761-6ce7-4ed4-adcc-c87d32f98e97",
+      "release_id": "f1afa809-fbb4-4947-8f72-44c716ca8380"
+    },
+    {
+      "canonical_name": "Tekken 8",
+      "aliases": [
+        "tekken 8 xbox series"
+      ],
+      "game_id": "7fb53a68-56ae-4e44-a8dd-f158974a6be4",
+      "release_id": "d899ecf2-1bf6-4e94-ad66-ef3424dd9a34"
+    },
+    {
+      "canonical_name": "EA Sports FC 24",
+      "aliases": [
+        "fc24 xbox series",
+        "fifa 24 xbox series"
+      ],
+      "game_id": "70ad02f2-a81a-4a32-8855-6a903e810081",
+      "release_id": "fcef446b-c7c1-4da7-b8bb-7a5f9609ea8f"
+    },
+    {
+      "canonical_name": "EA Sports FC 25",
+      "aliases": [
+        "fc25 xbox series"
+      ],
+      "game_id": "ee3cbe89-7499-4401-9726-ec91e9bbcfda",
+      "release_id": "72610215-4fb9-4ee4-b2c3-0872d924f5cc"
+    },
+    {
+      "canonical_name": "EA Sports FC 26",
+      "aliases": [
+        "fc26 xbox series"
+      ],
+      "game_id": "7b5eabce-40bb-46d3-983e-9d5c9cd8c16c",
+      "release_id": "2d75325e-f6c2-4804-a1b8-98a331b7ce22"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare II",
+      "aliases": [
+        "cod mw2 2022 xbox series"
+      ],
+      "game_id": "b0509b92-acb0-425c-a514-be1150d17140",
+      "release_id": "2a3ed03c-d8cf-4821-8ab0-d355e1ba1213"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare III",
+      "aliases": [
+        "cod mw3 2023 xbox series"
+      ],
+      "game_id": "790d29c4-bfaf-43ce-a475-f3151c806994",
+      "release_id": "0ff42c9b-50b1-430c-a288-e49254642a14"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 6",
+      "aliases": [
+        "cod bo6 xbox series"
+      ],
+      "game_id": "65db7e0b-732c-429b-8bde-9f695afc42c1",
+      "release_id": "b2ffe6b7-8d39-4d67-b4f2-6ab576fdda04"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 7",
+      "aliases": [
+        "cod bo7 xbox series"
+      ],
+      "game_id": "89c26500-1c58-42af-96c1-45cc0532b09b",
+      "release_id": "3c24aa9a-8015-4344-b85c-26cce525b1d3"
+    },
+    {
+      "canonical_name": "Battlefield 2042",
+      "aliases": [
+        "bf2042 xbox series"
+      ],
+      "game_id": "12d64463-2ddd-4b1c-99cf-77b2fafe2964",
+      "release_id": "c8ed5650-2f37-4dd3-9bff-9e1df2c3ae0f"
+    },
+    {
+      "canonical_name": "Battlefield 6",
+      "aliases": [
+        "bf6 xbox series"
+      ],
+      "game_id": "3646f436-8dd4-4c2b-b197-72f8d9d392f4",
+      "release_id": "c17a5502-c7a5-4eb6-80ae-eefb8cf8d9cc"
+    },
+    {
+      "canonical_name": "Diablo IV",
+      "aliases": [
+        "diablo 4 xbox series"
+      ],
+      "game_id": "3f72e0c5-5ff8-4d7e-8d2f-3a761eb97447",
+      "release_id": "5bf70732-6a06-4c03-9735-6a8205784af8"
+    },
+    {
+      "canonical_name": "Baldur's Gate 3",
+      "aliases": [
+        "bg3 xbox series"
+      ],
+      "game_id": "6f9fd029-9cd9-4209-808b-2f5e7f093235",
+      "release_id": "1847e8f1-e1fe-49bc-88eb-814384cd90bc"
+    },
+    {
+      "canonical_name": "Monster Hunter Wilds",
+      "aliases": [
+        "mh wilds xbox series"
+      ],
+      "game_id": "d7eedb29-4397-4773-ae36-73bb30d3ceec",
+      "release_id": "6d8b68c2-472a-4624-9d23-aaa868511475"
+    },
+    {
+      "canonical_name": "Monster Hunter World",
+      "aliases": [
+        "mh world xbox series"
+      ],
+      "game_id": "8dbdda1f-f51f-4547-b944-b60f9ec382e2",
+      "release_id": "74371fcf-8b01-47fc-aa57-f4ebc0761ab0"
+    },
+    {
+      "canonical_name": "Dragon's Dogma 2",
+      "aliases": [
+        "dragons dogma 2 xbox series"
+      ],
+      "game_id": "65cad831-84c5-487e-ab50-4457133d523b",
+      "release_id": "74ec3568-3dd6-4828-b0e4-ac9ab50858a2"
+    },
+    {
+      "canonical_name": "Persona 3 Reload",
+      "aliases": [
+        "p3 reload xbox series"
+      ],
+      "game_id": "fb21fc5d-1a17-43da-9a25-39281673a536",
+      "release_id": "9fd67c8d-fe06-4228-af64-96df56b26000"
+    },
+    {
+      "canonical_name": "Persona 5 Royal",
+      "aliases": [
+        "p5r xbox series"
+      ],
+      "game_id": "35fcac79-65a2-4a72-a584-09199016bd22",
+      "release_id": "046095b9-bcb2-495f-a490-e4d8849c9b43"
+    },
+    {
+      "canonical_name": "Like a Dragon: Infinite Wealth",
+      "aliases": [
+        "like a dragon infinite wealth xbox series"
+      ],
+      "game_id": "b339a092-3544-47e1-9bc9-274850bccfcc",
+      "release_id": "98ca910c-3913-4691-9206-e7b783f603bd"
+    },
+    {
+      "canonical_name": "NieR: Automata",
+      "aliases": [
+        "nier automata xbox series"
+      ],
+      "game_id": "5f9cba07-9a36-4445-891e-150c390b6c12",
+      "release_id": "14a7f72e-bf63-4965-b241-3a1390c9fab6"
+    },
+    {
+      "canonical_name": "Kingdom Hearts III",
+      "aliases": [
+        "kh3 xbox series"
+      ],
+      "game_id": "a1516f07-0af8-4c3e-8362-839cb0fe19ca",
+      "release_id": "6eb591d3-af25-4901-835a-43222df19d45"
+    },
+    {
+      "canonical_name": "Tales of Arise",
+      "aliases": [
+        "tales of arise xbox series"
+      ],
+      "game_id": "0fc0c2db-f66d-4194-9c5b-f31eb8740a4f",
+      "release_id": "c523e7b4-d115-4460-86ec-30b03e210263"
+    },
+    {
+      "canonical_name": "Crimson Desert",
+      "aliases": [
+        "crimson desert xbox series"
+      ],
+      "game_id": "5dc67928-a558-4aa2-8ebc-0d2dd4a1573a",
+      "release_id": "c55fb782-f2db-4f0d-8002-5bfdbc81493a"
+    },
+    {
+      "canonical_name": "Stray",
+      "aliases": [
+        "stray xbox series"
+      ],
+      "game_id": "ecef2521-1a8e-4141-afab-2152306c8096",
+      "release_id": "78e0f695-0067-4497-9d19-7ada9de9b209"
+    },
+    {
+      "canonical_name": "Cult of the Lamb",
+      "aliases": [
+        "cult of the lamb xbox series"
+      ],
+      "game_id": "e40f0b71-a3d9-479e-ab4d-fa27fbe850db",
+      "release_id": "c701b2b7-f79c-484b-82ff-dc4ec3f9d24d"
+    },
+    {
+      "canonical_name": "Hades",
+      "aliases": [
+        "hades xbox series"
+      ],
+      "game_id": "ad30cd32-6ea9-497d-884c-541e5a2cc317",
+      "release_id": "101eb8e2-acfd-4006-ac42-630aac01a3aa"
+    },
+    {
+      "canonical_name": "Hades II",
+      "aliases": [
+        "hades 2 xbox series"
+      ],
+      "game_id": "cdde69f0-71c5-487a-a951-36ec11c3e185",
+      "release_id": "c838c7bd-95a3-472f-8b1a-58e1b364da6f"
+    },
+    {
+      "canonical_name": "Arc Raiders",
+      "aliases": [
+        "arc raiders xbox series"
+      ],
+      "game_id": "c5a48afe-a646-405e-b494-e66bb7e44f6c",
+      "release_id": "20efde9a-6a48-420b-b308-65d4a065cbfb"
+    },
+    {
+      "canonical_name": "Marvel's Guardians of the Galaxy",
+      "aliases": [
+        "guardians of the galaxy xbox series"
+      ],
+      "game_id": "f00b24f1-2751-42a8-9314-bba6795cd455",
+      "release_id": "3845ba36-b9fb-46e0-8940-82b8900fe845"
+    },
+    {
+      "canonical_name": "Marvel's Avengers",
+      "aliases": [
+        "avengers game xbox series"
+      ],
+      "game_id": "1d744e20-d1b8-49a4-ac51-01ff40dad6f1",
+      "release_id": "ec3f218a-32cc-44fa-ad6b-d038ee3130d1"
+    },
+    {
+      "canonical_name": "Suicide Squad: Kill the Justice League",
+      "aliases": [
+        "suicide squad kill the justice league xbox series"
+      ],
+      "game_id": "ebd43039-68e5-4e74-8b5d-4c7aa328809e",
+      "release_id": "36cc4509-b9be-49c0-bff8-f4ff3618fb14"
+    },
+    {
+      "canonical_name": "Hitman World of Assassination",
+      "aliases": [
+        "hitman 3 xbox series"
+      ],
+      "game_id": "2d953988-08a8-41e6-8b83-df62d4597938",
+      "release_id": "69e68046-41e4-4757-934d-baef857baf8b"
+    },
+    {
+      "canonical_name": "Mafia: Definitive Edition",
+      "aliases": [
+        "mafia definitive edition xbox series"
+      ],
+      "game_id": "2b52ea67-daea-4263-96a2-7fa06a289e8e",
+      "release_id": "9175a905-7597-4cdb-9e72-4fe84dbda55c"
+    },
+    {
+      "canonical_name": "Mafia: The Old Country",
+      "aliases": [
+        "mafia old country xbox series"
+      ],
+      "game_id": "e63af730-6af7-463d-85dd-e398d731e779",
+      "release_id": "41af7f8b-8743-4ca7-baf6-5ea5b9f46749"
+    },
+    {
+      "canonical_name": "Sonic Frontiers",
+      "aliases": [
+        "sonic frontiers xbox series"
+      ],
+      "game_id": "8cb4d3a5-c3d8-49b4-99f6-f78100b1ffe7",
+      "release_id": "e711cdc6-ada6-49ca-8886-234a19498ddb"
+    },
+    {
+      "canonical_name": "Sonic Superstars",
+      "aliases": [
+        "sonic superstars xbox series"
+      ],
+      "game_id": "46643bad-c1d2-4130-8fdc-aada6a582af6",
+      "release_id": "2cd1cd49-4ff5-450f-a6c6-aaa90fa58a45"
+    },
+    {
+      "canonical_name": "Rainbow Six Siege",
+      "aliases": [
+        "r6 siege xbox series"
+      ],
+      "game_id": "49305756-3e8e-4693-b4ac-9c846e31b8fd",
+      "release_id": "56228bef-921d-40ad-a5a1-0f7478a6830f"
+    },
+    {
+      "canonical_name": "Rainbow Six Extraction",
+      "aliases": [
+        "r6 extraction xbox series"
+      ],
+      "game_id": "16849687-baff-4b72-92ca-f53dd8f1e53d",
+      "release_id": "0694eeea-27d2-45fa-b0a3-07864c86a316"
+    },
+    {
+      "canonical_name": "Overwatch 2",
+      "aliases": [
+        "ow2 xbox series"
+      ],
+      "game_id": "aaeb522f-c1a8-4c7f-aff2-01e7d978f584",
+      "release_id": "be8c41c7-d368-400f-850e-532711e6c876"
+    },
+    {
+      "canonical_name": "Tiny Tina's Wonderlands",
+      "aliases": [
+        "tiny tinas wonderlands xbox series"
+      ],
+      "game_id": "d1b8521c-a399-4e01-9594-208c60c1fef5",
+      "release_id": "e10180d9-6bc6-4222-ba6f-b9291f6cbd96"
+    },
+    {
+      "canonical_name": "Borderlands 3",
+      "aliases": [
+        "borderlands 3 xbox series"
+      ],
+      "game_id": "8828b83b-d939-4c27-980e-5432e01aaa5a",
+      "release_id": "62b64ccd-19b9-4978-b981-a7918263a257"
+    },
+    {
+      "canonical_name": "F1 23",
+      "aliases": [
+        "f1 23 xbox series"
+      ],
+      "game_id": "c41663b1-8763-4abd-831d-c4511c3d003f",
+      "release_id": "167a0247-b223-4989-8ed5-998e8680a1e8"
+    },
+    {
+      "canonical_name": "F1 24",
+      "aliases": [
+        "f1 24 xbox series"
+      ],
+      "game_id": "bf9f642d-4a97-4d69-98b5-8a7edb9b7a3a",
+      "release_id": "e04594c6-67ea-42f3-b67f-243d83e068fd"
+    },
+    {
+      "canonical_name": "F1 25",
+      "aliases": [
+        "f1 25 xbox series"
+      ],
+      "game_id": "21961c2b-b0b1-4b0a-b599-996ec8dd75c1",
+      "release_id": "1d2e1934-1dd3-49f4-a682-97422b01aa95"
+    },
+    {
+      "canonical_name": "EA Sports WRC",
+      "aliases": [
+        "wrc ea sports xbox series"
+      ],
+      "game_id": "58ecd698-fa33-4819-868c-5cf40b66211c",
+      "release_id": "b51501e0-e37e-4e8f-bd3a-8dd842b201b9"
+    },
+    {
+      "canonical_name": "Need for Speed Unbound",
+      "aliases": [
+        "nfs unbound xbox series"
+      ],
+      "game_id": "d90e7049-cc88-4e27-8512-1d5ee4c5131c",
+      "release_id": "d2fc7812-736c-41a5-a1ad-4c93c1456b93"
+    },
+    {
+      "canonical_name": "WWE 2K24",
+      "aliases": [
+        "wwe 2k24 xbox series"
+      ],
+      "game_id": "d4db1875-bb84-42b3-aae7-b550b6da658b",
+      "release_id": "c4c8a2b6-aa9b-42f2-aea2-f9a28b17814b"
+    },
+    {
+      "canonical_name": "WWE 2K25",
+      "aliases": [
+        "wwe 2k25 xbox series"
+      ],
+      "game_id": "352f1ce0-edc2-40e2-955a-782eb9515832",
+      "release_id": "572591fc-407e-424b-98d6-25787a01803f"
+    },
+    {
+      "canonical_name": "UFC 5",
+      "aliases": [
+        "ea sports ufc 5 xbox series"
+      ],
+      "game_id": "2645159f-c15d-4cd1-a55a-c4a0ef546b43",
+      "release_id": "22be3ac2-9303-4009-b43b-edf82b3d5c81"
+    },
+    {
+      "canonical_name": "NBA 2K24",
+      "aliases": [
+        "nba 2k24 xbox series"
+      ],
+      "game_id": "3e06b301-183e-4859-be15-163b020030ba",
+      "release_id": "d1540534-5935-44a2-879e-7b8b449b4406"
+    },
+    {
+      "canonical_name": "NBA 2K25",
+      "aliases": [
+        "nba 2k25 xbox series"
+      ],
+      "game_id": "4c0e4fbb-a7fc-474c-bfba-8d702809647f",
+      "release_id": "ca0c8b08-b6ac-492e-a13b-eeaf10404ba2"
+    },
+    {
+      "canonical_name": "NBA 2K26",
+      "aliases": [
+        "nba 2k26 xbox series"
+      ],
+      "game_id": "4938501e-62b1-46ec-bb4c-8641226f82c7",
+      "release_id": "8b585b15-36d6-4243-b6a7-8254701eed75"
+    },
+    {
+      "canonical_name": "Madden NFL 24",
+      "aliases": [
+        "madden 24 xbox series"
+      ],
+      "game_id": "5e6f6584-66cf-4e8c-ae19-2c1307ffde31",
+      "release_id": "b89a1149-b967-4241-9342-ecfd09f27b08"
+    },
+    {
+      "canonical_name": "Madden NFL 25",
+      "aliases": [
+        "madden 25 xbox series"
+      ],
+      "game_id": "392a4098-14a4-4f53-b30c-23f9be0800ed",
+      "release_id": "12b52737-e888-45bf-a8b8-1d123373553c"
+    },
+    {
+      "canonical_name": "Madden NFL 26",
+      "aliases": [
+        "madden 26 xbox series"
+      ],
+      "game_id": "d517ccef-136b-4b5f-828a-ef6f8dd3db77",
+      "release_id": "0bb56fe0-9925-4e3c-9542-b49eade5a57f"
+    },
+    {
+      "canonical_name": "MLB The Show 23",
+      "aliases": [
+        "mlb the show 23 xbox series"
+      ],
+      "game_id": "6af6d945-5452-48c7-b794-2287b10bac0b",
+      "release_id": "5b9a1e82-93eb-46da-bd6d-0fb37dbcb1d9"
+    },
+    {
+      "canonical_name": "MLB The Show 26",
+      "aliases": [
+        "mlb the show 26 xbox series"
+      ],
+      "game_id": "b0a10463-8f1a-42eb-859a-99c5ab7df848",
+      "release_id": "9ee5a656-3af8-45bd-9afd-339b972fd851"
+    },
+    {
+      "canonical_name": "Minecraft",
+      "aliases": [
+        "minecraft xbox series"
+      ],
+      "game_id": "878cb83c-1f68-44c5-a2d0-6fffdbe2f4fd",
+      "release_id": "8a867c02-6776-4f55-abe1-d9f3441ec02e"
+    },
+    {
+      "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+      "aliases": [
+        "lego star wars skywalker saga xbox series"
+      ],
+      "game_id": "68a52710-5491-4696-87b3-d7e2c279367f",
+      "release_id": "9ac49c40-ab40-4f0f-8da9-333b5910d09c"
+    },
+    {
+      "canonical_name": "Doom Eternal",
+      "aliases": [
+        "doom eternal xbox series"
+      ],
+      "game_id": "6fd835fe-5f1d-4df8-9f5d-f27c5473b219",
+      "release_id": "1365ff20-7d98-4c0a-9147-100ff9d34c52"
+    },
+    {
+      "canonical_name": "Doom: The Dark Ages",
+      "aliases": [
+        "doom dark ages xbox series"
+      ],
+      "game_id": "89dec2a9-a43d-4708-bdf9-a6ab81bfd97a",
+      "release_id": "f62b5913-05e7-4ce2-b124-85a8efd42266"
+    },
+    {
+      "canonical_name": "Metro Exodus",
+      "aliases": [
+        "metro exodus xbox series"
+      ],
+      "game_id": "135c58a0-eb16-4ae5-a2f0-8004ed5f9f73",
+      "release_id": "7e1479d9-6950-4f80-b28a-6a9592ff5dcd"
+    },
+    {
+      "canonical_name": "Crash Bandicoot 4: It's About Time",
+      "aliases": [
+        "crash 4 xbox series"
+      ],
+      "game_id": "95f58263-fe94-46a9-9cb2-17398c22b0d0",
+      "release_id": "e5488426-fac9-4793-a442-affcd8e222c1"
+    },
+    {
+      "canonical_name": "Ghostwire: Tokyo",
+      "aliases": [
+        "ghostwire tokyo xbox series"
+      ],
+      "game_id": "08a7c0c5-f7e1-4782-8a8a-8d173c6bd457",
+      "release_id": "eee81aa1-aef5-45a0-bd7a-11425d129afe"
+    },
+    {
+      "canonical_name": "Deathloop",
+      "aliases": [
+        "deathloop xbox series"
+      ],
+      "game_id": "0f893997-bb93-4c9e-a854-1d4ecb069064",
+      "release_id": "78fbd84e-4ab2-44c6-a6d9-5ba2b119e9ef"
+    },
+    {
+      "canonical_name": "Lies of P",
+      "aliases": [
+        "lies of p xbox series"
+      ],
+      "game_id": "28c5b2fc-63f8-4700-9fa6-727d71ebb9b4",
+      "release_id": "467fc737-6dfc-4a38-82fe-d908cd5ddea8"
+    },
+    {
+      "canonical_name": "Armored Core VI: Fires of Rubicon",
+      "aliases": [
+        "armored core 6 xbox series"
+      ],
+      "game_id": "5e387173-8c27-43e8-82c8-4502d5d3a8a0",
+      "release_id": "f485ccf5-2892-44a3-b927-5b655ac15052"
+    },
+    {
+      "canonical_name": "Wo Long: Fallen Dynasty",
+      "aliases": [
+        "wo long xbox series"
+      ],
+      "game_id": "8102b98f-b63f-4631-a64d-d7692201b445",
+      "release_id": "8c8eeaea-efd7-4465-bd19-5b42b10683e0"
+    },
+    {
+      "canonical_name": "Immortals of Aveum",
+      "aliases": [
+        "immortals of aveum xbox series"
+      ],
+      "game_id": "ced2bae4-10fe-4203-a7c9-42e7e110f84b",
+      "release_id": "ecdbb3aa-cc28-48dd-ba8b-f70f9d402466"
+    },
+    {
+      "canonical_name": "A Way Out",
+      "aliases": [
+        "a way out xbox series"
+      ],
+      "game_id": "d759fd4d-b8bf-42a3-908c-2da652c8bd3a",
+      "release_id": "a5e9ad64-92d2-4daf-b6ce-6c2e7242d713"
+    },
+    {
+      "canonical_name": "Tekken 7",
+      "aliases": [
+        "tekken 7 xbox series"
+      ],
+      "game_id": "877483eb-2e1c-4f7f-9f69-12b655fcb4b1",
+      "release_id": "2ff3ddc4-e06d-4ec2-b9c3-916c6f24d3da"
+    }
   ]
 }

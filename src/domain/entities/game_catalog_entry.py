@@ -5,6 +5,7 @@ from dataclasses import dataclass
 
 from domain.entities.detected_game import Platform
 from domain.entities.game_identity import GameIdentity
+from domain.entities.game_record import ReleaseIdentity
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class GameCatalogEntry:
     canonical_name: str
     platform: Platform
     detection_aliases: tuple[str, ...]
+    release_identity: ReleaseIdentity | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.canonical_name, str):
@@ -42,8 +44,10 @@ class GameCatalogEntry:
 
         object.__setattr__(self, "canonical_name", canonical_name)
         object.__setattr__(self, "detection_aliases", tuple(alias_snapshot))
+        if self.release_identity is not None:
+            GameIdentity(canonical_name, self.platform, self.release_identity)
 
     @property
     def identity(self) -> GameIdentity:
         """Return the canonical game-and-platform identity."""
-        return GameIdentity(self.canonical_name, self.platform)
+        return GameIdentity(self.canonical_name, self.platform, self.release_identity)

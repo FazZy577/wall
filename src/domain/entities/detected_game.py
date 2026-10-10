@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from enum import StrEnum
 
+from domain.entities.game_record import ReleaseIdentity
+
 
 class Platform(StrEnum):
     """Gaming platforms."""
@@ -19,6 +21,7 @@ class Platform(StrEnum):
     WII = "Nintendo Wii"
     WII_U = "Nintendo Wii U"
     SWITCH = "Nintendo Switch"
+    SWITCH_2 = "Nintendo Switch 2"
     NINTENDO_DS = "Nintendo DS"
     NINTENDO_3DS = "Nintendo 3DS"
     PSP = "PSP"
@@ -43,8 +46,14 @@ class DetectedGame:
     platform: Platform
     confidence: float
     detection_method: DetectionMethod
+    release_identity: ReleaseIdentity | None = None
 
     def __post_init__(self) -> None:
         """Validate confidence is between 0 and 1."""
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError(f"Confidence must be between 0 and 1, got {self.confidence}")
+        if self.release_identity is not None:
+            if not isinstance(self.release_identity, ReleaseIdentity):
+                raise TypeError("release_identity must be ReleaseIdentity")
+            if self.release_identity.platform is not self.platform:
+                raise ValueError("release platform does not match detection")

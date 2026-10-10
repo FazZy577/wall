@@ -35,6 +35,7 @@ class SearchPlanGenerationStrategy(StrEnum):
     """Supported strategies for generating explicit search queries."""
 
     CANONICAL_ONLY = "canonical_only"
+    DISCOVERY = "discovery"
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,7 @@ class SearchPlanGenerationRequest:
     strategy: SearchPlanGenerationStrategy = (
         SearchPlanGenerationStrategy.CANONICAL_ONLY
     )
+    discovery_platforms: tuple[Platform, ...] = ()
 
     def __post_init__(self) -> None:
         if isinstance(self.targets, (str, bytes)) or not isinstance(
@@ -67,6 +69,16 @@ class SearchPlanGenerationRequest:
 
         if not isinstance(self.strategy, SearchPlanGenerationStrategy):
             raise TypeError("strategy must be SearchPlanGenerationStrategy")
+        if not isinstance(self.discovery_platforms, (tuple, list)) or any(
+            not isinstance(platform, Platform) or platform is Platform.UNKNOWN
+            for platform in self.discovery_platforms
+        ):
+            raise ValueError("discovery_platforms must contain concrete platforms")
+        object.__setattr__(self, "discovery_platforms", tuple(self.discovery_platforms))
+        if self.strategy is SearchPlanGenerationStrategy.DISCOVERY and self.targets:
+            raise ValueError("discovery does not accept game targets")
+        if self.strategy is SearchPlanGenerationStrategy.CANONICAL_ONLY and self.discovery_platforms:
+            raise ValueError("discovery_platforms require discovery strategy")
 
     @staticmethod
     def _validate_coordinate(

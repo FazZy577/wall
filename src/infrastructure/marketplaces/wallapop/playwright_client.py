@@ -20,6 +20,13 @@ from playwright.async_api import (
     TimeoutError as PlaywrightTimeoutError,
 )
 
+from domain.entities.search_coverage import (
+    MarketplaceCategory,
+    MarketplaceSearchBatch,
+    MarketplaceSearchFailure,
+    SearchCoverage,
+    SearchStopReason,
+)
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.marketplaces.wallapop.listing_id import (
     normalize_wallapop_listing_id,
@@ -39,7 +46,7 @@ class PlaywrightStarter(Protocol):
 PlaywrightFactory = Callable[[], PlaywrightStarter]
 
 
-class WallapopPlaywrightError(Exception):
+class WallapopPlaywrightError(MarketplaceSearchFailure):
     """Base exception for Playwright-backed Wallapop searches."""
 
 
@@ -185,7 +192,22 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
         max_results: int,
     ) -> list[dict[str, Any]]:
         """Search and normalize listings captured from the real API endpoint."""
-        if not keywords.strip():
+        batch = await self.search_with_scope(keywords, latitude, longitude, max_results)
+        return list(batch.listings)
+
+    async def search_with_scope(
+        self,
+        keywords: str,
+        latitude: float,
+        longitude: float,
+        max_results: int,
+        *,
+        category: MarketplaceCategory | None = None,
+    ) -> MarketplaceSearchBatch:
+        """Capture data and coverage atomically under the same browser lock."""
+        if category is not None and category is not MarketplaceCategory.CONSOLES_AND_VIDEO_GAMES:
+            raise ValueError("Unsupported discovery category")
+        if not keywords.strip() and category is None:
             raise ValueError("keywords cannot be empty")
         if max_results <= 0:
             raise ValueError("max_results must be greater than zero")
@@ -208,6 +230,7 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
                 latitude=latitude,
                 longitude=longitude,
                 max_results=max_results,
+                category=category,
             )
 
     async def _capture_search(
@@ -218,7 +241,8 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
         latitude: float,
         longitude: float,
         max_results: int,
-    ) -> list[dict[str, Any]]:
+        category: MarketplaceCategory | None = None,
+    ) -> MarketplaceSearchBatch:
         response_queue: asyncio.Queue[Response] = asyncio.Queue()
 
         def handle_response(response: Response) -> None:
@@ -226,14 +250,16 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
                 response_queue.put_nowait(response)
 
         page.on("response", handle_response)
-        query = urlencode(
-            {
-                "keywords": keywords,
-                "latitude": latitude,
-                "longitude": longitude,
-            }
-        )
+        parameters: dict[str, str | float] = {
+            "keywords": keywords, "latitude": latitude, "longitude": longitude,
+        }
+        if category is MarketplaceCategory.CONSOLES_AND_VIDEO_GAMES:
+            # Official SEO landing's search parameters, checked 2026-10-02.
+            parameters.update(category_id="24200", subcategory_ids="24203")
+        query = urlencode(parameters)
         search_url = f"{self.SEARCH_URL}?{query}"
+        received = 0
+        pages_received = 0
 
         try:
             try:
@@ -249,6 +275,7 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
 
             listings: list[dict[str, Any]] = []
             seen_ids: set[str] = set()
+            stop_reason = SearchStopReason.UNREPORTED
 
             for page_number in range(1, self.max_pages + 1):
                 response = await self._next_response(response_queue)
@@ -256,6 +283,8 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
                 payload = await self._read_payload(response)
                 await self._save_debug_payload(payload, page_number)
                 page_items, next_page = self._extract_page(payload)
+                pages_received = page_number
+                received += len(page_items)
 
                 for item in page_items:
                     normalized = self._normalize_item(item)
@@ -267,16 +296,36 @@ class WallapopPlaywrightClient(IMarketplaceSearch):
                     seen_ids.add(listing_id)
                     listings.append(normalized)
                     if len(listings) >= max_results:
-                        return listings[:max_results]
+                        return MarketplaceSearchBatch(tuple(listings[:max_results]), SearchCoverage(
+                            pages_received, self.max_pages, received, SearchStopReason.RESULT_LIMIT
+                        ))
 
-                if not next_page or page_number >= self.max_pages:
+                if not next_page:
+                    pagination_declared = (
+                        "next_page" in payload["data"]["section"]
+                        or "next_page" in payload.get("meta", {})
+                    )
+                    stop_reason = (
+                        SearchStopReason.EXHAUSTED if pagination_declared
+                        else SearchStopReason.PAGINATION_UNKNOWN
+                    )
+                    break
+                if page_number >= self.max_pages:
+                    stop_reason = SearchStopReason.PAGE_LIMIT
                     break
 
                 if self.request_delay:
                     await asyncio.sleep(self.request_delay)
                 await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
 
-            return listings[:max_results]
+            return MarketplaceSearchBatch(tuple(listings[:max_results]), SearchCoverage(
+                pages_received, self.max_pages, received, stop_reason
+            ))
+        except WallapopPlaywrightError as error:
+            error.coverage = SearchCoverage(
+                pages_received, self.max_pages, received, SearchStopReason.ERROR
+            )
+            raise
         finally:
             page.remove_listener("response", handle_response)
 

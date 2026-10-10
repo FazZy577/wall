@@ -38,6 +38,7 @@ class ReasonCode(StrEnum):
     INSUFFICIENT_DATA = "insufficient_data"
     LOW_EXPECTED_PROFIT = "low_expected_profit"
     INVALID_LISTING_PRICE = "invalid_listing_price"
+    UNRESOLVED_SALE_TERMS = "unresolved_sale_terms"
 
 
 @dataclass

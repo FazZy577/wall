@@ -1,151 +1,1201 @@
 {
   "platform": "Xbox One",
   "games": [
-    {"canonical_name": "Grand Theft Auto V", "aliases": ["gta 5 xbox one", "gta v xbox one", "gta5 xbox one"]},
-    {"canonical_name": "Red Dead Redemption 2", "aliases": ["rdr2 xbox one", "red dead redemption 2 xbox"]},
-    {"canonical_name": "Red Dead Redemption", "aliases": ["rdr1 xbox one"]},
-    {"canonical_name": "Minecraft", "aliases": ["minecraft xbox one"]},
-    {"canonical_name": "Fallout 4", "aliases": ["fallout 4 xbox one"]},
-    {"canonical_name": "The Elder Scrolls V: Skyrim Special Edition", "aliases": ["skyrim se", "skyrim special edition", "skyrim xbox one"]},
-    {"canonical_name": "The Witcher 3: Wild Hunt", "aliases": ["witcher 3", "the witcher 3 xbox one"]},
-    {"canonical_name": "Dark Souls III", "aliases": ["dark souls 3 xbox one"]},
-    {"canonical_name": "Halo 5: Guardians", "aliases": ["halo 5", "halo 5 guardians"]},
-    {"canonical_name": "Halo: The Master Chief Collection", "aliases": ["halo mcc", "halo master chief collection"]},
-    {"canonical_name": "Halo Wars 2", "aliases": ["halo wars 2 xbox one"]},
-    {"canonical_name": "Gears of War 4", "aliases": ["gears 4", "gears of war 4"]},
-    {"canonical_name": "Gears 5", "aliases": ["gears of war 5", "gears5"]},
-    {"canonical_name": "Gears of War: Ultimate Edition", "aliases": ["gears ultimate edition"]},
-    {"canonical_name": "Forza Horizon 3", "aliases": ["forza horizon 3 xbox one"]},
-    {"canonical_name": "Forza Horizon 4", "aliases": ["forza horizon 4 xbox one"]},
-    {"canonical_name": "Forza Motorsport 6", "aliases": ["forza motorsport 6"]},
-    {"canonical_name": "Forza Motorsport 7", "aliases": ["forza motorsport 7"]},
-    {"canonical_name": "Sea of Thieves", "aliases": ["sea of thieves xbox one"]},
-    {"canonical_name": "Sunset Overdrive", "aliases": ["sunset overdrive xbox one"]},
-    {"canonical_name": "Titanfall", "aliases": ["titanfall xbox one"]},
-    {"canonical_name": "Titanfall 2", "aliases": ["titanfall 2 xbox one"]},
-    {"canonical_name": "Ori and the Blind Forest", "aliases": ["ori blind forest"]},
-    {"canonical_name": "Ori and the Will of the Wisps", "aliases": ["ori will of the wisps"]},
-    {"canonical_name": "State of Decay 2", "aliases": ["state of decay 2 xbox one"]},
-    {"canonical_name": "Quantum Break", "aliases": ["quantum break xbox one"]},
-    {"canonical_name": "ReCore", "aliases": ["recore xbox one"]},
-    {"canonical_name": "Rare Replay", "aliases": ["rare replay xbox one"]},
-    {"canonical_name": "Cuphead", "aliases": ["cuphead xbox one"]},
-    {"canonical_name": "EA Sports FC 24", "aliases": ["fc24 xbox one", "fifa 24 xbox one"]},
-    {"canonical_name": "FIFA 23", "aliases": ["fifa 23 xbox one"]},
-    {"canonical_name": "FIFA 22", "aliases": ["fifa 22 xbox one"]},
-    {"canonical_name": "FIFA 21", "aliases": ["fifa 21 xbox one"]},
-    {"canonical_name": "FIFA 20", "aliases": ["fifa 20 xbox one"]},
-    {"canonical_name": "FIFA 19", "aliases": ["fifa 19 xbox one"]},
-    {"canonical_name": "FIFA 18", "aliases": ["fifa 18 xbox one"]},
-    {"canonical_name": "FIFA 17", "aliases": ["fifa 17 xbox one"]},
-    {"canonical_name": "Call of Duty: Modern Warfare (2019)", "aliases": ["cod mw 2019", "modern warfare 2019"]},
-    {"canonical_name": "Call of Duty: Modern Warfare II", "aliases": ["cod mw2 2022 xbox one"]},
-    {"canonical_name": "Call of Duty: Black Ops 3", "aliases": ["cod bo3", "black ops 3 xbox one"]},
-    {"canonical_name": "Call of Duty: Black Ops 4", "aliases": ["cod bo4", "black ops 4 xbox one"]},
-    {"canonical_name": "Call of Duty: Black Ops Cold War", "aliases": ["cod cold war xbox one"]},
-    {"canonical_name": "Call of Duty: WWII", "aliases": ["cod ww2", "call of duty ww2 xbox one"]},
-    {"canonical_name": "Call of Duty: Infinite Warfare", "aliases": ["cod infinite warfare"]},
-    {"canonical_name": "Call of Duty: Ghosts", "aliases": ["cod ghosts xbox one"]},
-    {"canonical_name": "Call of Duty: Advanced Warfare", "aliases": ["cod advanced warfare"]},
-    {"canonical_name": "Call of Duty: Vanguard", "aliases": ["cod vanguard xbox one"]},
-    {"canonical_name": "Battlefield 1", "aliases": ["bf1 xbox one", "battlefield 1 xbox one"]},
-    {"canonical_name": "Battlefield 4", "aliases": ["bf4 xbox one"]},
-    {"canonical_name": "Battlefield V", "aliases": ["bfv xbox one", "battlefield 5 xbox one"]},
-    {"canonical_name": "Destiny", "aliases": ["destiny 1 xbox one"]},
-    {"canonical_name": "Destiny 2", "aliases": ["destiny 2 xbox one"]},
-    {"canonical_name": "PlayerUnknown's Battlegrounds", "aliases": ["pubg xbox one"]},
-    {"canonical_name": "Overwatch", "aliases": ["overwatch xbox one"]},
-    {"canonical_name": "Rainbow Six Siege", "aliases": ["r6 siege xbox one"]},
-    {"canonical_name": "Tom Clancy's The Division", "aliases": ["the division xbox one"]},
-    {"canonical_name": "Tom Clancy's The Division 2", "aliases": ["the division 2 xbox one"]},
-    {"canonical_name": "Star Wars Battlefront", "aliases": ["star wars battlefront 2015"]},
-    {"canonical_name": "Star Wars Battlefront II", "aliases": ["star wars battlefront 2 2017"]},
-    {"canonical_name": "Star Wars Jedi: Fallen Order", "aliases": ["jedi fallen order xbox one"]},
-    {"canonical_name": "Assassin's Creed Unity", "aliases": ["ac unity xbox one"]},
-    {"canonical_name": "Assassin's Creed Syndicate", "aliases": ["ac syndicate xbox one"]},
-    {"canonical_name": "Assassin's Creed Origins", "aliases": ["ac origins xbox one"]},
-    {"canonical_name": "Assassin's Creed Odyssey", "aliases": ["ac odyssey xbox one"]},
-    {"canonical_name": "Assassin's Creed Valhalla", "aliases": ["ac valhalla xbox one"]},
-    {"canonical_name": "Watch Dogs", "aliases": ["watch dogs 1 xbox one"]},
-    {"canonical_name": "Watch Dogs 2", "aliases": ["watch dogs 2 xbox one"]},
-    {"canonical_name": "Watch Dogs: Legion", "aliases": ["watch dogs legion xbox one"]},
-    {"canonical_name": "NBA 2K20", "aliases": ["nba 2k20 xbox one"]},
-    {"canonical_name": "NBA 2K21", "aliases": ["nba 2k21 xbox one"]},
-    {"canonical_name": "NBA 2K22", "aliases": ["nba 2k22 xbox one"]},
-    {"canonical_name": "WWE 2K19", "aliases": ["wwe 2k19 xbox one"]},
-    {"canonical_name": "WWE 2K20", "aliases": ["wwe 2k20 xbox one"]},
-    {"canonical_name": "WWE 2K22", "aliases": ["wwe 2k22 xbox one"]},
-    {"canonical_name": "Madden NFL 20", "aliases": ["madden 20 xbox one"]},
-    {"canonical_name": "Madden NFL 21", "aliases": ["madden 21 xbox one"]},
-    {"canonical_name": "Madden NFL 22", "aliases": ["madden 22 xbox one"]},
-    {"canonical_name": "Far Cry 4", "aliases": ["far cry 4 xbox one"]},
-    {"canonical_name": "Far Cry Primal", "aliases": ["far cry primal xbox one"]},
-    {"canonical_name": "Far Cry 5", "aliases": ["far cry 5 xbox one"]},
-    {"canonical_name": "Far Cry New Dawn", "aliases": ["far cry new dawn xbox one"]},
-    {"canonical_name": "Far Cry 6", "aliases": ["far cry 6 xbox one"]},
-    {"canonical_name": "Metal Gear Solid V: The Phantom Pain", "aliases": ["mgs5 xbox one", "mgs v phantom pain"]},
-    {"canonical_name": "Resident Evil 7: Biohazard", "aliases": ["re7 xbox one", "resident evil 7 xbox one"]},
-    {"canonical_name": "Resident Evil 2 Remake", "aliases": ["re2 remake xbox one"]},
-    {"canonical_name": "Resident Evil 3 Remake", "aliases": ["re3 remake xbox one"]},
-    {"canonical_name": "Resident Evil Village", "aliases": ["re village xbox one", "resident evil 8 xbox one"]},
-    {"canonical_name": "Middle-earth: Shadow of Mordor", "aliases": ["shadow of mordor xbox one"]},
-    {"canonical_name": "Middle-earth: Shadow of War", "aliases": ["shadow of war xbox one"]},
-    {"canonical_name": "Batman: Arkham Knight", "aliases": ["arkham knight xbox one"]},
-    {"canonical_name": "Batman: Return to Arkham", "aliases": ["return to arkham xbox one"]},
-    {"canonical_name": "Mortal Kombat X", "aliases": ["mkx xbox one"]},
-    {"canonical_name": "Mortal Kombat 11", "aliases": ["mk11 xbox one"]},
-    {"canonical_name": "Injustice 2", "aliases": ["injustice 2 xbox one"]},
-    {"canonical_name": "Injustice: Gods Among Us Ultimate Edition", "aliases": ["injustice 1 xbox one"]},
-    {"canonical_name": "Just Cause 3", "aliases": ["just cause 3 xbox one"]},
-    {"canonical_name": "Just Cause 4", "aliases": ["just cause 4 xbox one"]},
-    {"canonical_name": "Tom Clancy's Rainbow Six Extraction", "aliases": ["r6 extraction xbox one"]},
-    {"canonical_name": "Dying Light", "aliases": ["dying light 1 xbox one"]},
-    {"canonical_name": "Dying Light 2: Stay Human", "aliases": ["dying light 2 xbox one"]},
-    {"canonical_name": "Hitman 2", "aliases": ["hitman 2 xbox one"]},
-    {"canonical_name": "Hitman 3", "aliases": ["hitman 3 xbox one", "hitman world of assassination xbox one"]},
-    {"canonical_name": "Kingdom Hearts III", "aliases": ["kh3 xbox one"]},
-    {"canonical_name": "NieR: Automata", "aliases": ["nier automata xbox one"]},
-    {"canonical_name": "Dragon's Dogma: Dark Arisen", "aliases": ["dragons dogma dark arisen xbox one"]},
-    {"canonical_name": "Monster Hunter World", "aliases": ["mh world xbox one", "monster hunter world xbox one"]},
-    {"canonical_name": "Sekiro: Shadows Die Twice", "aliases": ["sekiro xbox one"]},
-    {"canonical_name": "Elden Ring", "aliases": ["elden ring xbox one"]},
-    {"canonical_name": "Diablo III: Eternal Collection", "aliases": ["diablo 3 eternal collection"]},
-    {"canonical_name": "Diablo IV", "aliases": ["diablo 4 xbox one"]},
-    {"canonical_name": "Borderlands 2", "aliases": ["borderlands 2 xbox one"]},
-    {"canonical_name": "Borderlands 3", "aliases": ["borderlands 3 xbox one"]},
-    {"canonical_name": "Cyberpunk 2077", "aliases": ["cyberpunk 2077 xbox one"]},
-    {"canonical_name": "Doom (2016)", "aliases": ["doom 2016 xbox one"]},
-    {"canonical_name": "Doom Eternal", "aliases": ["doom eternal xbox one"]},
-    {"canonical_name": "Wolfenstein: The New Order", "aliases": ["wolfenstein new order xbox one"]},
-    {"canonical_name": "Wolfenstein II: The New Colossus", "aliases": ["wolfenstein 2 new colossus"]},
-    {"canonical_name": "Marvel's Guardians of the Galaxy", "aliases": ["guardians of the galaxy xbox one"]},
-    {"canonical_name": "Marvel's Avengers", "aliases": ["avengers game xbox one"]},
-    {"canonical_name": "It Takes Two", "aliases": ["it takes two xbox one"]},
-    {"canonical_name": "A Way Out", "aliases": ["a way out xbox one"]},
-    {"canonical_name": "Hogwarts Legacy", "aliases": ["hogwarts legacy xbox one"]},
-    {"canonical_name": "Star Wars Jedi: Survivor", "aliases": ["jedi survivor xbox one"]},
-    {"canonical_name": "LEGO Star Wars: The Skywalker Saga", "aliases": ["lego star wars skywalker saga xbox one"]},
-    {"canonical_name": "Crash Bandicoot 4: It's About Time", "aliases": ["crash 4 xbox one"]},
-    {"canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition", "aliases": ["gta trilogy xbox one"]},
-    {"canonical_name": "F1 2020", "aliases": ["f1 2020 xbox one"]},
-    {"canonical_name": "F1 2021", "aliases": ["f1 2021 xbox one"]},
-    {"canonical_name": "F1 22", "aliases": ["f1 22 xbox one"]},
-    {"canonical_name": "EA Sports WRC", "aliases": ["wrc ea sports xbox one"]},
-    {"canonical_name": "Need for Speed Heat", "aliases": ["nfs heat xbox one"]},
-    {"canonical_name": "Need for Speed Payback", "aliases": ["nfs payback xbox one"]},
-    {"canonical_name": "Tekken 7", "aliases": ["tekken 7 xbox one"]},
-    {"canonical_name": "Street Fighter V", "aliases": ["sfv xbox one", "street fighter 5 xbox one"]},
-    {"canonical_name": "Life is Strange", "aliases": ["life is strange xbox one"]},
-    {"canonical_name": "Life is Strange 2", "aliases": ["life is strange 2 xbox one"]},
-    {"canonical_name": "Sonic Forces", "aliases": ["sonic forces xbox one"]},
-    {"canonical_name": "Sonic Frontiers", "aliases": ["sonic frontiers xbox one"]},
-    {"canonical_name": "Rocket League", "aliases": ["rocket league xbox one"]},
-    {"canonical_name": "Fallout 76", "aliases": ["fallout 76 xbox one"]},
-    {"canonical_name": "Anthem", "aliases": ["anthem xbox one"]},
-    {"canonical_name": "Days Gone", "aliases": ["days gone xbox one"]},
-    {"canonical_name": "EA Sports FC 25", "aliases": ["fc25 xbox one", "fifa 25 xbox one", "ea fc 25 xbox one"]},
-    {"canonical_name": "EA Sports FC 26", "aliases": ["fc26 xbox one", "fifa 26 xbox one", "ea fc 26 xbox one"]},
-    {"canonical_name": "Call of Duty: Black Ops 7", "aliases": ["cod bo7 xbox one", "black ops 7 xbox one"]},
-    {"canonical_name": "NBA 2K26", "aliases": ["nba 2k26 xbox one"]}
+    {
+      "canonical_name": "Grand Theft Auto V",
+      "aliases": [
+        "gta 5 xbox one",
+        "gta v xbox one",
+        "gta5 xbox one"
+      ],
+      "game_id": "125ab7e5-0d5e-479d-b7ff-97b40a87da1c",
+      "release_id": "5f09c4e7-abc1-40ad-825b-42f1f06afc39"
+    },
+    {
+      "canonical_name": "Red Dead Redemption 2",
+      "aliases": [
+        "rdr2 xbox one",
+        "red dead redemption 2 xbox"
+      ],
+      "game_id": "3aaf07ca-50e9-4d58-a770-bde168c954b3",
+      "release_id": "9b102fef-0b2a-40eb-8b54-dc16026e92f9"
+    },
+    {
+      "canonical_name": "Red Dead Redemption",
+      "aliases": [
+        "rdr1 xbox one"
+      ],
+      "game_id": "e60cc17c-884e-42a1-8055-bad7b0d31a20",
+      "release_id": "6f5b767a-ec79-4a4a-bf5f-ea0f82e3ef14"
+    },
+    {
+      "canonical_name": "Minecraft",
+      "aliases": [
+        "minecraft xbox one"
+      ],
+      "game_id": "878cb83c-1f68-44c5-a2d0-6fffdbe2f4fd",
+      "release_id": "7f51e435-6922-4bcb-9c18-df83ca82490c"
+    },
+    {
+      "canonical_name": "Fallout 4",
+      "aliases": [
+        "fallout 4 xbox one"
+      ],
+      "game_id": "81c0eb0e-5d4f-447f-b36a-2dae1c462c95",
+      "release_id": "cfd02841-972c-4bd5-9ef8-41f1d81dd9a1"
+    },
+    {
+      "canonical_name": "The Elder Scrolls V: Skyrim Special Edition",
+      "aliases": [
+        "skyrim se",
+        "skyrim special edition",
+        "skyrim xbox one"
+      ],
+      "game_id": "d0e538d4-5c61-4cd8-94b0-96934b340c22",
+      "release_id": "9de68d33-bade-4f52-ac82-9cf93122c1ee"
+    },
+    {
+      "canonical_name": "The Witcher 3: Wild Hunt",
+      "aliases": [
+        "witcher 3",
+        "the witcher 3 xbox one"
+      ],
+      "game_id": "a5fe25be-ee3a-43ed-b53f-dea8ec1ce658",
+      "release_id": "5202d45c-9b4e-45e2-8b16-9b61ac8201cd"
+    },
+    {
+      "canonical_name": "Dark Souls III",
+      "aliases": [
+        "dark souls 3 xbox one"
+      ],
+      "game_id": "9caef44e-4dd3-49ce-9241-8031790d2196",
+      "release_id": "1aa26765-a1af-4bc0-8eef-43ebd6c5884a"
+    },
+    {
+      "canonical_name": "Halo 5: Guardians",
+      "aliases": [
+        "halo 5",
+        "halo 5 guardians"
+      ],
+      "game_id": "86721249-665f-4c86-b80c-9491aee7389f",
+      "release_id": "8cc1af1c-54a9-4ffc-99cf-604073ba2d1f"
+    },
+    {
+      "canonical_name": "Halo: The Master Chief Collection",
+      "aliases": [
+        "halo mcc",
+        "halo master chief collection"
+      ],
+      "game_id": "aaf12e66-a3aa-4f9c-81f6-73070d243aa9",
+      "release_id": "8ecfb825-5c73-4ad7-a321-b316704c740e"
+    },
+    {
+      "canonical_name": "Halo Wars 2",
+      "aliases": [
+        "halo wars 2 xbox one"
+      ],
+      "game_id": "84431710-b2dd-4d13-ac01-a549048daa84",
+      "release_id": "7c94e421-6338-442a-a868-a9acc2e01472"
+    },
+    {
+      "canonical_name": "Gears of War 4",
+      "aliases": [
+        "gears 4",
+        "gears of war 4"
+      ],
+      "game_id": "4e006190-2a40-4bc6-8f88-003c0d4491d3",
+      "release_id": "b5d2965d-6c2b-45cb-a8f3-6e64b9707b2b"
+    },
+    {
+      "canonical_name": "Gears 5",
+      "aliases": [
+        "gears of war 5",
+        "gears5"
+      ],
+      "game_id": "cb7f5567-4085-40c9-82a3-9eddfcca5fc0",
+      "release_id": "32a01fa9-9b34-464f-975c-c1328c172711"
+    },
+    {
+      "canonical_name": "Gears of War: Ultimate Edition",
+      "aliases": [
+        "gears ultimate edition"
+      ],
+      "game_id": "20291825-3913-4e0a-9114-370794f39a8e",
+      "release_id": "8098be3f-f814-4db1-869b-9d9aca3578e3"
+    },
+    {
+      "canonical_name": "Forza Horizon 3",
+      "aliases": [
+        "forza horizon 3 xbox one"
+      ],
+      "game_id": "eb63aa0e-7f7c-4f4a-b833-b819e75e2ec6",
+      "release_id": "d535ff3d-2df6-4bfe-a7ee-b0d16d921706"
+    },
+    {
+      "canonical_name": "Forza Horizon 4",
+      "aliases": [
+        "forza horizon 4 xbox one"
+      ],
+      "game_id": "800f3e0d-c039-46db-9cb7-db0cf368cff9",
+      "release_id": "52f28f08-fca5-433a-9c99-57342e47e970"
+    },
+    {
+      "canonical_name": "Forza Motorsport 6",
+      "aliases": [
+        "forza motorsport 6"
+      ],
+      "game_id": "194cf360-a13a-49a2-9fb7-cc30063c02c7",
+      "release_id": "30b2f461-65d3-46ec-a3fe-bbfccf617bf9"
+    },
+    {
+      "canonical_name": "Forza Motorsport 7",
+      "aliases": [
+        "forza motorsport 7"
+      ],
+      "game_id": "80639e63-00da-460b-a02b-35fbe63df27f",
+      "release_id": "32bb0522-8129-4c13-9eac-dec73516e372"
+    },
+    {
+      "canonical_name": "Sea of Thieves",
+      "aliases": [
+        "sea of thieves xbox one"
+      ],
+      "game_id": "c8175374-4c2c-44fd-8943-8b0062af8e8f",
+      "release_id": "9eb6f794-6e2a-4536-a4ef-57e86899b829"
+    },
+    {
+      "canonical_name": "Sunset Overdrive",
+      "aliases": [
+        "sunset overdrive xbox one"
+      ],
+      "game_id": "3397dfbc-3e16-4e13-9dbb-54d979f80b5f",
+      "release_id": "2089bf67-2982-4576-b97b-4d2d650e7265"
+    },
+    {
+      "canonical_name": "Titanfall",
+      "aliases": [
+        "titanfall xbox one"
+      ],
+      "game_id": "00d724e2-8a2d-475d-8cd5-bf1d61dfa819",
+      "release_id": "f65a6796-fcfc-4497-88eb-5612bc524b64"
+    },
+    {
+      "canonical_name": "Titanfall 2",
+      "aliases": [
+        "titanfall 2 xbox one"
+      ],
+      "game_id": "bbfa8b11-6500-49bc-a373-c70f4bb22656",
+      "release_id": "b1ceb012-889e-4b32-902c-972f87c130af"
+    },
+    {
+      "canonical_name": "Ori and the Blind Forest",
+      "aliases": [
+        "ori blind forest"
+      ],
+      "game_id": "0e4e7b4d-744b-46ee-8677-38c370e0fd20",
+      "release_id": "71d27dc5-8aad-4b59-87d8-9b716a3ee6ec"
+    },
+    {
+      "canonical_name": "Ori and the Will of the Wisps",
+      "aliases": [
+        "ori will of the wisps"
+      ],
+      "game_id": "98668ff2-8699-410e-a8be-1d4935134066",
+      "release_id": "1968b93e-9717-4de6-a1db-a83474c45cea"
+    },
+    {
+      "canonical_name": "State of Decay 2",
+      "aliases": [
+        "state of decay 2 xbox one"
+      ],
+      "game_id": "84ffa8ca-f3ad-4489-b714-e8eeec758ad8",
+      "release_id": "46b3cec7-a22c-4158-9eb2-5e96b7111482"
+    },
+    {
+      "canonical_name": "Quantum Break",
+      "aliases": [
+        "quantum break xbox one"
+      ],
+      "game_id": "2f12c94e-736c-4506-b32f-ae4d3f0bbaae",
+      "release_id": "160f7758-e6b4-4418-8eb9-1fea55b2f467"
+    },
+    {
+      "canonical_name": "ReCore",
+      "aliases": [
+        "recore xbox one"
+      ],
+      "game_id": "cb78250f-d799-45d3-9b8c-5ed6fc0605c5",
+      "release_id": "b7296f66-efd4-4269-aa07-68fd205358bf"
+    },
+    {
+      "canonical_name": "Rare Replay",
+      "aliases": [
+        "rare replay xbox one"
+      ],
+      "game_id": "79a42201-7d21-407a-b931-d5228e0b5d44",
+      "release_id": "721f4bfa-1199-4553-bb05-1461e4780219"
+    },
+    {
+      "canonical_name": "Cuphead",
+      "aliases": [
+        "cuphead xbox one"
+      ],
+      "game_id": "da560308-8f26-4f17-9719-3d361ff876d1",
+      "release_id": "437e9a42-9bdb-468d-8c5f-9d84003f6b07"
+    },
+    {
+      "canonical_name": "EA Sports FC 24",
+      "aliases": [
+        "fc24 xbox one",
+        "fifa 24 xbox one"
+      ],
+      "game_id": "70ad02f2-a81a-4a32-8855-6a903e810081",
+      "release_id": "c43e9034-fb92-4ec9-b655-1fe6bdab472f"
+    },
+    {
+      "canonical_name": "FIFA 23",
+      "aliases": [
+        "fifa 23 xbox one"
+      ],
+      "game_id": "2782dd3c-b119-4d90-b39d-cd5cf42126b1",
+      "release_id": "c234d59f-b367-4efc-b7f1-294e05038a39"
+    },
+    {
+      "canonical_name": "FIFA 22",
+      "aliases": [
+        "fifa 22 xbox one"
+      ],
+      "game_id": "4ad8a150-717f-4ac5-ab2a-06028569e833",
+      "release_id": "604d5b97-1667-4f3a-9310-49838fc765cc"
+    },
+    {
+      "canonical_name": "FIFA 21",
+      "aliases": [
+        "fifa 21 xbox one"
+      ],
+      "game_id": "7c8af842-99f9-4db2-9790-9fe04f9e82e7",
+      "release_id": "0cfa014a-6406-4321-9ca0-685862726021"
+    },
+    {
+      "canonical_name": "FIFA 20",
+      "aliases": [
+        "fifa 20 xbox one"
+      ],
+      "game_id": "116fa7f9-adcd-4ca1-bb3b-8fedd1320c18",
+      "release_id": "b693c1ff-5f56-46d5-9131-f28c6e95242d"
+    },
+    {
+      "canonical_name": "FIFA 19",
+      "aliases": [
+        "fifa 19 xbox one"
+      ],
+      "game_id": "ad855181-13c3-4442-a8ea-814097c8cf2f",
+      "release_id": "627d79ed-8ff6-4d42-a844-61155789791e"
+    },
+    {
+      "canonical_name": "FIFA 18",
+      "aliases": [
+        "fifa 18 xbox one"
+      ],
+      "game_id": "a2226003-c9a0-429f-8b17-04cd24b65f28",
+      "release_id": "df99c5ef-ed06-4f7d-9e05-e16391e2d63a"
+    },
+    {
+      "canonical_name": "FIFA 17",
+      "aliases": [
+        "fifa 17 xbox one"
+      ],
+      "game_id": "defc2c75-a87d-4a03-a601-0a38924a63c7",
+      "release_id": "3b377cf1-9c41-4bc4-a481-3a7552777307"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare (2019)",
+      "aliases": [
+        "cod mw 2019",
+        "modern warfare 2019"
+      ],
+      "game_id": "d149e3d9-febe-4137-b35b-b0df7db243d0",
+      "release_id": "b5b0e6c3-0f53-42c8-a692-d7b9ad7fd611"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare II",
+      "aliases": [
+        "cod mw2 2022 xbox one"
+      ],
+      "game_id": "b0509b92-acb0-425c-a514-be1150d17140",
+      "release_id": "f2dcb5b0-0414-4242-ab9b-a39815872ef5"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 3",
+      "aliases": [
+        "cod bo3",
+        "black ops 3 xbox one"
+      ],
+      "game_id": "7be542a5-105a-4fe3-baca-64fb81829c98",
+      "release_id": "c7f334d6-adab-4ab3-b240-bc318a0ad1ca"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 4",
+      "aliases": [
+        "cod bo4",
+        "black ops 4 xbox one"
+      ],
+      "game_id": "c0b4f549-39f5-4e7b-98e8-58524733226c",
+      "release_id": "f0fdd3e2-d5c3-4595-9e76-537eb3d30b82"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops Cold War",
+      "aliases": [
+        "cod cold war xbox one"
+      ],
+      "game_id": "6cbecb10-9ee0-41c5-bb78-617b1521e0b6",
+      "release_id": "044fb003-5515-48e6-b3c2-6f73f6a3c3ed"
+    },
+    {
+      "canonical_name": "Call of Duty: WWII",
+      "aliases": [
+        "cod ww2",
+        "call of duty ww2 xbox one"
+      ],
+      "game_id": "b72fa978-576c-4144-b423-76279afec3da",
+      "release_id": "c2bb0abb-f669-41d2-8a0e-550a48de3964"
+    },
+    {
+      "canonical_name": "Call of Duty: Infinite Warfare",
+      "aliases": [
+        "cod infinite warfare"
+      ],
+      "game_id": "44212187-206c-4a77-b334-3f50a3fc145a",
+      "release_id": "6525c65c-5c29-466c-9085-41b557a55a96"
+    },
+    {
+      "canonical_name": "Call of Duty: Ghosts",
+      "aliases": [
+        "cod ghosts xbox one"
+      ],
+      "game_id": "742ca913-7029-4b93-a0f4-cd5c8d48b334",
+      "release_id": "dd45fad6-08af-4be8-b691-cd07e7809f6a"
+    },
+    {
+      "canonical_name": "Call of Duty: Advanced Warfare",
+      "aliases": [
+        "cod advanced warfare"
+      ],
+      "game_id": "613cfef7-582f-4447-831c-032d0a02e91c",
+      "release_id": "24f9a051-1ec1-4ed3-a6e7-265846fa937a"
+    },
+    {
+      "canonical_name": "Call of Duty: Vanguard",
+      "aliases": [
+        "cod vanguard xbox one"
+      ],
+      "game_id": "104c152f-f3ee-491c-8177-a20cf0ba690e",
+      "release_id": "939146c4-0448-4655-b581-7a8f0be919fb"
+    },
+    {
+      "canonical_name": "Battlefield 1",
+      "aliases": [
+        "bf1 xbox one",
+        "battlefield 1 xbox one"
+      ],
+      "game_id": "b6437c58-713f-422d-9d5e-ee440037201a",
+      "release_id": "13fe29bb-aab8-4dfa-a38d-c1f9b5a9526e"
+    },
+    {
+      "canonical_name": "Battlefield 4",
+      "aliases": [
+        "bf4 xbox one"
+      ],
+      "game_id": "b0f249ff-ef8f-42a6-a914-40d30aa7651e",
+      "release_id": "b5489a3c-e188-43d0-a6b7-a38ed4d842e6"
+    },
+    {
+      "canonical_name": "Battlefield V",
+      "aliases": [
+        "bfv xbox one",
+        "battlefield 5 xbox one"
+      ],
+      "game_id": "6b77ea3f-1652-41fc-a270-7d452f776830",
+      "release_id": "ef3d36da-e15e-4e82-a064-1a63cda1d58b"
+    },
+    {
+      "canonical_name": "Destiny",
+      "aliases": [
+        "destiny 1 xbox one"
+      ],
+      "game_id": "6ae460fe-5a32-48a2-ad92-c9a19110692d",
+      "release_id": "1723dd41-92ba-4c2e-a4f0-c1989c6dace2"
+    },
+    {
+      "canonical_name": "Destiny 2",
+      "aliases": [
+        "destiny 2 xbox one"
+      ],
+      "game_id": "f452a254-9ec6-4f74-af02-253c5c971c73",
+      "release_id": "dfb02930-8e14-4093-9b4d-3ab3664956c7"
+    },
+    {
+      "canonical_name": "PlayerUnknown's Battlegrounds",
+      "aliases": [
+        "pubg xbox one"
+      ],
+      "game_id": "b1565dcf-d8af-4268-b17d-d82d1c3f207d",
+      "release_id": "b5b22ebc-9642-4c48-8bbb-ea6511c3ad28"
+    },
+    {
+      "canonical_name": "Overwatch",
+      "aliases": [
+        "overwatch xbox one"
+      ],
+      "game_id": "2a60d77e-637d-417c-9b16-12e8c2c73b6c",
+      "release_id": "7b15fe13-64b7-4ad0-9f61-894116e92ce5"
+    },
+    {
+      "canonical_name": "Rainbow Six Siege",
+      "aliases": [
+        "r6 siege xbox one"
+      ],
+      "game_id": "49305756-3e8e-4693-b4ac-9c846e31b8fd",
+      "release_id": "aeda44d1-ce3a-4796-a946-7720d6baf68e"
+    },
+    {
+      "canonical_name": "Tom Clancy's The Division",
+      "aliases": [
+        "the division xbox one"
+      ],
+      "game_id": "0cec4516-38f3-4384-bf19-1b988a13bfc6",
+      "release_id": "f766c2d3-993b-4fa5-8a9c-693a7e63f7a4"
+    },
+    {
+      "canonical_name": "Tom Clancy's The Division 2",
+      "aliases": [
+        "the division 2 xbox one"
+      ],
+      "game_id": "81d216d2-8433-4de1-8b4f-64c0df759ef2",
+      "release_id": "4ac048fc-097b-4a97-bf11-a1342d2d7e75"
+    },
+    {
+      "canonical_name": "Star Wars Battlefront",
+      "aliases": [
+        "star wars battlefront 2015"
+      ],
+      "game_id": "9b9141c9-2bcd-4e04-9969-1286cf4fee3d",
+      "release_id": "5d04a111-486e-4291-9e59-90ad9bedd075"
+    },
+    {
+      "canonical_name": "Star Wars Battlefront II",
+      "aliases": [
+        "star wars battlefront 2 2017"
+      ],
+      "game_id": "063faabd-8e04-483e-b09e-e696c03b3d1f",
+      "release_id": "2ad65b53-d880-4660-9677-806e5976e41e"
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Fallen Order",
+      "aliases": [
+        "jedi fallen order xbox one"
+      ],
+      "game_id": "fe8771d1-eb7c-4987-867f-4ab388c20e17",
+      "release_id": "9b5a4934-75c4-4d9f-a5e7-32fd1612d9c8"
+    },
+    {
+      "canonical_name": "Assassin's Creed Unity",
+      "aliases": [
+        "ac unity xbox one"
+      ],
+      "game_id": "634fba74-d4c3-4a26-9871-a93aebd0c05e",
+      "release_id": "a1c34aaa-a8d9-442f-bbf7-391da7c9dd25"
+    },
+    {
+      "canonical_name": "Assassin's Creed Syndicate",
+      "aliases": [
+        "ac syndicate xbox one"
+      ],
+      "game_id": "e9d44f7f-7717-4668-9808-72cc4afc6e9c",
+      "release_id": "3ff668f6-6be9-4365-b900-18183502e721"
+    },
+    {
+      "canonical_name": "Assassin's Creed Origins",
+      "aliases": [
+        "ac origins xbox one"
+      ],
+      "game_id": "4e118244-e6c8-472d-b6d6-97b17d7a80cf",
+      "release_id": "ed753e88-7c1b-4e9e-8a04-8058dba350f2"
+    },
+    {
+      "canonical_name": "Assassin's Creed Odyssey",
+      "aliases": [
+        "ac odyssey xbox one"
+      ],
+      "game_id": "c475ea90-d071-411a-a017-1b089eb5a72d",
+      "release_id": "4c98363a-ab70-4d33-959c-fbe81707a2bd"
+    },
+    {
+      "canonical_name": "Assassin's Creed Valhalla",
+      "aliases": [
+        "ac valhalla xbox one"
+      ],
+      "game_id": "8ce59fb8-0129-47be-92aa-f2aa2781967d",
+      "release_id": "a448f859-5659-4ef2-ba56-e9cea0265369"
+    },
+    {
+      "canonical_name": "Watch Dogs",
+      "aliases": [
+        "watch dogs 1 xbox one"
+      ],
+      "game_id": "35a39415-e022-4720-b879-9504f718dec6",
+      "release_id": "8805e7d5-54b2-4458-8c8b-3bd10cd09dff"
+    },
+    {
+      "canonical_name": "Watch Dogs 2",
+      "aliases": [
+        "watch dogs 2 xbox one"
+      ],
+      "game_id": "e7c4d9f2-a063-4aa0-8ff4-628f4a73cb0d",
+      "release_id": "25f133b9-6562-46de-9ec6-b4b462b84a60"
+    },
+    {
+      "canonical_name": "Watch Dogs: Legion",
+      "aliases": [
+        "watch dogs legion xbox one"
+      ],
+      "game_id": "e14efc79-fe4f-46c4-8052-67f7adf8daeb",
+      "release_id": "e0c13e05-467e-44ed-87da-781981cb02fd"
+    },
+    {
+      "canonical_name": "NBA 2K20",
+      "aliases": [
+        "nba 2k20 xbox one"
+      ],
+      "game_id": "ee09a8bc-260d-46fa-bcb3-08893d02b864",
+      "release_id": "4acdcaec-9192-480e-9296-458a5b0928f1"
+    },
+    {
+      "canonical_name": "NBA 2K21",
+      "aliases": [
+        "nba 2k21 xbox one"
+      ],
+      "game_id": "00c5a867-923d-4883-a341-cb52b0c14970",
+      "release_id": "d8a44347-e0dd-4847-af25-154717db612c"
+    },
+    {
+      "canonical_name": "NBA 2K22",
+      "aliases": [
+        "nba 2k22 xbox one"
+      ],
+      "game_id": "33f2dcbe-041f-403c-a672-80e42fb02996",
+      "release_id": "8c466605-8ddc-4e49-82a7-4b2a897918ec"
+    },
+    {
+      "canonical_name": "WWE 2K19",
+      "aliases": [
+        "wwe 2k19 xbox one"
+      ],
+      "game_id": "c0702e65-9eb4-4e2c-aa74-49e73635242a",
+      "release_id": "6d76dd73-f348-490f-9f6d-7640257b1256"
+    },
+    {
+      "canonical_name": "WWE 2K20",
+      "aliases": [
+        "wwe 2k20 xbox one"
+      ],
+      "game_id": "973c40fe-6dd5-4bc5-bdde-e7ed1f4b4414",
+      "release_id": "d35b05ef-b633-4272-a1f7-e0390b050536"
+    },
+    {
+      "canonical_name": "WWE 2K22",
+      "aliases": [
+        "wwe 2k22 xbox one"
+      ],
+      "game_id": "ea30d56f-1e85-4d35-a2c1-08d32d925fe5",
+      "release_id": "0475dd2b-670c-4b75-a717-8e17919a0332"
+    },
+    {
+      "canonical_name": "Madden NFL 20",
+      "aliases": [
+        "madden 20 xbox one"
+      ],
+      "game_id": "880e91eb-a13f-4fde-91cb-46cda5fcdcbb",
+      "release_id": "42391308-c41c-468a-ad4c-4e78508adccf"
+    },
+    {
+      "canonical_name": "Madden NFL 21",
+      "aliases": [
+        "madden 21 xbox one"
+      ],
+      "game_id": "f5519a6c-5ea5-425e-835f-1b8add78dc8b",
+      "release_id": "df785362-0264-4555-94d1-c646e1d511fe"
+    },
+    {
+      "canonical_name": "Madden NFL 22",
+      "aliases": [
+        "madden 22 xbox one"
+      ],
+      "game_id": "af2c4010-570f-48b4-a790-69cb2746ece2",
+      "release_id": "08ffa084-58ed-4c1c-9299-98e8585101ee"
+    },
+    {
+      "canonical_name": "Far Cry 4",
+      "aliases": [
+        "far cry 4 xbox one"
+      ],
+      "game_id": "df0b1657-808d-4d80-892e-4300ebc8d309",
+      "release_id": "e864cd42-221b-44c1-8258-b6a7f294fb07"
+    },
+    {
+      "canonical_name": "Far Cry Primal",
+      "aliases": [
+        "far cry primal xbox one"
+      ],
+      "game_id": "80bd2c7d-6665-4924-a6cb-d91b1c991396",
+      "release_id": "a4289129-8dfb-4a00-9e4e-e5352cb62c52"
+    },
+    {
+      "canonical_name": "Far Cry 5",
+      "aliases": [
+        "far cry 5 xbox one"
+      ],
+      "game_id": "9b981d30-82d1-456e-8bc9-ad1d36747ef5",
+      "release_id": "58898d47-20b6-430d-b189-b3d2202810f2"
+    },
+    {
+      "canonical_name": "Far Cry New Dawn",
+      "aliases": [
+        "far cry new dawn xbox one"
+      ],
+      "game_id": "bfe940eb-7039-4c7a-a45d-19c0447af4ac",
+      "release_id": "5d9273ba-d8c2-4b75-bed5-e302872521ca"
+    },
+    {
+      "canonical_name": "Far Cry 6",
+      "aliases": [
+        "far cry 6 xbox one"
+      ],
+      "game_id": "17c9dea1-fbce-475d-9598-d2a5b818837d",
+      "release_id": "61ca2001-aff1-4212-8d5a-3ad856c540dd"
+    },
+    {
+      "canonical_name": "Metal Gear Solid V: The Phantom Pain",
+      "aliases": [
+        "mgs5 xbox one",
+        "mgs v phantom pain"
+      ],
+      "game_id": "3ecbcd75-61f6-411a-a9c5-b46fa88cecb9",
+      "release_id": "2ad0b81b-33ca-467c-891c-c04b69f48ba1"
+    },
+    {
+      "canonical_name": "Resident Evil 7: Biohazard",
+      "aliases": [
+        "re7 xbox one",
+        "resident evil 7 xbox one"
+      ],
+      "game_id": "3cc0aa6e-805b-4141-ad75-06d0f437637b",
+      "release_id": "70bab461-240c-488e-856d-d0a65a54e20a"
+    },
+    {
+      "canonical_name": "Resident Evil 2 Remake",
+      "aliases": [
+        "re2 remake xbox one"
+      ],
+      "game_id": "cebad433-fe68-4f26-92c6-10a221c1419c",
+      "release_id": "7fec81a7-4189-469c-964e-877ce2bfbf78"
+    },
+    {
+      "canonical_name": "Resident Evil 3 Remake",
+      "aliases": [
+        "re3 remake xbox one"
+      ],
+      "game_id": "ba3b79ff-c683-4db3-a170-48a9e16047c4",
+      "release_id": "2b1fc093-0efb-48b0-974a-d6623dd3378f"
+    },
+    {
+      "canonical_name": "Resident Evil Village",
+      "aliases": [
+        "re village xbox one",
+        "resident evil 8 xbox one"
+      ],
+      "game_id": "02a75c5a-b94c-4bd8-baaa-458d78fe56e9",
+      "release_id": "538a0169-4261-463f-b713-abf7b4dc874f"
+    },
+    {
+      "canonical_name": "Middle-earth: Shadow of Mordor",
+      "aliases": [
+        "shadow of mordor xbox one"
+      ],
+      "game_id": "b04759c1-6f10-4bc4-a886-9211080ab767",
+      "release_id": "16bd04b7-7efa-4f75-a6d5-5a45a8b15107"
+    },
+    {
+      "canonical_name": "Middle-earth: Shadow of War",
+      "aliases": [
+        "shadow of war xbox one"
+      ],
+      "game_id": "90f7c99e-c661-4451-910c-0a52e76aadf9",
+      "release_id": "5436bba5-ae66-4ccc-932b-67af66eb888a"
+    },
+    {
+      "canonical_name": "Batman: Arkham Knight",
+      "aliases": [
+        "arkham knight xbox one"
+      ],
+      "game_id": "e846ef9e-e31a-4920-8e48-1f3b30d47c53",
+      "release_id": "279c359b-9b87-4bae-8a16-6189e59581ac"
+    },
+    {
+      "canonical_name": "Batman: Return to Arkham",
+      "aliases": [
+        "return to arkham xbox one"
+      ],
+      "game_id": "2a4517ef-0727-44f2-a108-fa62ffba3984",
+      "release_id": "caacf1cc-8bd9-4df0-9d38-d7d2b88d38d1"
+    },
+    {
+      "canonical_name": "Mortal Kombat X",
+      "aliases": [
+        "mkx xbox one"
+      ],
+      "game_id": "4c7c97de-c9a7-4bab-af00-b4421e084a34",
+      "release_id": "c9092419-312b-4100-bbf4-9cda7b0a2b10"
+    },
+    {
+      "canonical_name": "Mortal Kombat 11",
+      "aliases": [
+        "mk11 xbox one"
+      ],
+      "game_id": "ace4bed9-411f-46cc-b273-8431bdb12cf8",
+      "release_id": "a3023a7a-c9eb-4bb6-95d7-9f7213db4ce2"
+    },
+    {
+      "canonical_name": "Injustice 2",
+      "aliases": [
+        "injustice 2 xbox one"
+      ],
+      "game_id": "a396302a-ddbb-4483-8f1a-128674cbf3c0",
+      "release_id": "15703ff1-04d8-4cf2-a790-28044ad705c7"
+    },
+    {
+      "canonical_name": "Injustice: Gods Among Us Ultimate Edition",
+      "aliases": [
+        "injustice 1 xbox one"
+      ],
+      "game_id": "c8603abe-d296-4985-81c9-e518328e3f6f",
+      "release_id": "2097d374-9eea-4078-9e8d-3c4f5c9e9e44"
+    },
+    {
+      "canonical_name": "Just Cause 3",
+      "aliases": [
+        "just cause 3 xbox one"
+      ],
+      "game_id": "c6925e77-b5f6-4b45-bc81-f8ab96b13bb0",
+      "release_id": "c55732b2-5fef-4c94-8483-4ee6cc703165"
+    },
+    {
+      "canonical_name": "Just Cause 4",
+      "aliases": [
+        "just cause 4 xbox one"
+      ],
+      "game_id": "7dfb8de3-ac4e-4aa4-8069-08a045fad277",
+      "release_id": "c362be50-aa80-4a2f-988a-4b78c82c3864"
+    },
+    {
+      "canonical_name": "Tom Clancy's Rainbow Six Extraction",
+      "aliases": [
+        "r6 extraction xbox one"
+      ],
+      "game_id": "0f1fb08b-73ca-4cf2-bf95-80af7810272c",
+      "release_id": "2e7c2ecc-6f34-4a16-9567-1d532646cd7a"
+    },
+    {
+      "canonical_name": "Dying Light",
+      "aliases": [
+        "dying light 1 xbox one"
+      ],
+      "game_id": "d858cb41-86fa-44d8-b6e9-8ea64de91f69",
+      "release_id": "fde57667-fdb2-4fda-882c-90fc9ae38ae0"
+    },
+    {
+      "canonical_name": "Dying Light 2: Stay Human",
+      "aliases": [
+        "dying light 2 xbox one"
+      ],
+      "game_id": "cd2a8d05-ca6c-4d33-977e-64e2dcad86f8",
+      "release_id": "db637e4d-49da-4a66-8a9b-399e2ac86301"
+    },
+    {
+      "canonical_name": "Hitman 2",
+      "aliases": [
+        "hitman 2 xbox one"
+      ],
+      "game_id": "6d4c1c69-0313-41c1-a710-c6b467c9e828",
+      "release_id": "0dcaad1c-1eef-4faa-b2e0-778e7739a8fc"
+    },
+    {
+      "canonical_name": "Hitman 3",
+      "aliases": [
+        "hitman 3 xbox one",
+        "hitman world of assassination xbox one"
+      ],
+      "game_id": "f2ff02a2-fabf-43b4-9daa-b82d860ec5a2",
+      "release_id": "fe0c0ee3-1b0b-4e10-af50-85f42fcf50ef"
+    },
+    {
+      "canonical_name": "Kingdom Hearts III",
+      "aliases": [
+        "kh3 xbox one"
+      ],
+      "game_id": "a1516f07-0af8-4c3e-8362-839cb0fe19ca",
+      "release_id": "3540f114-fc45-4678-aec9-a6f8bb5cae35"
+    },
+    {
+      "canonical_name": "NieR: Automata",
+      "aliases": [
+        "nier automata xbox one"
+      ],
+      "game_id": "5f9cba07-9a36-4445-891e-150c390b6c12",
+      "release_id": "503abe50-93aa-4f23-aefb-517f4026e7b0"
+    },
+    {
+      "canonical_name": "Dragon's Dogma: Dark Arisen",
+      "aliases": [
+        "dragons dogma dark arisen xbox one"
+      ],
+      "game_id": "0ea188e1-b246-4ff1-8d63-56101514da82",
+      "release_id": "f27d7db3-47fc-4a38-b41b-05fd5f56d447"
+    },
+    {
+      "canonical_name": "Monster Hunter World",
+      "aliases": [
+        "mh world xbox one",
+        "monster hunter world xbox one"
+      ],
+      "game_id": "8dbdda1f-f51f-4547-b944-b60f9ec382e2",
+      "release_id": "fb6e4d16-ab4a-4b41-825a-d95b5fe20356"
+    },
+    {
+      "canonical_name": "Sekiro: Shadows Die Twice",
+      "aliases": [
+        "sekiro xbox one"
+      ],
+      "game_id": "31d6fd89-cea9-4ad4-81f2-4d8668d1815f",
+      "release_id": "eafd9273-c748-4c11-a6c0-ca228ec7103d"
+    },
+    {
+      "canonical_name": "Elden Ring",
+      "aliases": [
+        "elden ring xbox one"
+      ],
+      "game_id": "5ca34fc9-8fac-4e76-b1e0-5da9e1bbeb76",
+      "release_id": "50f56313-59ed-4fd5-bd1a-e7c710333867"
+    },
+    {
+      "canonical_name": "Diablo III: Eternal Collection",
+      "aliases": [
+        "diablo 3 eternal collection"
+      ],
+      "game_id": "f6bd6d66-edcf-40cf-8d3e-ca554c6cd865",
+      "release_id": "4bac3453-3db8-4749-a210-ccb496105734"
+    },
+    {
+      "canonical_name": "Diablo IV",
+      "aliases": [
+        "diablo 4 xbox one"
+      ],
+      "game_id": "3f72e0c5-5ff8-4d7e-8d2f-3a761eb97447",
+      "release_id": "3143bced-4c49-470c-ba97-f1f1ada7736b"
+    },
+    {
+      "canonical_name": "Borderlands 2",
+      "aliases": [
+        "borderlands 2 xbox one"
+      ],
+      "game_id": "dc50153d-cb8b-4607-a7d8-08cebba886ec",
+      "release_id": "e0dfa55f-00ad-4a58-8f77-497fef7a19b5"
+    },
+    {
+      "canonical_name": "Borderlands 3",
+      "aliases": [
+        "borderlands 3 xbox one"
+      ],
+      "game_id": "8828b83b-d939-4c27-980e-5432e01aaa5a",
+      "release_id": "037acf01-caa6-4e8b-b30a-9b29540d547b"
+    },
+    {
+      "canonical_name": "Cyberpunk 2077",
+      "aliases": [
+        "cyberpunk 2077 xbox one"
+      ],
+      "game_id": "47a6e16b-e8e4-4468-b42a-03929b3ab393",
+      "release_id": "39a1dbee-bd82-46a3-9364-b74fdb8d3cb3"
+    },
+    {
+      "canonical_name": "Doom (2016)",
+      "aliases": [
+        "doom 2016 xbox one"
+      ],
+      "game_id": "3e8b0b1a-0eb5-4ed3-9da9-8bbd1f5a085c",
+      "release_id": "0411e4aa-9dce-4f84-90ff-6d35d203a089"
+    },
+    {
+      "canonical_name": "Doom Eternal",
+      "aliases": [
+        "doom eternal xbox one"
+      ],
+      "game_id": "6fd835fe-5f1d-4df8-9f5d-f27c5473b219",
+      "release_id": "8e1b8145-cee7-456c-a9d5-8146b6fdf079"
+    },
+    {
+      "canonical_name": "Wolfenstein: The New Order",
+      "aliases": [
+        "wolfenstein new order xbox one"
+      ],
+      "game_id": "f5ecd869-4d8e-4d71-8ce8-9cda9cf4e2f5",
+      "release_id": "1c982ae2-6f18-4ef6-93a6-55e4627f7150"
+    },
+    {
+      "canonical_name": "Wolfenstein II: The New Colossus",
+      "aliases": [
+        "wolfenstein 2 new colossus"
+      ],
+      "game_id": "f5e31c58-80be-4e8f-8414-95600adbf6a4",
+      "release_id": "31cbf8e6-316b-44f1-a753-04d9396496c6"
+    },
+    {
+      "canonical_name": "Marvel's Guardians of the Galaxy",
+      "aliases": [
+        "guardians of the galaxy xbox one"
+      ],
+      "game_id": "f00b24f1-2751-42a8-9314-bba6795cd455",
+      "release_id": "da707d13-d377-450b-88e2-6e4062963a35"
+    },
+    {
+      "canonical_name": "Marvel's Avengers",
+      "aliases": [
+        "avengers game xbox one"
+      ],
+      "game_id": "1d744e20-d1b8-49a4-ac51-01ff40dad6f1",
+      "release_id": "46d37601-fd9e-48ed-a815-2e3ace496d27"
+    },
+    {
+      "canonical_name": "It Takes Two",
+      "aliases": [
+        "it takes two xbox one"
+      ],
+      "game_id": "02a665ac-4506-4153-8d41-0af8dedf4e5c",
+      "release_id": "672f0727-e459-4385-ba07-7c91fda29502"
+    },
+    {
+      "canonical_name": "A Way Out",
+      "aliases": [
+        "a way out xbox one"
+      ],
+      "game_id": "d759fd4d-b8bf-42a3-908c-2da652c8bd3a",
+      "release_id": "cac3fc8f-c7eb-4ab4-a8ef-ec086b84794d"
+    },
+    {
+      "canonical_name": "Hogwarts Legacy",
+      "aliases": [
+        "hogwarts legacy xbox one"
+      ],
+      "game_id": "823b9ad8-500f-4b28-93e0-600da605af6b",
+      "release_id": "688ce1f6-4007-4bae-a36f-610d03b6e0cc"
+    },
+    {
+      "canonical_name": "Star Wars Jedi: Survivor",
+      "aliases": [
+        "jedi survivor xbox one"
+      ],
+      "game_id": "3d4dd0ea-64cc-4788-a180-4c3d49577f3a",
+      "release_id": "e02a66d7-11cd-40c2-aa5b-5a9dc0267cd6"
+    },
+    {
+      "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+      "aliases": [
+        "lego star wars skywalker saga xbox one"
+      ],
+      "game_id": "68a52710-5491-4696-87b3-d7e2c279367f",
+      "release_id": "643296c9-38a0-4e75-b864-c3cfb1c93f82"
+    },
+    {
+      "canonical_name": "Crash Bandicoot 4: It's About Time",
+      "aliases": [
+        "crash 4 xbox one"
+      ],
+      "game_id": "95f58263-fe94-46a9-9cb2-17398c22b0d0",
+      "release_id": "19321b31-7efc-4cd1-8d2e-b70878f525f4"
+    },
+    {
+      "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+      "aliases": [
+        "gta trilogy xbox one"
+      ],
+      "game_id": "b6baf737-e261-4e33-a511-e232ee505238",
+      "release_id": "7ee710bb-f6cd-49e1-b5ce-00aba6917dd3"
+    },
+    {
+      "canonical_name": "F1 2020",
+      "aliases": [
+        "f1 2020 xbox one"
+      ],
+      "game_id": "f4ab0cdf-8fcc-4799-8ad8-397981ec51b3",
+      "release_id": "09f9a358-97f1-47bd-ba51-582fdc518e9c"
+    },
+    {
+      "canonical_name": "F1 2021",
+      "aliases": [
+        "f1 2021 xbox one"
+      ],
+      "game_id": "c80b572b-017e-4a51-824b-f204586893e6",
+      "release_id": "aac472d2-4b97-40d3-8c8c-1a06ca6ad3c3"
+    },
+    {
+      "canonical_name": "F1 22",
+      "aliases": [
+        "f1 22 xbox one"
+      ],
+      "game_id": "73d10300-2c4f-4e5a-ac66-877ab9a993e4",
+      "release_id": "efb618ad-2c95-427f-b8fd-b3b473ee5ed4"
+    },
+    {
+      "canonical_name": "EA Sports WRC",
+      "aliases": [
+        "wrc ea sports xbox one"
+      ],
+      "game_id": "58ecd698-fa33-4819-868c-5cf40b66211c",
+      "release_id": "9a0e06e2-db0d-4729-9e6a-1f94190ff942"
+    },
+    {
+      "canonical_name": "Need for Speed Heat",
+      "aliases": [
+        "nfs heat xbox one"
+      ],
+      "game_id": "6bc9df8c-1c89-47aa-aa6f-ae666560baf8",
+      "release_id": "1bb4de77-e0f4-4af8-8466-4511a82d18c1"
+    },
+    {
+      "canonical_name": "Need for Speed Payback",
+      "aliases": [
+        "nfs payback xbox one"
+      ],
+      "game_id": "cf39404a-cc9b-49ac-bd7c-3732dd898187",
+      "release_id": "d71356d6-6927-47a5-bd59-7d4b70bb9d39"
+    },
+    {
+      "canonical_name": "Tekken 7",
+      "aliases": [
+        "tekken 7 xbox one"
+      ],
+      "game_id": "877483eb-2e1c-4f7f-9f69-12b655fcb4b1",
+      "release_id": "738036b9-012b-40cc-8071-4a7aa89b84f2"
+    },
+    {
+      "canonical_name": "Street Fighter V",
+      "aliases": [
+        "sfv xbox one",
+        "street fighter 5 xbox one"
+      ],
+      "game_id": "b4f977dd-4faf-4512-86c9-907fc3c5b876",
+      "release_id": "124d5735-7bc0-4bc6-bfa2-50cf650e0786"
+    },
+    {
+      "canonical_name": "Life is Strange",
+      "aliases": [
+        "life is strange xbox one"
+      ],
+      "game_id": "53a0aa0e-b239-43f2-9b40-ef593c1895de",
+      "release_id": "ea2f8bbd-f655-4639-a420-2c0b51404cb0"
+    },
+    {
+      "canonical_name": "Life is Strange 2",
+      "aliases": [
+        "life is strange 2 xbox one"
+      ],
+      "game_id": "1bcf2fb4-e7ef-497b-9d17-3e507d15bc5a",
+      "release_id": "23fb62cc-03f9-4e73-8de3-45202aeeca86"
+    },
+    {
+      "canonical_name": "Sonic Forces",
+      "aliases": [
+        "sonic forces xbox one"
+      ],
+      "game_id": "614f8218-07e7-4572-83a3-2dda3e5179ce",
+      "release_id": "e9c3a288-688c-4988-824a-d0a05ef34633"
+    },
+    {
+      "canonical_name": "Sonic Frontiers",
+      "aliases": [
+        "sonic frontiers xbox one"
+      ],
+      "game_id": "8cb4d3a5-c3d8-49b4-99f6-f78100b1ffe7",
+      "release_id": "c6d7ed38-85e0-42f0-8227-e8a31b5b3194"
+    },
+    {
+      "canonical_name": "Rocket League",
+      "aliases": [
+        "rocket league xbox one"
+      ],
+      "game_id": "5d8ab847-8d65-42d3-a833-6069fbbb12b8",
+      "release_id": "854c99fe-a728-46f9-aa5d-d15f45695f7d"
+    },
+    {
+      "canonical_name": "Fallout 76",
+      "aliases": [
+        "fallout 76 xbox one"
+      ],
+      "game_id": "18f6bb25-5acb-4c6e-85c3-3ac2abc2db76",
+      "release_id": "4e46b336-9ab5-4929-a11a-46e77d07003c"
+    },
+    {
+      "canonical_name": "Anthem",
+      "aliases": [
+        "anthem xbox one"
+      ],
+      "game_id": "4c3595a2-2033-430f-80fd-9bab9d2caffa",
+      "release_id": "0fc7a761-91f1-4801-9e0d-4ae65df5aa65"
+    },
+    {
+      "canonical_name": "Days Gone",
+      "aliases": [
+        "days gone xbox one"
+      ],
+      "game_id": "9eeb745b-4c47-4856-82bd-b7b4ee8de0ca",
+      "release_id": "164c2c2a-1a6d-4a73-b68f-296878012ea8"
+    },
+    {
+      "canonical_name": "EA Sports FC 25",
+      "aliases": [
+        "fc25 xbox one",
+        "fifa 25 xbox one",
+        "ea fc 25 xbox one"
+      ],
+      "game_id": "ee3cbe89-7499-4401-9726-ec91e9bbcfda",
+      "release_id": "b23cd6a6-575c-46eb-9aa4-c849e0975ba6"
+    },
+    {
+      "canonical_name": "EA Sports FC 26",
+      "aliases": [
+        "fc26 xbox one",
+        "fifa 26 xbox one",
+        "ea fc 26 xbox one"
+      ],
+      "game_id": "7b5eabce-40bb-46d3-983e-9d5c9cd8c16c",
+      "release_id": "4b102eb3-c23d-4dda-9c8b-34672dd5b5f0"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops 7",
+      "aliases": [
+        "cod bo7 xbox one",
+        "black ops 7 xbox one"
+      ],
+      "game_id": "89c26500-1c58-42af-96c1-45cc0532b09b",
+      "release_id": "8bc0726f-01ba-4505-8fbf-ea68319820ff"
+    },
+    {
+      "canonical_name": "NBA 2K26",
+      "aliases": [
+        "nba 2k26 xbox one"
+      ],
+      "game_id": "4938501e-62b1-46ec-bb4c-8641226f82c7",
+      "release_id": "8d7bb129-f80b-45a0-857c-1ce1ffcb31c3"
+    }
   ]
 }

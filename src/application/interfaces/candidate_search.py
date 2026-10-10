@@ -3,9 +3,11 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.search_coverage import MarketplaceCategory, SearchCoverage
 
 
 @dataclass(frozen=True)
@@ -16,12 +18,15 @@ class SearchQuery:
     latitude: float
     longitude: float
     max_results: int
+    category: MarketplaceCategory | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.keywords, str):
             raise TypeError("keywords must be str")
         normalized_keywords = self.keywords.strip()
-        if not normalized_keywords:
+        if self.category is not None and not isinstance(self.category, MarketplaceCategory):
+            raise TypeError("category must be MarketplaceCategory or None")
+        if not normalized_keywords and self.category is None:
             raise ValueError("keywords must not be empty")
         object.__setattr__(self, "keywords", normalized_keywords)
 
@@ -74,16 +79,32 @@ class CandidateSearchResult:
     candidates: tuple[CandidateListing, ...]
     failures: tuple[CandidateItemFailure, ...]
     total_items_received: int
+    coverage: SearchCoverage = SearchCoverage()
 
     def __post_init__(self) -> None:
         if isinstance(self.total_items_received, bool) or not isinstance(
             self.total_items_received, int
         ):
             raise TypeError("total_items_received must be int")
+        if not isinstance(self.coverage, SearchCoverage):
+            raise TypeError("coverage must be SearchCoverage")
         if self.total_items_received < 0:
             raise ValueError("total_items_received must be non-negative")
         object.__setattr__(self, "candidates", tuple(self.candidates))
         object.__setattr__(self, "failures", tuple(self.failures))
+
+
+@dataclass(frozen=True)
+class QueryScan:
+    """Per-query bounds and observed completion, including failed searches."""
+
+    run_id: str
+    query_index: int
+    query: SearchQuery
+    coverage: SearchCoverage
+    started_at: datetime
+    completed_at: datetime
+    error_type: str | None = None
 
 
 class ICandidateSearch(ABC):

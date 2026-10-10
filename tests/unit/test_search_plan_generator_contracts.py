@@ -132,9 +132,10 @@ def test_game_search_target_is_frozen_and_has_only_target_fields() -> None:
         target.canonical_name = "RDR2"  # type: ignore[misc]
 
 
-def test_generation_strategy_has_exactly_one_public_value() -> None:
+def test_generation_strategy_supports_canonical_and_discovery() -> None:
     assert list(SearchPlanGenerationStrategy) == [
-        SearchPlanGenerationStrategy.CANONICAL_ONLY
+        SearchPlanGenerationStrategy.CANONICAL_ONLY,
+        SearchPlanGenerationStrategy.DISCOVERY,
     ]
     assert SearchPlanGenerationStrategy.CANONICAL_ONLY.value == "canonical_only"
     assert issubclass(SearchPlanGenerationStrategy, StrEnum)
@@ -402,6 +403,7 @@ def test_generation_contract_does_not_modify_search_query() -> None:
         "latitude",
         "longitude",
         "max_results",
+        "category",
     ]
 
 

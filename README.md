@@ -9,8 +9,9 @@ incluidos de referencias contextuales y clasifica hardware, accesorios,
 ediciones no modeladas y menciones multiplataforma inseguras.
 
 La CLI realiza consultas reales únicamente cuando se ejecuta `scan` con
-`--confirm-live`. No es todavía un sistema autónomo: no hay histórico,
-persistencia, scheduler, notificaciones, API ni dashboard.
+`--confirm-live`. Puede conservar observaciones e identificaciones en SQLite
+mediante `[persistence]`. No es todavía un sistema autónomo: no hay scheduler,
+notificaciones, API ni dashboard.
 
 ## Instalación mínima
 
@@ -22,6 +23,19 @@ py -m uv run playwright install chromium
 ```
 
 La configuración de referencia está en [`config.example.toml`](config.example.toml).
+Para buscar sin una lista de juegos, usa
+[`config.discovery.example.toml`](config.discovery.example.toml): descubre anuncios
+por categoría y, opcionalmente, por palabras de plataforma. Conserva desconocidos
+en SQLite y muestra los límites de cobertura de cada consulta.
+El registro local separa juego y lanzamiento mediante IDs estables; conserva
+desconocidos como provisionales y distingue Nintendo Switch de Nintendo Switch 2.
+Con `[metadata] enabled = true`, el proveedor opcional IGDB puede confirmar
+juegos ausentes de la semilla, conservar su procedencia y reconocerlos después
+sin editar el catálogo. Requiere credenciales y persistencia; consulta la
+[configuración y los límites de B09](OPERATIONAL_CLI.md#identificación-externa-opcional-b09).
+La caché persistente limita consultas repetidas y revisa pendientes y metadatos
+caducados al iniciar los escaneos. Con `persistence.seed_catalog = false` y
+descubrimiento con metadatos activos, puede empezar sin una lista inicial de juegos.
 
 ## Uso principal
 

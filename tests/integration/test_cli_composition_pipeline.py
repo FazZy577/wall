@@ -29,7 +29,7 @@ from presentation.cli.config import (
 pytestmark = pytest.mark.integration
 
 _CANDIDATE_QUERY = "Grand Theft Auto V PS4"
-_COMPARABLE_QUERY = "gta v ps4"
+_COMPARABLE_QUERY = "grand theft auto v ps4"
 
 
 @dataclass(frozen=True)
@@ -43,11 +43,11 @@ class _MarketplaceCall:
 class _OfflineMarketplaceSearch(IMarketplaceSearch):
     def __init__(
         self,
-        responses: Mapping[str, Sequence[dict[str, Any]]],
+        responses: Mapping[tuple[str, int], Sequence[dict[str, Any]]],
     ) -> None:
         self._responses = {
-            self._normalize(keywords): tuple(deepcopy(list(items)))
-            for keywords, items in responses.items()
+            (self._normalize(keywords), limit): tuple(deepcopy(list(items)))
+            for (keywords, limit), items in responses.items()
         }
         self.calls: list[_MarketplaceCall] = []
         self.closed = False
@@ -63,7 +63,7 @@ class _OfflineMarketplaceSearch(IMarketplaceSearch):
             _MarketplaceCall(keywords, latitude, longitude, max_results)
         )
         response = deepcopy(
-            list(self._responses.get(self._normalize(keywords), ()))
+            list(self._responses.get((self._normalize(keywords), max_results), ()))
         )
         return response[:max_results]
 
@@ -129,7 +129,7 @@ def _config() -> AppConfig:
     )
 
 
-def _responses() -> dict[str, Sequence[dict[str, Any]]]:
+def _responses() -> dict[tuple[str, int], Sequence[dict[str, Any]]]:
     comparables = [
         _raw_listing(
             f"composition-comparable-{index}",
@@ -139,14 +139,14 @@ def _responses() -> dict[str, Sequence[dict[str, Any]]]:
         for index, price in enumerate(("18", "19", "20", "21", "22") * 4)
     ]
     return {
-        _CANDIDATE_QUERY: (
+        (_CANDIDATE_QUERY, 10): (
             _raw_listing(
                 "composition-candidate-gta",
                 "GTA V PS4 juego individual",
                 "5.00",
             ),
         ),
-        _COMPARABLE_QUERY: comparables,
+        (_COMPARABLE_QUERY, 100): comparables,
     }
 
 

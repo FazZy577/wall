@@ -1,8 +1,9 @@
 """Offline integration tests for the operational scan command."""
 
 import json
+import sqlite3
 from collections.abc import AsyncIterator, Mapping, Sequence
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, closing
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -148,12 +149,49 @@ def _success_responses() -> dict[str, Sequence[dict[str, Any]]]:
         _GTA_QUERY: (
             _raw("cli-individual", "GTA V PS4 juego individual", "5.00"),
         ),
-        "gta v ps4": _comparables(
+        "grand theft auto v ps4": _comparables(
             "cli-gta",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
         ),
     }
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("fail_during_write", [False, True])
+async def test_persistence_failures_are_visible_in_cli(
+    tmp_path, monkeypatch, capsys, fail_during_write
+):
+    config_path = tmp_path / "config.toml"
+    _write_config(config_path, json_path="report.json")
+    with config_path.open("a", encoding="utf-8") as config_file:
+        config_file.write('\n[persistence]\nenabled = true\ndatabase_path = "data/store.sqlite3"\n')
+    marketplace = _FakeMarketplaceSearch({
+        _GTA_QUERY: [_raw("unknown", "Zyxqv PS5", "20")],
+    })
+    if fail_during_write:
+        @asynccontextmanager
+        async def open_runtime(config):
+            runtime = build_operational_runtime(config, marketplace)
+            with closing(sqlite3.connect(config.persistence.database_path)) as connection, connection:
+                connection.execute("""CREATE TRIGGER reject_observation BEFORE INSERT ON listing_observations
+                    BEGIN SELECT RAISE(ABORT, 'test failure'); END""")
+            yield runtime
+        monkeypatch.setattr(cli_main, "open_operational_runtime", open_runtime)
+    else:
+        (tmp_path / "data").write_text("blocked directory", encoding="utf-8")
+        _patch_runtime(monkeypatch, marketplace)
+    code = await cli_main.run_scan(config_path, confirm_live=True)
+    output = capsys.readouterr()
+    if fail_during_write:
+        assert code == 1
+        assert "observation_storage_error" in output.out
+        report = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+        assert report["failures"]["routing"][0]["kind"] == "observation_storage_error"
+    else:
+        assert code == 8
+        assert "Observation storage error" in output.err
+        assert not marketplace.calls
 
 
 @pytest.mark.asyncio
@@ -181,7 +219,7 @@ async def test_scan_command_runs_full_offline_pipeline_and_writes_both_outputs(
     assert report["individual_opportunities"][0]["currency"] == "EUR"
     assert isinstance(report["individual_opportunities"][0]["purchase_price"], str)
     assert _GTA_QUERY in marketplace.calls
-    assert "gta v ps4" in [call.casefold() for call in marketplace.calls]
+    assert "grand theft auto v ps4" in [call.casefold() for call in marketplace.calls]
     serialized = report_path.read_text(encoding="utf-8").casefold()
     assert "must-not-be-reported" not in serialized
     assert "traceback" not in serialized

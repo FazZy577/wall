@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeAlias, cast
 
-from application.interfaces.candidate_search import SearchQuery
+from application.interfaces.candidate_search import QueryScan, SearchQuery
 from application.interfaces.lot_opportunity_scanner import (
     GameValuationFailure,
     LotScanResult,
@@ -153,11 +153,30 @@ def _timestamp(value: datetime) -> str:
 
 
 def _query_mapping(query: SearchQuery) -> dict[str, JsonValue]:
-    return {
+    result: dict[str, JsonValue] = {
         "keywords": query.keywords,
         "latitude": _finite(query.latitude),
         "longitude": _finite(query.longitude),
         "max_results": query.max_results,
+    }
+    if query.category is not None:
+        result["category"] = query.category.value
+        result["platform_selection"] = "keyword" if query.keywords else "all"
+    return result
+
+
+def _query_scan_mapping(scan: QueryScan) -> dict[str, JsonValue]:
+    return {
+        "run_id": scan.run_id,
+        "query_index": scan.query_index,
+        "query": _query_mapping(scan.query),
+        "pages_received": scan.coverage.pages_received,
+        "max_pages": scan.coverage.max_pages,
+        "items_received": scan.coverage.items_received,
+        "stop_reason": scan.coverage.stop_reason.value,
+        "started_at": _timestamp(scan.started_at),
+        "completed_at": _timestamp(scan.completed_at),
+        "error_type": scan.error_type,
     }
 
 
@@ -187,6 +206,8 @@ def _valuation_mapping(valuation: GameValuation) -> dict[str, JsonValue]:
         "game": valuation.game.canonical_name,
         "platform": valuation.game.platform.value,
         "estimated_price": str(valuation.estimated_market_value),
+        "quantity": valuation.quantity,
+        "total_estimated_value": str(valuation.reference_value_for_quantity),
         "confidence": _finite(valuation.confidence_score),
         "observations_used": valuation.observations_used,
         "outliers_removed": valuation.observations_removed,
@@ -387,6 +408,8 @@ def build_json_report(
             "queries": generation_queries,
         },
         "execution": {
+            **({"query_scans": _json_list([_query_scan_mapping(scan) for scan in execution.query_scans])}
+               if execution.query_scans else {}),
             "created_at": _timestamp(execution.created_at),
             "processing_time_seconds": _finite(execution.processing_time),
             "queries": {

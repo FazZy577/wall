@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from domain.entities.detected_game import DetectedGame
+from domain.entities.game_identity import GameIdentity
 
 
 class CandidateDisposition(StrEnum):
@@ -26,6 +27,8 @@ class CandidateClassificationReason(StrEnum):
     AMBIGUOUS_MULTIPLATFORM = "ambiguous_multiplatform"
     UNSUPPORTED_EDITION = "unsupported_edition"
     CONTEXTUAL_REFERENCE_ONLY = "contextual_reference_only"
+    UNRESOLVED_SALE_TERMS = "unresolved_sale_terms"
+    UNCONFIRMED_IDENTITY = "unconfirmed_identity"
 
 
 _IGNORED_REASONS = frozenset(
@@ -39,6 +42,8 @@ _IGNORED_REASONS = frozenset(
 )
 _AMBIGUOUS_REASONS = frozenset(
     {
+        CandidateClassificationReason.UNCONFIRMED_IDENTITY,
+        CandidateClassificationReason.UNRESOLVED_SALE_TERMS,
         CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
         CandidateClassificationReason.UNSUPPORTED_EDITION,
         CandidateClassificationReason.CONTEXTUAL_REFERENCE_ONLY,
@@ -58,6 +63,11 @@ class CandidateClassification:
     disposition: CandidateDisposition
     reason: CandidateClassificationReason
     included_games: tuple[DetectedGame, ...]
+    quantities: tuple[int, ...] = ()
+
+    @property
+    def total_units(self) -> int:
+        return sum(self.quantities)
 
     def __post_init__(self) -> None:
         if not isinstance(self.disposition, CandidateDisposition):
@@ -68,13 +78,18 @@ class CandidateClassification:
             raise TypeError("included_games must be tuple")
         if any(not isinstance(game, DetectedGame) for game in self.included_games):
             raise TypeError("included_games must contain only DetectedGame")
+        if type(self.quantities) is not tuple:
+            raise TypeError("quantities must be tuple")
+        if not self.quantities:
+            object.__setattr__(self, "quantities", (1,) * len(self.included_games))
+        if len(self.quantities) != len(self.included_games) or any(
+            type(quantity) is not int or quantity < 1 for quantity in self.quantities
+        ):
+            raise ValueError("quantities must contain one positive integer per identity")
 
-        identities: set[tuple[str, object]] = set()
+        identities: set[GameIdentity] = set()
         for game in self.included_games:
-            identity = (
-                " ".join(game.canonical_name.strip().casefold().split()),
-                game.platform,
-            )
+            identity = GameIdentity.from_game(game)
             if identity in identities:
                 raise ValueError(
                     "included_games must not contain duplicate game identities"
@@ -82,7 +97,7 @@ class CandidateClassification:
             identities.add(identity)
 
         if self.disposition is CandidateDisposition.ELIGIBLE_INDIVIDUAL:
-            if len(self.included_games) != 1:
+            if len(self.included_games) != 1 or self.total_units != 1:
                 raise ValueError(
                     "ELIGIBLE_INDIVIDUAL requires exactly one included game"
                 )
@@ -93,7 +108,7 @@ class CandidateClassification:
             return
 
         if self.disposition is CandidateDisposition.ELIGIBLE_LOT:
-            if len(self.included_games) < 2:
+            if self.total_units < 2:
                 raise ValueError("ELIGIBLE_LOT requires at least two included games")
             if self.reason is not CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT:
                 raise ValueError(

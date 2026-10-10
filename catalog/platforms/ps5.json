@@ -8,7 +8,9 @@
         "spider man 2",
         "spiderman2",
         "spider-man 2 ps5"
-      ]
+      ],
+      "game_id": "974ef46f-febc-4053-be69-60f0f9c8baad",
+      "release_id": "366791f6-2a63-4c18-a9f0-a69045b16eba"
     },
     {
       "canonical_name": "Marvel's Spider-Man: Miles Morales",
@@ -16,14 +18,18 @@
         "miles morales",
         "spiderman miles morales",
         "spider man miles morales"
-      ]
+      ],
+      "game_id": "4cf6d942-967c-4677-922a-6112fb5409c0",
+      "release_id": "33b06f28-eda6-45e4-8efb-50fa5380e15f"
     },
     {
       "canonical_name": "Marvel's Spider-Man Remastered",
       "aliases": [
         "spiderman remastered",
         "spider man ps5"
-      ]
+      ],
+      "game_id": "8d6fd925-421a-4ccd-abf6-3e76ebe098ca",
+      "release_id": "ae35091b-5693-4c94-8d17-57a2a6a0f305"
     },
     {
       "canonical_name": "God of War Ragnarök",
@@ -31,62 +37,80 @@
         "gow ragnarok",
         "god of war ragnarok",
         "ragnarok ps5"
-      ]
+      ],
+      "game_id": "7681bf0e-cb3a-4c13-bcb1-7a257a0cfe95",
+      "release_id": "e2020d56-0c7c-4132-b0f2-b692301186d8"
     },
     {
       "canonical_name": "God of War",
       "aliases": [
         "god of war ps5",
         "gow 2018"
-      ]
+      ],
+      "game_id": "117eaef6-4657-4846-bf30-72e024c4eafb",
+      "release_id": "2427bf09-54dd-4ef9-a166-e7d18722b878"
     },
     {
       "canonical_name": "Horizon Forbidden West",
       "aliases": [
         "horizon fw",
         "horizon forbidden west ps5"
-      ]
+      ],
+      "game_id": "31c219b3-07dd-4c8b-8866-a31ca02e1932",
+      "release_id": "a966a087-50f2-4809-a717-71081ca3da3d"
     },
     {
       "canonical_name": "Horizon Forbidden West: Burning Shores",
       "aliases": [
         "burning shores",
         "horizon burning shores"
-      ]
+      ],
+      "game_id": "b7d2a41a-8c8a-48b2-92e0-164389e83160",
+      "release_id": "e7c3bb54-9aaf-4539-b4ed-71fd737891e5"
     },
     {
       "canonical_name": "Horizon Zero Dawn Remastered",
       "aliases": [
         "horizon zero dawn ps5",
         "hzd remastered"
-      ]
+      ],
+      "game_id": "04cc4b74-089a-4e72-a5d2-5218baedc85c",
+      "release_id": "9b86d377-f29f-4893-813c-84662748ef3d"
     },
     {
       "canonical_name": "Gran Turismo 7",
       "aliases": [
         "gt7",
         "gran turismo 7 ps5"
-      ]
+      ],
+      "game_id": "8f45588d-393c-43c9-b1fb-106c06705247",
+      "release_id": "59e4dfb3-8a52-4fba-a8bf-bb6d4533eb8c"
     },
     {
       "canonical_name": "Ratchet & Clank: Rift Apart",
       "aliases": [
         "rift apart",
         "ratchet and clank rift apart"
-      ]
+      ],
+      "game_id": "772e09a6-3482-4267-a17b-2899ac92ca9a",
+      "release_id": "228b75aa-2cf0-4340-8eb7-e19d326f0fa8"
     },
     {
       "canonical_name": "Demon's Souls",
       "aliases": [
         "demons souls ps5",
         "demon souls remake"
-      ]
+      ],
+      "game_id": "84099669-923d-4ca1-9aa9-70d79d08601d",
+      "release_id": "6653acda-1283-44c4-987b-2a9a0b8c0d88"
     },
     {
       "canonical_name": "Returnal",
       "aliases": [
         "returnal ps5"
-      ]
+      ],
+      "game_id": "7c46ae59-83f8-4ae7-af84-6bc4182d293b",
+      "release_id": "3d1c694d-17a8-4f75-8890-743d47813ec5"
     },
     {
       "canonical_name": "The Last of Us Part I",
@@ -94,138 +118,180 @@
         "tlou 1 remake",
         "the last of us part 1",
         "last of us remake ps5"
-      ]
+      ],
+      "game_id": "39eaa5a2-4bde-4307-b495-c9b060733ae0",
+      "release_id": "4aaa24b8-335f-4688-bd08-92fac87a035d"
     },
     {
       "canonical_name": "The Last of Us Part II Remastered",
       "aliases": [
         "tlou 2 remastered",
         "the last of us part 2 remastered"
-      ]
+      ],
+      "game_id": "6745453b-8c89-474d-9c6c-406655d74618",
+      "release_id": "8f742cc8-8a02-49d6-8ced-6c0ac92c0907"
     },
     {
       "canonical_name": "Ghost of Tsushima Director's Cut",
       "aliases": [
         "ghost of tsushima ps5",
         "got director's cut"
-      ]
+      ],
+      "game_id": "595a3884-572c-424f-96ed-a1cddbc091a1",
+      "release_id": "52678f47-9fe0-4153-8387-7c6cc6ae005f"
     },
     {
       "canonical_name": "Ghost of Yotei",
       "aliases": [
         "ghost of yotei ps5"
-      ]
+      ],
+      "game_id": "d57cbe67-beba-4fa5-8cdd-5b1bfe9416e2",
+      "release_id": "33f10743-f32e-4199-b639-fd01914e146e"
     },
     {
       "canonical_name": "Final Fantasy XVI",
       "aliases": [
         "ff16",
         "final fantasy 16"
-      ]
+      ],
+      "game_id": "0ec88015-8f98-4cd4-8b3e-de724f4d6c3f",
+      "release_id": "001a3628-2f71-483f-b631-bdbdd8453d0b"
     },
     {
       "canonical_name": "Final Fantasy VII Rebirth",
       "aliases": [
         "ff7 rebirth",
         "final fantasy 7 rebirth"
-      ]
+      ],
+      "game_id": "55df17c7-cbad-4eb2-9c94-74f893cd42e1",
+      "release_id": "0a4af978-4931-49ba-b262-da34769efed9"
     },
     {
       "canonical_name": "Final Fantasy VII Remake Intergrade",
       "aliases": [
         "ff7 remake",
         "final fantasy 7 remake ps5"
-      ]
+      ],
+      "game_id": "74bf0102-e1e7-4e74-998a-eb7abb98621f",
+      "release_id": "ddde9432-fee5-4dac-86eb-a089cf316de4"
     },
     {
       "canonical_name": "Astro Bot",
       "aliases": [
         "astro bot ps5",
         "astrobot"
-      ]
+      ],
+      "game_id": "15adb452-28a1-42b4-9b4a-6205419b682d",
+      "release_id": "50cc30b0-5c0a-4663-9b53-e5ec2659cebf"
     },
     {
       "canonical_name": "Death Stranding 2: On the Beach",
       "aliases": [
         "death stranding 2",
         "ds2 kojima"
-      ]
+      ],
+      "game_id": "9c9c3f42-704e-4f93-bf2b-57efaa3b0c2d",
+      "release_id": "3ba1a25f-af83-4f68-943d-aa01007fb612"
     },
     {
       "canonical_name": "Death Stranding Director's Cut",
       "aliases": [
         "death stranding ps5"
-      ]
+      ],
+      "game_id": "13a8f690-1a0e-4163-900b-8ec8a0675ee2",
+      "release_id": "e228a4bd-b9cf-4ccd-a0f1-9ed3a462c722"
     },
     {
       "canonical_name": "Stellar Blade",
       "aliases": [
         "stellar blade ps5"
-      ]
+      ],
+      "game_id": "fb3e286a-9da4-4286-9f25-d8e9811a67dd",
+      "release_id": "a7d0b7ae-8821-49f1-b4e8-a361cec6ebc0"
     },
     {
       "canonical_name": "Helldivers 2",
       "aliases": [
         "helldivers ii",
         "helldivers 2 ps5"
-      ]
+      ],
+      "game_id": "cfeb25ef-090b-4fd7-b091-35aa2b2877c1",
+      "release_id": "f7dbb080-0e2e-48ed-973e-d7f5ece2073b"
     },
     {
       "canonical_name": "Rise of the Ronin",
       "aliases": [
         "rise of the ronin ps5"
-      ]
+      ],
+      "game_id": "06f88732-4b1a-4709-92fc-0101f33ca602",
+      "release_id": "6bdbec8d-66ca-4402-86f7-14f4cdf951d1"
     },
     {
       "canonical_name": "Until Dawn",
       "aliases": [
         "until dawn remake",
         "until dawn ps5"
-      ]
+      ],
+      "game_id": "97f84930-2452-4605-b4a8-92fb623c6d6e",
+      "release_id": "8666e6a7-fc88-46c8-89f5-754acbff4da7"
     },
     {
       "canonical_name": "Days Gone",
       "aliases": [
         "days gone ps5"
-      ]
+      ],
+      "game_id": "9eeb745b-4c47-4856-82bd-b7b4ee8de0ca",
+      "release_id": "ccbbc99f-5160-4f19-a0be-5010d2e51cdc"
     },
     {
       "canonical_name": "Sackboy: A Big Adventure",
       "aliases": [
         "sackboy",
         "sackboy big adventure"
-      ]
+      ],
+      "game_id": "e0c507ea-adaa-48bb-bb24-e9f4a84f008e",
+      "release_id": "8430fa3c-c5d9-4768-8b05-54d3de7a934d"
     },
     {
       "canonical_name": "Crash Bandicoot 4: It's About Time",
       "aliases": [
         "crash 4",
         "crash bandicoot 4"
-      ]
+      ],
+      "game_id": "95f58263-fe94-46a9-9cb2-17398c22b0d0",
+      "release_id": "a6b584d5-d85f-4a04-a453-7fc63249c7c4"
     },
     {
       "canonical_name": "Kena: Bridge of Spirits",
       "aliases": [
         "kena bridge of spirits"
-      ]
+      ],
+      "game_id": "d3b5f94e-ae95-44fc-86e1-259e5f88d29d",
+      "release_id": "8988493e-6ace-42b2-8420-a4bce84f5806"
     },
     {
       "canonical_name": "Sifu",
       "aliases": [
         "sifu ps5"
-      ]
+      ],
+      "game_id": "96286ea9-4e42-4435-be3b-571a0bb99d2f",
+      "release_id": "b39362e4-531a-4d98-a767-4ff778eceafe"
     },
     {
       "canonical_name": "Deathloop",
       "aliases": [
         "deathloop ps5"
-      ]
+      ],
+      "game_id": "0f893997-bb93-4c9e-a854-1d4ecb069064",
+      "release_id": "acc8a00b-55a8-4491-b359-e72235ba0bf7"
     },
     {
       "canonical_name": "Ghostwire: Tokyo",
       "aliases": [
         "ghostwire tokyo"
-      ]
+      ],
+      "game_id": "08a7c0c5-f7e1-4782-8a8a-8d173c6bd457",
+      "release_id": "af0f9f16-fa60-45cc-81b8-8ff14148cf37"
     },
     {
       "canonical_name": "Resident Evil Village",
@@ -233,110 +299,144 @@
         "re village",
         "resident evil 8",
         "re8"
-      ]
+      ],
+      "game_id": "02a75c5a-b94c-4bd8-baaa-458d78fe56e9",
+      "release_id": "9b139db8-ad1a-4d9c-8a07-f3b996fb7bf6"
     },
     {
       "canonical_name": "Resident Evil 4 Remake",
       "aliases": [
         "re4 remake",
         "resident evil 4 remake ps5"
-      ]
+      ],
+      "game_id": "89f9dd98-8ced-4100-a4c3-7b084e19ba3d",
+      "release_id": "3fbab74b-9190-45df-b995-bff834f1d1f4"
     },
     {
       "canonical_name": "Resident Evil 2 Remake",
       "aliases": [
         "re2 remake"
-      ]
+      ],
+      "game_id": "cebad433-fe68-4f26-92c6-10a221c1419c",
+      "release_id": "41957e81-834f-44ce-9536-bf1b32ec2d14"
     },
     {
       "canonical_name": "Resident Evil 3 Remake",
       "aliases": [
         "re3 remake"
-      ]
+      ],
+      "game_id": "ba3b79ff-c683-4db3-a170-48a9e16047c4",
+      "release_id": "f26b0413-cfbd-4ced-8d25-79b3dc26bdd8"
     },
     {
       "canonical_name": "Resident Evil Requiem",
       "aliases": [
         "re requiem",
         "resident evil 9"
-      ]
+      ],
+      "game_id": "0bd3433a-99cd-4838-ae50-d1948e126026",
+      "release_id": "c5ae4474-ad1c-4e31-8034-822d2fc16766"
     },
     {
       "canonical_name": "Dead Space Remake",
       "aliases": [
         "dead space ps5",
         "dead space remake 2023"
-      ]
+      ],
+      "game_id": "52a9c216-ad2a-4647-995a-e04764f44914",
+      "release_id": "30acc2f6-51eb-4fea-a4f9-3db59f3fa646"
     },
     {
       "canonical_name": "Silent Hill 2 Remake",
       "aliases": [
         "silent hill 2 remake ps5"
-      ]
+      ],
+      "game_id": "ebdb5b67-76ba-4e14-a2de-366c309869b8",
+      "release_id": "96bea5fe-632c-45ee-ab53-8f7d7dbc6b52"
     },
     {
       "canonical_name": "Alan Wake 2",
       "aliases": [
         "alan wake ii"
-      ]
+      ],
+      "game_id": "e2d33f2c-2f0c-4fd1-a6a9-6a92f03cd8a9",
+      "release_id": "2b7a70e7-8f08-4059-b454-e20d7d2b5997"
     },
     {
       "canonical_name": "Elden Ring",
       "aliases": [
         "elden ring ps5"
-      ]
+      ],
+      "game_id": "5ca34fc9-8fac-4e76-b1e0-5da9e1bbeb76",
+      "release_id": "3f2169a7-a9ba-403d-af72-721d45c7326e"
     },
     {
       "canonical_name": "Elden Ring: Shadow of the Erdtree",
       "aliases": [
         "shadow of the erdtree",
         "elden ring dlc"
-      ]
+      ],
+      "game_id": "568ca748-2d81-42a4-a5e2-5b0c1fc04576",
+      "release_id": "76cae16e-1b83-402d-aff2-ab5218e0e52e"
     },
     {
       "canonical_name": "Dark Souls Remastered",
       "aliases": [
         "dark souls ps5"
-      ]
+      ],
+      "game_id": "b199f6fa-e2cb-49d4-b54a-59f43a99c02d",
+      "release_id": "3074ec6c-51cc-4c40-b4c5-b42ffbff4e57"
     },
     {
       "canonical_name": "Sekiro: Shadows Die Twice",
       "aliases": [
         "sekiro ps5"
-      ]
+      ],
+      "game_id": "31d6fd89-cea9-4ad4-81f2-4d8668d1815f",
+      "release_id": "3e618afb-de9a-44ae-b0ff-ef91704dade6"
     },
     {
       "canonical_name": "Armored Core VI: Fires of Rubicon",
       "aliases": [
         "armored core 6",
         "ac6"
-      ]
+      ],
+      "game_id": "5e387173-8c27-43e8-82c8-4502d5d3a8a0",
+      "release_id": "a2dec125-7815-4502-8055-4e649b96410e"
     },
     {
       "canonical_name": "Lies of P",
       "aliases": [
         "lies of p ps5"
-      ]
+      ],
+      "game_id": "28c5b2fc-63f8-4700-9fa6-727d71ebb9b4",
+      "release_id": "3d825f68-cbed-4824-8bdb-dd89d845dddb"
     },
     {
       "canonical_name": "Wo Long: Fallen Dynasty",
       "aliases": [
         "wo long"
-      ]
+      ],
+      "game_id": "8102b98f-b63f-4631-a64d-d7692201b445",
+      "release_id": "0f2f3955-8f4f-4674-a9d3-b79ef3eff208"
     },
     {
       "canonical_name": "Cyberpunk 2077",
       "aliases": [
         "cyberpunk",
         "cyberpunk 2077 ps5"
-      ]
+      ],
+      "game_id": "47a6e16b-e8e4-4468-b42a-03929b3ab393",
+      "release_id": "7076e67e-a8b5-4bd7-a039-4760dca08b60"
     },
     {
       "canonical_name": "Cyberpunk 2077: Phantom Liberty",
       "aliases": [
         "phantom liberty",
         "cyberpunk phantom liberty"
-      ]
+      ],
+      "game_id": "b72ee2e8-92e4-4cc0-a481-bb235a515500",
+      "release_id": "0244cb01-4192-46a8-9464-a8b4003b1629"
     },
     {
       "canonical_name": "Grand Theft Auto V",
@@ -344,149 +444,195 @@
         "gta 5 ps5",
         "gta v ps5",
         "gta5 ps5"
-      ]
+      ],
+      "game_id": "125ab7e5-0d5e-479d-b7ff-97b40a87da1c",
+      "release_id": "2187ae60-7b07-4180-9518-f3ca19ef5b5c"
     },
     {
       "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
       "aliases": [
         "gta trilogy",
         "gta trilogy definitive edition"
-      ]
+      ],
+      "game_id": "b6baf737-e261-4e33-a511-e232ee505238",
+      "release_id": "fd00108b-3e05-4acd-860e-1ef81c0ac041"
     },
     {
       "canonical_name": "Red Dead Redemption 2",
       "aliases": [
         "rdr2 ps5",
         "red dead redemption 2 ps5"
-      ]
+      ],
+      "game_id": "3aaf07ca-50e9-4d58-a770-bde168c954b3",
+      "release_id": "999fd6a7-6508-4867-a862-b767f149549a"
     },
     {
       "canonical_name": "Red Dead Redemption",
       "aliases": [
         "rdr1 ps5",
         "red dead redemption remaster ps5"
-      ]
+      ],
+      "game_id": "e60cc17c-884e-42a1-8055-bad7b0d31a20",
+      "release_id": "8cb2fe95-e111-40c1-8831-440ebacda88e"
     },
     {
       "canonical_name": "Assassin's Creed Valhalla",
       "aliases": [
         "ac valhalla",
         "assassins creed valhalla"
-      ]
+      ],
+      "game_id": "8ce59fb8-0129-47be-92aa-f2aa2781967d",
+      "release_id": "a14ad709-babb-4ce5-8a6b-b84937374f42"
     },
     {
       "canonical_name": "Assassin's Creed Mirage",
       "aliases": [
         "ac mirage",
         "assassins creed mirage"
-      ]
+      ],
+      "game_id": "c1d4826c-f6d8-407c-805d-bba994eb0c82",
+      "release_id": "a996524e-2e68-475b-ad59-b199c294fab6"
     },
     {
       "canonical_name": "Assassin's Creed Shadows",
       "aliases": [
         "ac shadows",
         "assassins creed shadows"
-      ]
+      ],
+      "game_id": "d9f323ab-5760-4036-a1b1-7be5970a2283",
+      "release_id": "3b7a5bcf-8dab-47d3-9130-aedaf159009b"
     },
     {
       "canonical_name": "Star Wars Jedi: Fallen Order",
       "aliases": [
         "jedi fallen order"
-      ]
+      ],
+      "game_id": "fe8771d1-eb7c-4987-867f-4ab388c20e17",
+      "release_id": "10870aeb-3afd-4aab-ac0a-c6988238ec1a"
     },
     {
       "canonical_name": "Star Wars Jedi: Survivor",
       "aliases": [
         "jedi survivor"
-      ]
+      ],
+      "game_id": "3d4dd0ea-64cc-4788-a180-4c3d49577f3a",
+      "release_id": "62a438a8-a2a1-4727-bd7d-036bf567b165"
     },
     {
       "canonical_name": "Hogwarts Legacy",
       "aliases": [
         "hogwarts legacy ps5"
-      ]
+      ],
+      "game_id": "823b9ad8-500f-4b28-93e0-600da605af6b",
+      "release_id": "9efd594d-91ae-4e11-9ca6-6c94a8dce0e6"
     },
     {
       "canonical_name": "It Takes Two",
       "aliases": [
         "it takes two ps5"
-      ]
+      ],
+      "game_id": "02a665ac-4506-4153-8d41-0af8dedf4e5c",
+      "release_id": "069945e6-db6b-40b0-906e-2a7c6fe5f4f6"
     },
     {
       "canonical_name": "Split Fiction",
       "aliases": [
         "split fiction ps5"
-      ]
+      ],
+      "game_id": "adf5ef9e-5a73-4492-ac40-ea8f16624213",
+      "release_id": "4fe833b2-cb84-4be0-ac41-5543deabe660"
     },
     {
       "canonical_name": "A Plague Tale: Requiem",
       "aliases": [
         "plague tale requiem"
-      ]
+      ],
+      "game_id": "54f80d61-9681-40c0-bcc5-7ee416ab2fe5",
+      "release_id": "cbdcc662-a492-4e1c-803f-25874a2a8fe3"
     },
     {
       "canonical_name": "A Plague Tale: Innocence",
       "aliases": [
         "plague tale innocence"
-      ]
+      ],
+      "game_id": "060667b7-5d22-4fe7-9372-add26d3b7bac",
+      "release_id": "0d7a5b47-3462-4d37-a131-cd1c0912dd66"
     },
     {
       "canonical_name": "Dying Light 2: Stay Human",
       "aliases": [
         "dying light 2"
-      ]
+      ],
+      "game_id": "cd2a8d05-ca6c-4d33-977e-64e2dcad86f8",
+      "release_id": "f8a1d9a7-e6c1-4868-92f9-f079b73e7f10"
     },
     {
       "canonical_name": "Far Cry 6",
       "aliases": [
         "far cry 6 ps5"
-      ]
+      ],
+      "game_id": "17c9dea1-fbce-475d-9598-d2a5b818837d",
+      "release_id": "efca8f55-c795-4fb7-9461-994bd4936b03"
     },
     {
       "canonical_name": "Watch Dogs: Legion",
       "aliases": [
         "watch dogs legion"
-      ]
+      ],
+      "game_id": "e14efc79-fe4f-46c4-8052-67f7adf8daeb",
+      "release_id": "91c06cf3-1d11-4727-a243-9fdd2c112830"
     },
     {
       "canonical_name": "Metal Gear Solid Delta: Snake Eater",
       "aliases": [
         "mgs delta",
         "metal gear solid delta"
-      ]
+      ],
+      "game_id": "0ebd4e9b-08f1-4001-8221-e6ed397bd6bd",
+      "release_id": "ae0ccb8d-1551-41bc-8104-0797423222f2"
     },
     {
       "canonical_name": "Metal Gear Solid: Master Collection Vol. 1",
       "aliases": [
         "mgs master collection"
-      ]
+      ],
+      "game_id": "463117af-e8c4-4fda-9c62-4f64f934acca",
+      "release_id": "bf82b411-ff33-4842-895d-2087018beca5"
     },
     {
       "canonical_name": "Mortal Kombat 1",
       "aliases": [
         "mk1",
         "mortal kombat 1 ps5"
-      ]
+      ],
+      "game_id": "78901506-df41-4a8c-a60f-5bb679f65569",
+      "release_id": "f69e5b3d-936e-4037-ba84-ad653d8d8e48"
     },
     {
       "canonical_name": "Mortal Kombat 11",
       "aliases": [
         "mk11",
         "mortal kombat 11 ps5"
-      ]
+      ],
+      "game_id": "ace4bed9-411f-46cc-b273-8431bdb12cf8",
+      "release_id": "7e0a2f8a-d443-4b2a-836c-82f446418c17"
     },
     {
       "canonical_name": "Street Fighter 6",
       "aliases": [
         "sf6",
         "street fighter vi"
-      ]
+      ],
+      "game_id": "2826d761-6ce7-4ed4-adcc-c87d32f98e97",
+      "release_id": "9d15a67b-63f2-47a2-b2a0-6010f9327383"
     },
     {
       "canonical_name": "Tekken 8",
       "aliases": [
         "tekken 8 ps5"
-      ]
+      ],
+      "game_id": "7fb53a68-56ae-4e44-a8dd-f158974a6be4",
+      "release_id": "0b6e1943-87ca-4801-8931-095af6363efa"
     },
     {
       "canonical_name": "EA Sports FC 24",
@@ -494,7 +640,9 @@
         "fc24",
         "fifa 24",
         "ea fc 24"
-      ]
+      ],
+      "game_id": "70ad02f2-a81a-4a32-8855-6a903e810081",
+      "release_id": "94e46f69-eaa1-4f26-9b31-a4fb8e9a4746"
     },
     {
       "canonical_name": "EA Sports FC 25",
@@ -502,7 +650,9 @@
         "fc25",
         "fifa 25",
         "ea fc 25"
-      ]
+      ],
+      "game_id": "ee3cbe89-7499-4401-9726-ec91e9bbcfda",
+      "release_id": "b04a5160-0648-4a9e-8085-acabdc71b176"
     },
     {
       "canonical_name": "EA Sports FC 26",
@@ -510,438 +660,578 @@
         "fc26",
         "fifa 26",
         "ea fc 26"
-      ]
+      ],
+      "game_id": "7b5eabce-40bb-46d3-983e-9d5c9cd8c16c",
+      "release_id": "0ee044a0-218b-4277-b767-e6f182819910"
     },
     {
       "canonical_name": "Call of Duty: Modern Warfare II",
       "aliases": [
         "cod mw2 2022",
         "modern warfare 2 2022"
-      ]
+      ],
+      "game_id": "b0509b92-acb0-425c-a514-be1150d17140",
+      "release_id": "e3fdc6a4-d419-4f64-af79-850f9073bf5b"
     },
     {
       "canonical_name": "Call of Duty: Modern Warfare III",
       "aliases": [
         "cod mw3 2023",
         "modern warfare 3 2023"
-      ]
+      ],
+      "game_id": "790d29c4-bfaf-43ce-a475-f3151c806994",
+      "release_id": "71fe648f-bb88-4ff2-afb6-4d3a00916433"
     },
     {
       "canonical_name": "Call of Duty: Vanguard",
       "aliases": [
         "cod vanguard"
-      ]
+      ],
+      "game_id": "104c152f-f3ee-491c-8177-a20cf0ba690e",
+      "release_id": "a97983d6-f37a-434b-8f6b-1416091fe65f"
     },
     {
       "canonical_name": "Call of Duty: Black Ops Cold War",
       "aliases": [
         "cod cold war",
         "bo cold war"
-      ]
+      ],
+      "game_id": "6cbecb10-9ee0-41c5-bb78-617b1521e0b6",
+      "release_id": "50df26a3-05de-4bef-81ce-6a593d667226"
     },
     {
       "canonical_name": "Call of Duty: Black Ops 6",
       "aliases": [
         "cod bo6",
         "black ops 6"
-      ]
+      ],
+      "game_id": "65db7e0b-732c-429b-8bde-9f695afc42c1",
+      "release_id": "de2a13b7-6849-4f6c-9580-8aa321b1ac5e"
     },
     {
       "canonical_name": "Call of Duty: Black Ops 7",
       "aliases": [
         "cod bo7",
         "black ops 7"
-      ]
+      ],
+      "game_id": "89c26500-1c58-42af-96c1-45cc0532b09b",
+      "release_id": "9c255993-942c-4811-88a0-464f86108283"
     },
     {
       "canonical_name": "Battlefield 2042",
       "aliases": [
         "bf2042",
         "battlefield 2042 ps5"
-      ]
+      ],
+      "game_id": "12d64463-2ddd-4b1c-99cf-77b2fafe2964",
+      "release_id": "d53dd2cf-9e45-4bb3-9fdd-bc4277d0c036"
     },
     {
       "canonical_name": "Battlefield 6",
       "aliases": [
         "bf6",
         "battlefield 6 ps5"
-      ]
+      ],
+      "game_id": "3646f436-8dd4-4c2b-b197-72f8d9d392f4",
+      "release_id": "5de82d92-cd7e-4aff-853c-1bea82e5df0d"
     },
     {
       "canonical_name": "Diablo IV",
       "aliases": [
         "diablo 4",
         "diablo iv ps5"
-      ]
+      ],
+      "game_id": "3f72e0c5-5ff8-4d7e-8d2f-3a761eb97447",
+      "release_id": "f596c714-dddd-463b-a3a8-76dcc149896f"
     },
     {
       "canonical_name": "Diablo II: Resurrected",
       "aliases": [
         "diablo 2 resurrected"
-      ]
+      ],
+      "game_id": "85f6e397-3802-46e5-bf61-8939c87bcfcc",
+      "release_id": "42db779f-f267-47ed-a5c3-6ed5a8ef3244"
     },
     {
       "canonical_name": "Baldur's Gate 3",
       "aliases": [
         "bg3",
         "baldurs gate 3"
-      ]
+      ],
+      "game_id": "6f9fd029-9cd9-4209-808b-2f5e7f093235",
+      "release_id": "91b1719d-8b70-4a2f-9762-6e82416b0a2f"
     },
     {
       "canonical_name": "Monster Hunter Wilds",
       "aliases": [
         "mh wilds",
         "monster hunter wilds ps5"
-      ]
+      ],
+      "game_id": "d7eedb29-4397-4773-ae36-73bb30d3ceec",
+      "release_id": "e7e9f667-bd00-45d0-9273-4f5a903de2ef"
     },
     {
       "canonical_name": "Monster Hunter Rise",
       "aliases": [
         "mh rise ps5"
-      ]
+      ],
+      "game_id": "e3cfadf1-cd95-466b-89a4-4fd3fff31f40",
+      "release_id": "f481228b-99ad-4a3c-861c-5f468117db9b"
     },
     {
       "canonical_name": "Dragon's Dogma 2",
       "aliases": [
         "dragons dogma 2"
-      ]
+      ],
+      "game_id": "65cad831-84c5-487e-ab50-4457133d523b",
+      "release_id": "c18b0791-28c4-4b15-baf3-c5587114ecab"
     },
     {
       "canonical_name": "Persona 3 Reload",
       "aliases": [
         "p3 reload",
         "persona 3 reload ps5"
-      ]
+      ],
+      "game_id": "fb21fc5d-1a17-43da-9a25-39281673a536",
+      "release_id": "e3d16add-2e45-41f1-8986-da0216f9e748"
     },
     {
       "canonical_name": "Persona 5 Royal",
       "aliases": [
         "p5r",
         "persona 5 royal ps5"
-      ]
+      ],
+      "game_id": "35fcac79-65a2-4a72-a584-09199016bd22",
+      "release_id": "c533b4a1-eb6a-46eb-958d-da70252abf0f"
     },
     {
       "canonical_name": "Like a Dragon: Infinite Wealth",
       "aliases": [
         "yakuza infinite wealth",
         "like a dragon infinite wealth"
-      ]
+      ],
+      "game_id": "b339a092-3544-47e1-9bc9-274850bccfcc",
+      "release_id": "39c4ccf4-2a7c-4431-b6a4-40de52aecea2"
     },
     {
       "canonical_name": "Yakuza: Like a Dragon",
       "aliases": [
         "yakuza like a dragon ps5"
-      ]
+      ],
+      "game_id": "5bee6476-c989-4cd9-bf00-b9bdec582284",
+      "release_id": "12e29472-a145-4ae6-b558-78bb07ee4ae3"
     },
     {
       "canonical_name": "NieR: Automata",
       "aliases": [
         "nier automata ps5"
-      ]
+      ],
+      "game_id": "5f9cba07-9a36-4445-891e-150c390b6c12",
+      "release_id": "4f9d72fe-4355-4be7-b61c-1665201118b3"
     },
     {
       "canonical_name": "NieR Replicant ver.1.22474487139...",
       "aliases": [
         "nier replicant ps5"
-      ]
+      ],
+      "game_id": "a8298633-20fe-4f92-8f3d-9e1c09f59da2",
+      "release_id": "042b9273-5df3-4fb7-8ec1-b3b1da7c6f32"
     },
     {
       "canonical_name": "Kingdom Hearts III",
       "aliases": [
         "kh3",
         "kingdom hearts 3"
-      ]
+      ],
+      "game_id": "a1516f07-0af8-4c3e-8362-839cb0fe19ca",
+      "release_id": "83218606-ad27-4e58-b3e0-6d5569c74564"
     },
     {
       "canonical_name": "Tales of Arise",
       "aliases": [
         "tales of arise ps5"
-      ]
+      ],
+      "game_id": "0fc0c2db-f66d-4194-9c5b-f31eb8740a4f",
+      "release_id": "9f9ad210-2db5-4697-b04b-c9f888527a4a"
     },
     {
       "canonical_name": "Crimson Desert",
       "aliases": [
         "crimson desert ps5"
-      ]
+      ],
+      "game_id": "5dc67928-a558-4aa2-8ebc-0d2dd4a1573a",
+      "release_id": "36ad8093-e8e4-4682-b72a-f61bd38c8f3f"
     },
     {
       "canonical_name": "Black Myth: Wukong",
       "aliases": [
         "black myth wukong ps5",
         "wukong ps5"
-      ]
+      ],
+      "game_id": "9cf5ed94-45ca-4364-a63e-4ef5fa6adfc9",
+      "release_id": "d3247a5e-4160-40ce-aa4e-02f5ff93df44"
     },
     {
       "canonical_name": "Stray",
       "aliases": [
         "stray ps5"
-      ]
+      ],
+      "game_id": "ecef2521-1a8e-4141-afab-2152306c8096",
+      "release_id": "f1a85e98-223f-4635-8dc9-d65ed80bc77c"
     },
     {
       "canonical_name": "Cult of the Lamb",
       "aliases": [
         "cult of the lamb ps5"
-      ]
+      ],
+      "game_id": "e40f0b71-a3d9-479e-ab4d-fa27fbe850db",
+      "release_id": "769d6c64-de32-4a5f-a065-b3cfc514b698"
     },
     {
       "canonical_name": "Hades",
       "aliases": [
         "hades ps5"
-      ]
+      ],
+      "game_id": "ad30cd32-6ea9-497d-884c-541e5a2cc317",
+      "release_id": "a6232aff-c375-40ea-8037-3d022fb3b342"
     },
     {
       "canonical_name": "Hades II",
       "aliases": [
         "hades 2"
-      ]
+      ],
+      "game_id": "cdde69f0-71c5-487a-a951-36ec11c3e185",
+      "release_id": "ee7b19a3-fe32-4a77-afc4-af6272ee7191"
     },
     {
       "canonical_name": "Arc Raiders",
       "aliases": [
         "arc raiders ps5"
-      ]
+      ],
+      "game_id": "c5a48afe-a646-405e-b494-e66bb7e44f6c",
+      "release_id": "0f4d80ca-84e4-4096-9343-d4c85c69075a"
     },
     {
       "canonical_name": "Marvel's Guardians of the Galaxy",
       "aliases": [
         "guardians of the galaxy ps5"
-      ]
+      ],
+      "game_id": "f00b24f1-2751-42a8-9314-bba6795cd455",
+      "release_id": "c3369964-d993-46bd-b48b-9d936bb4edb2"
     },
     {
       "canonical_name": "Marvel's Avengers",
       "aliases": [
         "avengers game ps5"
-      ]
+      ],
+      "game_id": "1d744e20-d1b8-49a4-ac51-01ff40dad6f1",
+      "release_id": "fd41cc43-27de-463b-889b-46dbbdf44c9d"
     },
     {
       "canonical_name": "Suicide Squad: Kill the Justice League",
       "aliases": [
         "suicide squad kill the justice league"
-      ]
+      ],
+      "game_id": "ebd43039-68e5-4e74-8b5d-4c7aa328809e",
+      "release_id": "90dee30b-3957-4baf-bb70-213ab8aed146"
     },
     {
       "canonical_name": "Hitman World of Assassination",
       "aliases": [
         "hitman 3",
         "hitman iii"
-      ]
+      ],
+      "game_id": "2d953988-08a8-41e6-8b83-df62d4597938",
+      "release_id": "3b61d9e1-5115-4e48-a667-9f81d09a6000"
     },
     {
       "canonical_name": "Mafia: Definitive Edition",
       "aliases": [
         "mafia definitive edition ps5"
-      ]
+      ],
+      "game_id": "2b52ea67-daea-4263-96a2-7fa06a289e8e",
+      "release_id": "1e4b3aff-a67e-4dc2-a266-bdeaf951bba4"
     },
     {
       "canonical_name": "Mafia: The Old Country",
       "aliases": [
         "mafia old country"
-      ]
+      ],
+      "game_id": "e63af730-6af7-463d-85dd-e398d731e779",
+      "release_id": "3b7e000c-606a-47f6-bff2-9119c5bdf765"
     },
     {
       "canonical_name": "Immortals of Aveum",
       "aliases": [
         "immortals of aveum ps5"
-      ]
+      ],
+      "game_id": "ced2bae4-10fe-4203-a7c9-42e7e110f84b",
+      "release_id": "0b107faf-0303-447c-9e12-3ecff11b1d01"
     },
     {
       "canonical_name": "Forspoken",
       "aliases": [
         "forspoken ps5"
-      ]
+      ],
+      "game_id": "c2f89ddd-a278-449b-b1f0-85a8e0ac2fd4",
+      "release_id": "b8e907be-da07-47bc-8b48-cbbd675ffc21"
     },
     {
       "canonical_name": "Sonic Frontiers",
       "aliases": [
         "sonic frontiers ps5"
-      ]
+      ],
+      "game_id": "8cb4d3a5-c3d8-49b4-99f6-f78100b1ffe7",
+      "release_id": "f0cc9c67-d876-4e4d-ab1b-992b12ae5249"
     },
     {
       "canonical_name": "Sonic Superstars",
       "aliases": [
         "sonic superstars ps5"
-      ]
+      ],
+      "game_id": "46643bad-c1d2-4130-8fdc-aada6a582af6",
+      "release_id": "4bfa0041-3e4a-43b0-9722-2b795199158d"
     },
     {
       "canonical_name": "Crash Team Rumble",
       "aliases": [
         "crash team rumble ps5"
-      ]
+      ],
+      "game_id": "1b75f1ba-8fb8-4902-9508-226ffe21e271",
+      "release_id": "6165f908-c694-4e2a-a554-22c72b632ef8"
     },
     {
       "canonical_name": "Rainbow Six Siege",
       "aliases": [
         "r6 siege",
         "rainbow six siege ps5"
-      ]
+      ],
+      "game_id": "49305756-3e8e-4693-b4ac-9c846e31b8fd",
+      "release_id": "02c7f79f-3148-4b27-bfee-d9816ef3374a"
     },
     {
       "canonical_name": "Rainbow Six Extraction",
       "aliases": [
         "r6 extraction"
-      ]
+      ],
+      "game_id": "16849687-baff-4b72-92ca-f53dd8f1e53d",
+      "release_id": "76f4704f-ecc8-4df7-9044-4bc25c1cb89b"
     },
     {
       "canonical_name": "Overwatch 2",
       "aliases": [
         "ow2 ps5"
-      ]
+      ],
+      "game_id": "aaeb522f-c1a8-4c7f-aff2-01e7d978f584",
+      "release_id": "e005fbc9-5754-4a1f-9238-33c19525dee2"
     },
     {
       "canonical_name": "Outriders",
       "aliases": [
         "outriders ps5"
-      ]
+      ],
+      "game_id": "114c5c7e-7db6-4089-be2f-4a0580fd4faf",
+      "release_id": "519458bb-06c5-4bf7-8f32-5b14542d9663"
     },
     {
       "canonical_name": "Little Nightmares II",
       "aliases": [
         "little nightmares 2 ps5"
-      ]
+      ],
+      "game_id": "0c855f07-fa03-4a0a-b724-6daa465079d8",
+      "release_id": "b5b02283-b527-403e-822e-15f1d4128be3"
     },
     {
       "canonical_name": "Tiny Tina's Wonderlands",
       "aliases": [
         "tiny tinas wonderlands"
-      ]
+      ],
+      "game_id": "d1b8521c-a399-4e01-9594-208c60c1fef5",
+      "release_id": "aaa44767-e045-4243-98aa-4b349f8f74a3"
     },
     {
       "canonical_name": "Borderlands 3",
       "aliases": [
         "borderlands 3 ps5"
-      ]
+      ],
+      "game_id": "8828b83b-d939-4c27-980e-5432e01aaa5a",
+      "release_id": "2411c506-c91a-4351-aac5-517ac1d29cc3"
     },
     {
       "canonical_name": "Cities: Skylines II",
       "aliases": [
         "cities skylines 2"
-      ]
+      ],
+      "game_id": "643a72d5-32b8-4578-9dde-23774d578fef",
+      "release_id": "bdf881ee-9de6-4751-9b5b-310bf2519049"
     },
     {
       "canonical_name": "F1 23",
       "aliases": [
         "f1 23 ps5"
-      ]
+      ],
+      "game_id": "c41663b1-8763-4abd-831d-c4511c3d003f",
+      "release_id": "4da8bf1e-58d0-48fd-b6a7-6b65bfefabeb"
     },
     {
       "canonical_name": "F1 24",
       "aliases": [
         "f1 24 ps5"
-      ]
+      ],
+      "game_id": "bf9f642d-4a97-4d69-98b5-8a7edb9b7a3a",
+      "release_id": "71fb6b37-8da7-46f2-9326-e2ed7a1ab0fe"
     },
     {
       "canonical_name": "F1 25",
       "aliases": [
         "f1 25 ps5"
-      ]
+      ],
+      "game_id": "21961c2b-b0b1-4b0a-b599-996ec8dd75c1",
+      "release_id": "df0687d3-c6d9-4bbb-a0d9-903f8c060d2d"
     },
     {
       "canonical_name": "EA Sports WRC",
       "aliases": [
         "wrc ea sports"
-      ]
+      ],
+      "game_id": "58ecd698-fa33-4819-868c-5cf40b66211c",
+      "release_id": "5944ef87-1600-4847-afe6-c3984e9e15d2"
     },
     {
       "canonical_name": "Need for Speed Unbound",
       "aliases": [
         "nfs unbound"
-      ]
+      ],
+      "game_id": "d90e7049-cc88-4e27-8512-1d5ee4c5131c",
+      "release_id": "0545a731-a17c-430a-83fa-b633737b2dc5"
     },
     {
       "canonical_name": "Need for Speed Heat",
       "aliases": [
         "nfs heat ps5"
-      ]
+      ],
+      "game_id": "6bc9df8c-1c89-47aa-aa6f-ae666560baf8",
+      "release_id": "ac761903-0618-432a-8d93-0ac6a7e8611b"
     },
     {
       "canonical_name": "WWE 2K24",
       "aliases": [
         "wwe 2k24 ps5"
-      ]
+      ],
+      "game_id": "d4db1875-bb84-42b3-aae7-b550b6da658b",
+      "release_id": "06de3866-e832-4e88-85b1-76d0c76fa900"
     },
     {
       "canonical_name": "WWE 2K25",
       "aliases": [
         "wwe 2k25 ps5"
-      ]
+      ],
+      "game_id": "352f1ce0-edc2-40e2-955a-782eb9515832",
+      "release_id": "cc0c0775-1752-401b-92f2-fe91e93fd2ed"
     },
     {
       "canonical_name": "UFC 5",
       "aliases": [
         "ea sports ufc 5"
-      ]
+      ],
+      "game_id": "2645159f-c15d-4cd1-a55a-c4a0ef546b43",
+      "release_id": "d23abe3c-c379-4f6e-a8d2-ec3f3ad484f7"
     },
     {
       "canonical_name": "UFC 6",
       "aliases": [
         "ea sports ufc 6"
-      ]
+      ],
+      "game_id": "5e210dca-504b-4c2b-98d2-a4a1e3230032",
+      "release_id": "919db186-224a-41bb-9117-a70a2829d6b4"
     },
     {
       "canonical_name": "NBA 2K24",
       "aliases": [
         "nba 2k24 ps5"
-      ]
+      ],
+      "game_id": "3e06b301-183e-4859-be15-163b020030ba",
+      "release_id": "b2f08ec8-b1e9-411b-ac4b-7463ae8f6f97"
     },
     {
       "canonical_name": "NBA 2K25",
       "aliases": [
         "nba 2k25 ps5"
-      ]
+      ],
+      "game_id": "4c0e4fbb-a7fc-474c-bfba-8d702809647f",
+      "release_id": "3db9ee7f-4924-41b8-afcb-45f4c2afa893"
     },
     {
       "canonical_name": "NBA 2K26",
       "aliases": [
         "nba 2k26 ps5"
-      ]
+      ],
+      "game_id": "4938501e-62b1-46ec-bb4c-8641226f82c7",
+      "release_id": "41054496-1652-418f-aa63-aa5fe0a4a2f8"
     },
     {
       "canonical_name": "MLB The Show 23",
       "aliases": [
         "mlb the show 23"
-      ]
+      ],
+      "game_id": "6af6d945-5452-48c7-b794-2287b10bac0b",
+      "release_id": "701eb946-47f3-4e83-8838-9843b007d529"
     },
     {
       "canonical_name": "MLB The Show 26",
       "aliases": [
         "mlb the show 26"
-      ]
+      ],
+      "game_id": "b0a10463-8f1a-42eb-859a-99c5ab7df848",
+      "release_id": "f697336f-af16-41f8-ad53-42e3b00473cc"
     },
     {
       "canonical_name": "Minecraft",
       "aliases": [
         "minecraft ps5"
-      ]
+      ],
+      "game_id": "878cb83c-1f68-44c5-a2d0-6fffdbe2f4fd",
+      "release_id": "c3d60d21-6afe-4648-8815-7e2f50afff15"
     },
     {
       "canonical_name": "LEGO Star Wars: The Skywalker Saga",
       "aliases": [
         "lego star wars skywalker saga"
-      ]
+      ],
+      "game_id": "68a52710-5491-4696-87b3-d7e2c279367f",
+      "release_id": "051b245f-5d35-4fdb-8467-218d906d271e"
     },
     {
       "canonical_name": "Doom Eternal",
       "aliases": [
         "doom eternal ps5"
-      ]
+      ],
+      "game_id": "6fd835fe-5f1d-4df8-9f5d-f27c5473b219",
+      "release_id": "ccfa31bf-d51b-4233-b08a-e0e5a758b47d"
     },
     {
       "canonical_name": "Doom: The Dark Ages",
       "aliases": [
         "doom dark ages"
-      ]
+      ],
+      "game_id": "89dec2a9-a43d-4708-bdf9-a6ab81bfd97a",
+      "release_id": "00897d1f-3b39-491a-b2cd-7c468a5356fa"
     },
     {
       "canonical_name": "Wolfenstein: Youngblood",
       "aliases": [
         "wolfenstein youngblood ps5"
-      ]
+      ],
+      "game_id": "10f50f5a-0478-4a28-a414-882ee152b890",
+      "release_id": "86879769-bfc2-42c4-9765-31e8583dd505"
     },
     {
       "canonical_name": "Metro Exodus",
       "aliases": [
         "metro exodus ps5"
-      ]
+      ],
+      "game_id": "135c58a0-eb16-4ae5-a2f0-8004ed5f9f73",
+      "release_id": "5e648ecc-499b-466c-a3ec-6b8dc38f722e"
     }
   ]
 }

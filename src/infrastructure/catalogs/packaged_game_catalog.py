@@ -7,6 +7,7 @@ from typing import cast
 
 from domain.entities.detected_game import Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
+from domain.entities.game_record import ReleaseIdentity
 from domain.interfaces.game_catalog import IGameCatalog
 
 
@@ -31,6 +32,7 @@ class PackagedGameCatalog(IGameCatalog):
             raise GameCatalogSchemaError("Game catalog root must be a list")
 
         games: list[GameCatalogEntry] = []
+        release_ids: set[str] = set()
         seen_identities: dict[tuple[str, Platform], int] = {}
         for index, raw_entry in enumerate(raw_catalog):
             if not isinstance(raw_entry, dict):
@@ -39,6 +41,10 @@ class PackagedGameCatalog(IGameCatalog):
                 )
 
             entry = self._parse_entry(cast(dict[object, object], raw_entry), index)
+            if entry.release_identity is not None:
+                if entry.release_identity.release_id in release_ids:
+                    raise self._field_error(index, "release_id", "must be unique")
+                release_ids.add(entry.release_identity.release_id)
             identity = self._identity(entry)
             if identity in seen_identities:
                 first_index = seen_identities[identity]
@@ -109,7 +115,20 @@ class PackagedGameCatalog(IGameCatalog):
             canonical_name=canonical_name,
             platform=platform,
             detection_aliases=tuple(aliases),
+            release_identity=cls._parse_identity(raw_entry, platform, index),
         )
+
+    @classmethod
+    def _parse_identity(cls, entry: dict[object, object], platform: Platform, index: int) -> ReleaseIdentity | None:
+        if "game_id" not in entry and "release_id" not in entry:
+            return None  # Legacy caller-owned fixtures remain readable.
+        try:
+            return ReleaseIdentity(
+                game_id=cast(str, entry.get("game_id")),
+                release_id=cast(str, entry.get("release_id")), platform=platform,
+            )
+        except (TypeError, ValueError) as error:
+            raise cls._field_error(index, "game_id/release_id", "invalid stable identity") from error
 
     @staticmethod
     def _required_field(

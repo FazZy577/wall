@@ -534,19 +534,20 @@ def test_multiple_platform_families_are_ambiguous(
 
 
 @pytest.mark.parametrize(
-    "title",
+    ("title", "platform"),
     [
-        "GTA V PS4 PlayStation 4",
-        "GTA V PS4",
-        "GTA V Xbox Series X",
-        "GTA V Nintendo Switch",
+        ("GTA V PS4 PlayStation 4", Platform.PS4),
+        ("GTA V PS4", Platform.PS4),
+        ("GTA V Xbox Series X", Platform.XBOX_SERIES),
+        ("GTA V Nintendo Switch", Platform.SWITCH),
     ],
 )
 def test_one_platform_family_is_not_ambiguous(
     policy: RuleBasedCandidateEligibilityPolicy,
     title: str,
+    platform: Platform,
 ) -> None:
-    game = _game()
+    game = _game(platform=platform)
     result = policy.classify(_listing(title), (game,))
     _assert_classification(
         result,
@@ -1194,6 +1195,7 @@ def test_implementation_has_no_forbidden_dependencies_or_io() -> None:
     assert not any(name.startswith("application") for name in imports)
     assert not any(name.startswith("presentation") for name in imports)
     allowed_infrastructure_imports = {
+        "infrastructure.matching.game_text",
         "infrastructure.matching.platform_lexical_matcher",
     }
     infrastructure_imports = {

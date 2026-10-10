@@ -13,6 +13,7 @@ latitude = 40.4168
 longitude = -3.7038
 
 [search]
+# To discover games without known titles, see config.discovery.example.toml.
 strategy = "canonical_only"
 max_queries = 10
 max_results_per_query = 20
@@ -46,3 +47,20 @@ overwrite = false
 
 [safety]
 max_targets = 10
+
+# Relative to this TOML file. Stores observations, including unknown games.
+[persistence]
+enabled = true
+database_path = "data/catalog_discovery.sqlite3"
+# Set false to start with an empty registry; use discovery with metadata enabled.
+seed_catalog = true
+
+# Optional external identification. Requires IGDB_CLIENT_ID / IGDB_CLIENT_SECRET.
+[metadata]
+enabled = false
+provider = "igdb"
+max_queries_per_scan = 20
+maintenance_limit = 5
+metadata_ttl_seconds = 604800
+pending_retry_seconds = 86400
+error_retry_seconds = 300

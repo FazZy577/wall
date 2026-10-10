@@ -9,6 +9,9 @@ from typing import Any, cast
 
 import pytest
 
+from application.interfaces.catalog_discovery_recorder import (
+    NullCatalogDiscoveryRecorder,
+)
 from application.interfaces.search_orchestrator import ISearchOrchestrator
 from application.interfaces.search_plan_generator import ISearchPlanGenerator
 from application.use_cases.default_opportunity_scanner import DefaultOpportunityScanner
@@ -263,6 +266,15 @@ def test_candidate_eligibility_policy_is_composed_once_without_lifecycle() -> No
     assert not hasattr(policy, "close")
     assert marketplace.open_calls == 0
     assert marketplace.close_calls == 0
+
+
+def test_catalog_discovery_is_explicitly_disabled_by_default() -> None:
+    _, _, orchestrator, _ = _concrete_runtime()
+
+    assert isinstance(
+        orchestrator.catalog_discovery_recorder,
+        NullCatalogDiscoveryRecorder,
+    )
 
 
 def test_economic_configuration_is_translated_exactly_for_each_currency() -> None:

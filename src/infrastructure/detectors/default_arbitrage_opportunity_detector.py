@@ -13,6 +13,7 @@ from domain._decimal import require_decimal
 from domain.currency import CurrencyMismatchError, validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.sale_terms import PriceBasis, assess_sale_terms
 from domain.interfaces.arbitrage_opportunity_detector import (
     ArbitrageOpportunity,
     IArbitrageOpportunityDetector,
@@ -96,12 +97,18 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
         Returns:
             Arbitrage opportunity with recommendation and profitability metrics
         """
+        from domain.entities.game_identity import GameIdentity
+        GameIdentity.from_game(market_estimate.game)
         if listing.currency != market_estimate.currency:
             raise CurrencyMismatchError(
                 listing.currency,
                 market_estimate.currency,
                 "ArbitrageOpportunityDetector",
             )
+
+        terms = assess_sale_terms(listing, (market_estimate.game,))
+        if listing.price > 0 and terms.price_basis is not PriceBasis.TOTAL:
+            raise ValueError("Unresolved total purchase price; valuation is not safe")
 
         # Extract prices
         listing_price = listing.price
@@ -135,6 +142,10 @@ class DefaultArbitrageOpportunityDetector(IArbitrageOpportunityDetector):
             confidence_score=confidence_score,
             net_roi_percentage=economic_breakdown.net_roi_percentage,
         )
+
+        if (not terms.resolved or terms.total_units != 1) and recommendation is not Recommendation.SKIP:
+            recommendation, reason = Recommendation.SKIP, ReasonCode.UNRESOLVED_SALE_TERMS
+            opportunity_score = 0.0
 
         # Build result
         return ArbitrageOpportunity(

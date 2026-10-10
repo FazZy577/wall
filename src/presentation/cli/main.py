@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
+from application.interfaces.listing_observation_recorder import ObservationStorageError
 from application.interfaces.search_orchestrator import SearchOrchestrationResult
 from application.interfaces.search_plan_generator import (
     GameSearchTarget,
@@ -91,6 +92,7 @@ def _request_from_config(config: AppConfig) -> SearchPlanGenerationRequest:
         max_results=config.search.max_results_per_query,
         max_queries=config.search.max_queries,
         strategy=config.search.strategy,
+        discovery_platforms=config.search.discovery_platforms,
     )
 
 
@@ -205,6 +207,9 @@ async def run_scan(
                 overwrite=config.output.overwrite,
             )
         return _execution_exit_code(execution)
+    except ObservationStorageError as error:
+        _write_stderr(f"Observation storage error: {error}")
+        return 8
     except UnknownGameSearchTargetError as error:
         _write_stderr(
             f"Unknown game target: {_safe_error_text(error, 'target not found')}"

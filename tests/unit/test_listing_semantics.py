@@ -268,6 +268,21 @@ def test_candidate_listing_never_accepts_or_reads_detected_games() -> None:
     for folder in ("src", "tests", "examples"):
         for source_file in (repository_root / folder).rglob("*.py"):
             tree = ast.parse(source_file.read_text(encoding="utf-8"))
+            # ComparableFilterInput owns a detection snapshot; it is not a
+            # CandidateListing even when a parameter is also named "listing".
+            comparable_input_reads = {
+                id(attribute)
+                for function in ast.walk(tree)
+                if isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and any(
+                    argument.arg == "listing"
+                    and isinstance(argument.annotation, ast.Name)
+                    and argument.annotation.id == "ComparableFilterInput"
+                    for argument in function.args.args
+                )
+                for attribute in ast.walk(function)
+                if isinstance(attribute, ast.Attribute)
+            }
             for node in ast.walk(tree):
                 if isinstance(node, ast.Call):
                     function_name = getattr(node.func, "id", None)
@@ -281,6 +296,7 @@ def test_candidate_listing_never_accepts_or_reads_detected_games() -> None:
                     and node.attr == "detected_games"
                     and isinstance(node.value, ast.Name)
                     and node.value.id == "listing"
+                    and id(node) not in comparable_input_reads
                 ):
                     violations.append(str(source_file.relative_to(repository_root)))
 

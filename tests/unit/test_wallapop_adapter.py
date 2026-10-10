@@ -4,6 +4,7 @@ import asyncio
 import logging
 from dataclasses import FrozenInstanceError
 from decimal import Decimal
+from types import MethodType
 from typing import Any
 from unittest.mock import AsyncMock, Mock
 
@@ -56,6 +57,7 @@ def _raw(
 
 def _adapter(return_value: object) -> tuple[WallapopCandidateSearchAdapter, Mock]:
     marketplace_search = Mock(spec=IMarketplaceSearch)
+    marketplace_search.search_with_scope = MethodType(IMarketplaceSearch.search_with_scope, marketplace_search)
     marketplace_search.search_listings = AsyncMock(return_value=return_value)
     return WallapopCandidateSearchAdapter(marketplace_search), marketplace_search
 

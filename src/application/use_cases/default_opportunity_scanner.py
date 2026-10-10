@@ -45,6 +45,7 @@ class _ComparableCacheKey:
 
     canonical_name: str
     platform: str
+    release_identity: object = None
 
 
 @dataclass(frozen=True)
@@ -116,7 +117,11 @@ class DefaultOpportunityScanner(IOpportunityScanner):
     def _build_comparable_cache_key(game: DetectedGame) -> _ComparableCacheKey:
         """Build an alias-independent, platform-sensitive collection key."""
         normalized_name = " ".join(game.canonical_name.strip().casefold().split())
-        return _ComparableCacheKey(normalized_name, game.platform.value)
+        identity = game.release_identity
+        if identity is not None:
+            from domain.entities.game_identity import GameIdentity
+            GameIdentity.from_game(game)  # Provisional identities cannot enter a valuation cache.
+        return _ComparableCacheKey("" if identity else normalized_name, game.platform.value, identity)
 
     async def _get_or_collect_comparables(
         self,

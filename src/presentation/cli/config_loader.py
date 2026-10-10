@@ -56,7 +56,7 @@ def load_app_config(path: Path) -> AppConfig:
     The loader performs no environment substitution, no filesystem writes, and
     no operational composition. Relative ``output.json_path`` values are
     resolved relative to the TOML file rather than the process working
-    directory.
+    directory. The same rule applies to ``persistence.database_path``.
     """
     if not isinstance(path, Path):
         raise TypeError("path must be pathlib.Path")
@@ -86,6 +86,17 @@ def load_app_config(path: Path) -> AppConfig:
 
     try:
         resolved_config = _resolve_output_path(raw_config, config_path)
+        raw_persistence = resolved_config.get("persistence")
+        if isinstance(raw_persistence, dict):
+            raw_path = raw_persistence.get("database_path")
+            if isinstance(raw_path, str) and raw_path.strip():
+                database_path = Path(raw_path)
+                if not database_path.is_absolute():
+                    database_path = config_path.parent / database_path
+                resolved_config = dict(resolved_config)
+                resolved_config["persistence"] = {
+                    **raw_persistence, "database_path": database_path.resolve(strict=False)
+                }
         return AppConfig.model_validate(resolved_config)
     except _ValidationError as error:
         details = _safe_validation_message(error)
@@ -94,5 +105,5 @@ def load_app_config(path: Path) -> AppConfig:
         ) from error
     except OSError as error:
         raise AppConfigLoadError(
-            f"Unable to resolve configuration output path: {config_path}"
+            f"Unable to resolve configuration path: {config_path}"
         ) from error

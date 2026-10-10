@@ -37,9 +37,16 @@ class GameValuation:
     observations_used: int
     observations_removed: int
     created_at: datetime
+    quantity: int = 1
 
     def __post_init__(self) -> None:
         require_decimal("estimated_market_value", self.estimated_market_value)
+        if type(self.quantity) is not int or self.quantity < 1:
+            raise ValueError("quantity must be a positive integer")
+
+    @property
+    def reference_value_for_quantity(self) -> Decimal:
+        return self.estimated_market_value * self.quantity
 
     @property
     def currency(self) -> str:

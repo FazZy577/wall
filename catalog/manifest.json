@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_version": 9,
+  "catalog_version": 10,
   "sources": [
     "platforms/ps3.json",
     "platforms/ps4.json",

@@ -85,11 +85,11 @@ class _FakeMarketplaceSearch(IMarketplaceSearch):
 
     def __init__(
         self,
-        responses: Mapping[str, Sequence[dict[str, Any]]],
+        responses: Mapping[tuple[str, int], Sequence[dict[str, Any]]],
     ) -> None:
         self._responses = {
-            self._normalize(keywords): tuple(deepcopy(list(items)))
-            for keywords, items in responses.items()
+            (self._normalize(keywords), limit): tuple(deepcopy(list(items)))
+            for (keywords, limit), items in responses.items()
         }
         self.calls: list[_MarketplaceCall] = []
 
@@ -108,7 +108,7 @@ class _FakeMarketplaceSearch(IMarketplaceSearch):
                 max_results=max_results,
             )
         )
-        return deepcopy(list(self._responses.get(self._normalize(keywords), ())))
+        return deepcopy(list(self._responses.get((self._normalize(keywords), max_results), ())))
 
     @staticmethod
     def _normalize(keywords: str) -> str:
@@ -187,17 +187,17 @@ def _responses(
     *,
     gta_candidates: Sequence[dict[str, Any]] = (),
     rdr2_candidates: Sequence[dict[str, Any]] = (),
-) -> dict[str, Sequence[dict[str, Any]]]:
+) -> dict[tuple[str, int], Sequence[dict[str, Any]]]:
     return {
-        _GTA_KEYWORDS: gta_candidates,
-        _RDR2_KEYWORDS: rdr2_candidates,
-        "gta v ps4": _gta_comparables(),
-        "rdr2 ps4": _rdr2_comparables(),
+        (_GTA_KEYWORDS, 10): gta_candidates,
+        (_RDR2_KEYWORDS, 10): rdr2_candidates,
+        ("grand theft auto v ps4", 100): _gta_comparables(),
+        ("red dead redemption 2 ps4", 100): _rdr2_comparables(),
     }
 
 
 def _build_pipeline(
-    responses: Mapping[str, Sequence[dict[str, Any]]],
+    responses: Mapping[tuple[str, int], Sequence[dict[str, Any]]],
 ) -> _Pipeline:
     catalog = PackagedGameCatalog()
     generator = DefaultSearchPlanGenerator(catalog)
@@ -327,7 +327,7 @@ async def test_complete_pipeline_from_real_catalog_target() -> None:
         execution.lot_candidates,
         execution.undetected_candidates,
     ) == (1, 1, 0, 1, 1, 1, 1, 0, 0)
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "Grand Theft Auto V PS4"]
     assert pipeline.marketplace.calls[0].max_results == _MAX_RESULTS
     assert pipeline.marketplace.calls[1].max_results == 100
 
@@ -377,8 +377,8 @@ async def test_multiple_real_targets_preserve_generation_and_execution_order() -
     assert _called_keywords(pipeline) == [
         _GTA_KEYWORDS,
         _RDR2_KEYWORDS,
-        "gta v PS4",
-        "rdr2 PS4",
+        "Grand Theft Auto V PS4",
+        "Red Dead Redemption 2 PS4",
     ]
 
 
@@ -408,7 +408,7 @@ async def test_generator_deduplication_remains_separate_from_orchestrator() -> N
         execution.duplicate_queries,
     ) == (1, 1, 0)
     assert execution.unique_candidates == 1
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "Grand Theft Auto V PS4"]
 
 
 @pytest.mark.asyncio
@@ -450,7 +450,7 @@ async def test_query_limit_is_atomic_and_duplicates_fit_after_deduplication() ->
     assert generation.queries_generated == 1
     assert generation.duplicate_queries_removed == 1
     assert execution.executed_queries == 1
-    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "gta v PS4"]
+    assert _called_keywords(pipeline) == [_GTA_KEYWORDS, "Grand Theft Auto V PS4"]
 
 
 @pytest.mark.asyncio

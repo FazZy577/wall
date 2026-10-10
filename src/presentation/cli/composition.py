@@ -1,9 +1,18 @@
 """Composition root and owned lifecycle for the operational pipeline."""
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
+from application.interfaces.catalog_discovery_recorder import (
+    NullCatalogDiscoveryRecorder,
+)
+from application.interfaces.game_metadata import IUnknownGameResolver
+from application.interfaces.listing_observation_recorder import (
+    IListingObservationRecorder,
+    NullListingObservationRecorder,
+)
 from application.interfaces.search_orchestrator import ISearchOrchestrator
 from application.interfaces.search_plan_generator import ISearchPlanGenerator
 from application.use_cases.default_lot_opportunity_scanner import (
@@ -22,11 +31,13 @@ from domain.entities.resale_economics import (
     ResaleAbsoluteCosts,
     ResaleEconomicPolicy,
 )
+from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.analyzers.default_lot_opportunity_analyzer import (
     DefaultLotOpportunityAnalyzer,
 )
 from infrastructure.catalogs.packaged_game_catalog import PackagedGameCatalog
+from infrastructure.catalogs.sqlite_game_registry import SqliteGameRegistry
 from infrastructure.classifiers.rule_based_candidate_eligibility_policy import (
     RuleBasedCandidateEligibilityPolicy,
 )
@@ -40,6 +51,9 @@ from infrastructure.detectors.default_arbitrage_opportunity_detector import (
     DefaultArbitrageOpportunityDetector,
 )
 from infrastructure.detectors.fuzzy_game_detector import FuzzyGameDetector
+from infrastructure.discovery.sqlite_catalog_discovery_recorder import (
+    SqliteCatalogDiscoveryRecorder,
+)
 from infrastructure.estimators.default_market_price_estimator import (
     DefaultMarketPriceEstimator,
 )
@@ -52,6 +66,9 @@ from infrastructure.marketplaces.wallapop.adapter import (
 from infrastructure.marketplaces.wallapop.playwright_client import (
     WallapopPlaywrightClient,
 )
+from infrastructure.metadata.igdb import IgdbMetadataProvider
+from infrastructure.metadata.resolver import VerifiedMetadataResolver
+from infrastructure.metadata.scheduled_provider import ScheduledMetadataProvider
 from infrastructure.outliers.default_outlier_removal import DefaultOutlierRemoval
 from infrastructure.rankers.default_opportunity_ranker import (
     DefaultOpportunityRanker,
@@ -86,7 +103,18 @@ def build_operational_runtime(
     if not isinstance(marketplace_search, IMarketplaceSearch):
         raise TypeError("marketplace_search must implement IMarketplaceSearch")
 
-    catalog = PackagedGameCatalog()
+    catalog: IGameCatalog
+    observation_recorder: IListingObservationRecorder = NullListingObservationRecorder()
+    if config.persistence.enabled:
+        sqlite_recorder = SqliteCatalogDiscoveryRecorder(config.persistence.database_path)
+        sqlite_recorder.initialize()
+        observation_recorder = sqlite_recorder
+        registry = SqliteGameRegistry(sqlite_recorder.database_path)
+        if config.persistence.seed_catalog and not registry.list_games():
+            registry.import_seed(PackagedGameCatalog().list_games())
+        catalog = registry
+    else:
+        catalog = PackagedGameCatalog()
     plan_generator = DefaultSearchPlanGenerator(catalog)
     game_detector = FuzzyGameDetector(catalog)
     comparable_filter = RuleBasedComparableFilter()
@@ -94,6 +122,7 @@ def build_operational_runtime(
         marketplace_search=marketplace_search,
         game_detector=game_detector,
         comparable_filter=comparable_filter,
+        observation_recorder=observation_recorder,
     )
     dataset_builder = DefaultPriceDatasetBuilder()
     statistics = DefaultPriceStatistics()
@@ -160,12 +189,34 @@ def build_operational_runtime(
     )
     candidate_search = WallapopCandidateSearchAdapter(marketplace_search)
     candidate_eligibility_policy = RuleBasedCandidateEligibilityPolicy()
+    unknown_game_resolver: IUnknownGameResolver | None = None
+    if config.metadata.enabled:
+        assert isinstance(catalog, SqliteGameRegistry)
+        scheduled_provider = ScheduledMetadataProvider(
+            IgdbMetadataProvider(os.environ.get("IGDB_CLIENT_ID", ""),
+                                 os.environ.get("IGDB_CLIENT_SECRET", "")),
+            catalog.database_path, config.metadata.provider,
+            max_queries=config.metadata.max_queries_per_scan,
+            metadata_ttl_seconds=config.metadata.metadata_ttl_seconds,
+            pending_retry_seconds=config.metadata.pending_retry_seconds,
+            error_retry_seconds=config.metadata.error_retry_seconds,
+        )
+        unknown_game_resolver = VerifiedMetadataResolver(
+            scheduled_provider, catalog, game_detector, candidate_eligibility_policy,
+            schedule=scheduled_provider,
+            # Reserve half for fresh observations when the budget permits it.
+            maintenance_limit=min(config.metadata.maintenance_limit, max(1, config.metadata.max_queries_per_scan // 2)),
+        )
+    catalog_discovery_recorder = NullCatalogDiscoveryRecorder()
     search_orchestrator = DefaultSearchOrchestrator(
         candidate_search=candidate_search,
         game_detector=game_detector,
         candidate_eligibility_policy=candidate_eligibility_policy,
         opportunity_scanner=opportunity_scanner,
         lot_opportunity_scanner=lot_opportunity_scanner,
+        catalog_discovery_recorder=catalog_discovery_recorder,
+        observation_recorder=observation_recorder,
+        unknown_game_resolver=unknown_game_resolver,
     )
 
     return OperationalRuntime(

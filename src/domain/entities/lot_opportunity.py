@@ -30,6 +30,7 @@ class LotReasonCode(StrEnum):
     INCOMPLETE_VALUATION = "incomplete_valuation"
     NO_GAMES_DETECTED = "no_games_detected"
     INVALID_LOT_PRICE = "invalid_lot_price"
+    UNRESOLVED_SALE_TERMS = "unresolved_sale_terms"
 
 
 @dataclass
@@ -78,6 +79,10 @@ class LotOpportunity:
                     valuation.currency,
                     "LotOpportunity",
                 )
+
+    @property
+    def total_units(self) -> int:
+        return sum(valuation.quantity for valuation in self.game_valuations)
 
     @property
     def reference_market_value(self) -> Decimal:

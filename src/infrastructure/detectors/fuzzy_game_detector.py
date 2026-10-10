@@ -9,8 +9,10 @@ from rapidfuzz import fuzz
 from domain.entities.detected_game import DetectedGame, DetectionMethod, Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
 from domain.entities.game_identity import GameIdentity
+from domain.entities.game_record import MediaFormat
 from domain.interfaces.game_catalog import IGameCatalog
 from domain.interfaces.game_detector import IGameDetector, ListingText
+from infrastructure.matching.game_text import split_game_text
 from infrastructure.matching.platform_lexical_matcher import (
     PlatformLexicalMatcher,
     PlatformMention,
@@ -68,7 +70,13 @@ class FuzzyGameDetector(IGameDetector):
         if not isinstance(game_catalog, IGameCatalog):
             raise TypeError("game_catalog must be IGameCatalog")
         self.game_catalog = game_catalog
-        self._catalog_entries: tuple[GameCatalogEntry, ...] = game_catalog.list_games()
+        self._catalog_entries: tuple[GameCatalogEntry, ...] = tuple(
+            entry for entry in game_catalog.list_games()
+            if entry.release_identity is None or (
+                entry.release_identity.edition == "standard"
+                and entry.release_identity.media_format is MediaFormat.PHYSICAL
+            )
+        )
         self._platform_matcher = PlatformLexicalMatcher()
         self._game_variant_patterns = self._build_game_variant_patterns()
 
@@ -96,12 +104,19 @@ class FuzzyGameDetector(IGameDetector):
 
         return self._deduplicate_and_sort(detected_games)
 
+    def refresh(self) -> None:
+        """Publish a fully built snapshot after a confirmed registry transaction."""
+        snapshot = FuzzyGameDetector(self.game_catalog)
+        self._catalog_entries = snapshot._catalog_entries
+        self._game_variant_patterns = snapshot._game_variant_patterns
+
     def _build_segments(self, text: str) -> tuple[_TextSegment, ...]:
         segments: list[_TextSegment] = []
-        for raw_segment in _SEGMENT_SEPARATOR.split(text):
-            normalized = self._normalize_text(raw_segment)
-            if not normalized:
-                continue
+        protected_spans = tuple(
+            (mention.start, mention.end)
+            for mention in self._find_exact_mentions(self._normalize_text(text))
+        )
+        for normalized in split_game_text(text, _SEGMENT_SEPARATOR, protected_spans):
             mentions = tuple(
                 mention
                 for mention in self._platform_matcher.find_mentions(normalized)
@@ -139,6 +154,7 @@ class FuzzyGameDetector(IGameDetector):
                     platform=platform,
                     confidence=1.0,
                     detection_method=DetectionMethod.EXACT_MATCH,
+                    release_identity=candidate.entry.release_identity,
                 )
             )
 
@@ -149,20 +165,49 @@ class FuzzyGameDetector(IGameDetector):
         if fuzzy_platform is None:
             return detected
 
+        # An exact title owns its words. Fuzzy fallback must not reuse them to
+        # resurrect a shorter title (or another instalment) from the same mention.
+        # Keep residual chunks separate so words on opposite sides cannot form
+        # a fictitious title either.
+        residuals: list[str] = []
+        start = 0
+        consumed_spans = sorted(
+            [(mention.start, mention.end) for mention in exact_mentions]
+            + [
+                (mention.start, mention.end)
+                for mention in self._platform_matcher.find_mentions(segment.text)
+            ]
+        )
+        for left, right in consumed_spans:
+            if left > start:
+                residuals.append(segment.text[start:left].strip())
+            start = max(start, right)
+        residuals.append(segment.text[start:].strip())
         for entry_index, entry in enumerate(self._catalog_entries):
             if entry_index in exact_entry_indexes or entry.platform is not fuzzy_platform:
                 continue
-            fuzzy_match = self._fuzzy_match(entry_index, entry, segment.text)
-            if fuzzy_match is not None:
-                detected.append(fuzzy_match)
+            for residual in residuals:
+                if not residual:
+                    continue
+                fuzzy_match = self._fuzzy_match(entry_index, entry, residual)
+                if fuzzy_match is not None:
+                    detected.append(fuzzy_match)
         return detected
 
     def _find_exact_mentions(self, text: str) -> tuple[_ExactGameMention, ...]:
         grouped: dict[tuple[int, int], dict[int, _ExactGameCandidate]] = {}
+        platform_mentions = self._platform_matcher.find_mentions(text)
         for entry_index, entry_patterns in enumerate(self._game_variant_patterns):
             entry = self._catalog_entries[entry_index]
             for variant in entry_patterns:
                 for match in variant.pattern.finditer(text):
+                    # A catalog alias ending in "Xbox" must not consume the
+                    # prefix of "Xbox Series" and hide the canonical game name.
+                    if any(
+                        mention.start < match.end() < mention.end
+                        for mention in platform_mentions
+                    ):
+                        continue
                     span = (match.start(), match.end())
                     candidate = _ExactGameCandidate(
                         entry_index=entry_index,
@@ -282,7 +327,7 @@ class FuzzyGameDetector(IGameDetector):
             for candidate in mention.candidates
             if candidate.entry.platform is platform
         )
-        names = {candidate.entry.identity.canonical_name for candidate in compatible}
+        names = {candidate.entry.identity for candidate in compatible}
         if len(names) == 1:
             return next(
                 (
@@ -294,7 +339,7 @@ class FuzzyGameDetector(IGameDetector):
             )
 
         canonical_names = {
-            candidate.entry.identity.canonical_name
+            candidate.entry.identity
             for candidate in compatible
             if candidate.is_canonical
         }
@@ -305,7 +350,7 @@ class FuzzyGameDetector(IGameDetector):
             candidate
             for candidate in compatible
             if candidate.is_canonical
-            and candidate.entry.identity.canonical_name == canonical_name
+            and candidate.entry.identity == canonical_name
         )
 
     def _fuzzy_match(
@@ -317,23 +362,22 @@ class FuzzyGameDetector(IGameDetector):
         best_score = 0.0
         best_match_text = ""
         for variant in self._game_variant_patterns[entry_index]:
-            score = fuzz.token_set_ratio(variant.normalized_text, text)
+            # Compare the whole residual phrase: token_set_ratio gives 100 to
+            # a single shared word and can invent games from incomplete names.
+            score = fuzz.token_sort_ratio(variant.normalized_text, text)
             if score > best_score:
                 best_score = score
                 best_match_text = variant.normalized_text
         if best_score < self.MIN_CONFIDENCE_THRESHOLD:
             return None
-        method = (
-            DetectionMethod.ALIAS_MATCH
-            if best_score >= self.ALIAS_MATCH_THRESHOLD
-            else DetectionMethod.FUZZY_MATCH
-        )
         return DetectedGame(
             canonical_name=entry.canonical_name,
             matched_text=best_match_text,
             platform=entry.platform,
             confidence=best_score / 100.0,
-            detection_method=method,
+            # Similarity alone is not evidence of a literal alias match.
+            detection_method=DetectionMethod.FUZZY_MATCH,
+            release_identity=entry.release_identity,
         )
 
     def _build_game_variant_patterns(
@@ -415,7 +459,7 @@ class FuzzyGameDetector(IGameDetector):
     ) -> list[DetectedGame]:
         by_identity: dict[GameIdentity, DetectedGame] = {}
         for game in games:
-            identity = GameIdentity(game.canonical_name, game.platform)
+            identity = GameIdentity.from_game(game)
             previous = by_identity.get(identity)
             if previous is None or FuzzyGameDetector._is_better(game, previous):
                 by_identity[identity] = game

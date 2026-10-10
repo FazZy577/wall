@@ -681,7 +681,7 @@ class TestFailureHandling:
         mock_lot_analyzer: Mock,
     ) -> None:
         candidate = CandidateListing(
-            "combined", "GTA V RDR2", "", Decimal("20"), "EUR", "url"
+            "combined", "Lote GTA V RDR2", "", Decimal("20"), "EUR", "url"
         )
         valuation = Mock()
         game_failure = GameValuationFailure(
@@ -1012,7 +1012,7 @@ async def test_detected_lot_skips_detector_and_matches_existing_entry_point(
 ) -> None:
     listing = CandidateListing(
         "detected-lot",
-        "GTA V RDR2",
+        "Lote GTA V RDR2",
         "",
         Decimal("20"),
         "EUR",
@@ -1088,7 +1088,7 @@ async def test_detected_lot_preserves_order_and_existing_deduplication(
 ) -> None:
     listing = CandidateListing(
         "dedup-detected",
-        "GTA V RDR2",
+        "Lote GTA V RDR2",
         "",
         Decimal("20"),
         "EUR",
@@ -1129,7 +1129,7 @@ async def test_detected_lot_preserves_partial_and_aggregate_failures(
 ) -> None:
     listing = CandidateListing(
         "partial-detected",
-        "GTA V RDR2",
+        "Lote GTA V RDR2",
         "",
         Decimal("20"),
         "EUR",

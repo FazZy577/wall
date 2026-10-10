@@ -693,7 +693,7 @@ class TestCurrencySpecificLotProfitThresholds:
             analyzer.analyze(listing, [valuation], 1)
 
     def test_mixed_platforms_share_only_homogeneous_currency_threshold(self) -> None:
-        listing = CandidateListing("lot", "Mixed platforms", "", Decimal("10"), "EUR", "url")
+        listing = CandidateListing("lot", "Lote Mixed platforms", "", Decimal("10"), "EUR", "url")
         valuations = [
             _make_valuation("Spider-Man", 8.0, currency="EUR", platform=Platform.PS5),
             _make_valuation("Minecraft", 7.0, currency="EUR", platform=Platform.PS4),

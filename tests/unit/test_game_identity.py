@@ -116,6 +116,7 @@ def test_identity_is_frozen_and_contains_only_identity_fields() -> None:
     assert [field.name for field in fields(identity)] == [
         "canonical_name",
         "platform",
+        "release_identity",
     ]
     for unrelated_field in (
         "aliases",

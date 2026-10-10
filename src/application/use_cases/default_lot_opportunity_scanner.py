@@ -9,6 +9,7 @@ Contains NO business logic — only coordination.
 import logging
 import time
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import cast
 
@@ -24,6 +25,7 @@ from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity
+from domain.entities.sale_terms import assess_sale_terms
 from domain.interfaces.game_detector import IGameDetector, ListingText
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 from domain.interfaces.market_price_estimator import IMarketPriceEstimator
@@ -124,6 +126,18 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
         total_detected_games = len(detected_games)
         game_valuations: list[GameValuation] = []
         failures: list[GameValuationFailure] = []
+        terms = assess_sale_terms(listing, tuple(detected_games))
+        if not terms.resolved or (
+            candidate.quantities and candidate.quantities != terms.quantities
+        ):
+            return self._build_result(
+                listing, None, [], [], total_detected_games, detected_games, start_time,
+                FailureInfo(
+                    listing_id=listing.listing_id,
+                    stage=PipelineStage.LOT_ANALYSIS,
+                    reason="Unresolved sale content, quantities or total price",
+                ),
+            )
 
         if not detected_games:
             failures.append(
@@ -147,7 +161,8 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
             )
 
             if valuation is not None:
-                game_valuations.append(valuation)
+                quantity = terms.quantities[i - 1]
+                game_valuations.append(replace(valuation, quantity=quantity) if quantity != 1 else valuation)
             if failure is not None:
                 failures.append(failure)
 
@@ -197,12 +212,10 @@ class DefaultLotOpportunityScanner(ILotOpportunityScanner):
     def _deduplicate_games(games: Sequence[DetectedGame]) -> list[DetectedGame]:
         """Keep first occurrence of each normalized game identity."""
         unique: list[DetectedGame] = []
-        seen: set[tuple[str, str]] = set()
+        from domain.entities.game_identity import GameIdentity
+        seen: set[GameIdentity] = set()
         for game in games:
-            key = (
-                " ".join(game.canonical_name.strip().casefold().split()),
-                game.platform.value,
-            )
+            key = GameIdentity.from_game(game)
             if key not in seen:
                 seen.add(key)
                 unique.append(game)

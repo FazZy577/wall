@@ -28,12 +28,12 @@ from presentation.cli.config import (
 pytestmark = pytest.mark.integration
 
 _CANDIDATE_QUERY = "Grand Theft Auto V PS4"
-_COMPARABLE_QUERY = "gta v PS4"
+_COMPARABLE_QUERY = "Grand Theft Auto V PS4"
 
 
 class _OfflinePlaywrightClient(IMarketplaceSearch):
     instances: ClassVar[list["_OfflinePlaywrightClient"]] = []
-    responses: ClassVar[dict[str, list[dict[str, Any]]]] = {}
+    responses: ClassVar[dict[tuple[str, int], list[dict[str, Any]]]] = {}
 
     def __init__(
         self,
@@ -75,7 +75,7 @@ class _OfflinePlaywrightClient(IMarketplaceSearch):
         del latitude, longitude
         assert self.is_open
         self.calls.append(keywords)
-        response = deepcopy(self.responses.get(self._normalize(keywords), []))
+        response = deepcopy(self.responses.get((self._normalize(keywords), max_results), []))
         return response[:max_results]
 
     @staticmethod
@@ -94,7 +94,7 @@ def _raw_listing(listing_id: str, title: str, price: str) -> dict[str, Any]:
     }
 
 
-def _responses() -> dict[str, list[dict[str, Any]]]:
+def _responses() -> dict[tuple[str, int], list[dict[str, Any]]]:
     comparables = [
         _raw_listing(
             f"lifecycle-comparable-{index}",
@@ -104,14 +104,14 @@ def _responses() -> dict[str, list[dict[str, Any]]]:
         for index, price in enumerate(("18", "19", "20", "21", "22") * 4)
     ]
     return {
-        _OfflinePlaywrightClient._normalize(_CANDIDATE_QUERY): [
+        (_OfflinePlaywrightClient._normalize(_CANDIDATE_QUERY), 10): [
             _raw_listing(
                 "lifecycle-candidate-gta",
                 "GTA V PS4 juego individual",
                 "5.00",
             )
         ],
-        _OfflinePlaywrightClient._normalize(_COMPARABLE_QUERY): comparables,
+        (_OfflinePlaywrightClient._normalize(_COMPARABLE_QUERY), 100): comparables,
     }
 
 

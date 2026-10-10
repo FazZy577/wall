@@ -2,15 +2,28 @@
 
 import logging
 import time
+import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from application.interfaces.candidate_search import (
     CandidateSearchResult,
     ICandidateSearch,
+    QueryScan,
     SearchQuery,
 )
+from application.interfaces.catalog_discovery_recorder import (
+    ICatalogDiscoveryRecorder,
+    NullCatalogDiscoveryRecorder,
+)
 from application.interfaces.detected_candidate import DetectedCandidate
+from application.interfaces.game_metadata import IUnknownGameResolver, MetadataDeferred
+from application.interfaces.listing_observation_recorder import (
+    IdentificationStatus,
+    IListingObservationRecorder,
+    ListingObservation,
+    NullListingObservationRecorder,
+)
 from application.interfaces.lot_opportunity_scanner import (
     ILotOpportunityScanner,
     LotScanResult,
@@ -31,9 +44,17 @@ from application.interfaces.search_orchestrator import (
 )
 from domain.entities.candidate_classification import (
     CandidateClassification,
+    CandidateClassificationReason,
     CandidateDisposition,
 )
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.detected_game import DetectedGame
+from domain.entities.search_coverage import (
+    MarketplaceCategory,
+    MarketplaceSearchFailure,
+    SearchCoverage,
+    SearchStopReason,
+)
 from domain.interfaces.candidate_eligibility_policy import (
     ICandidateEligibilityPolicy,
 )
@@ -48,6 +69,7 @@ class _SearchQueryKey:
     latitude: float
     longitude: float
     max_results: int
+    category: MarketplaceCategory | None
 
 
 class DefaultSearchOrchestrator(ISearchOrchestrator):
@@ -60,12 +82,25 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
         candidate_eligibility_policy: ICandidateEligibilityPolicy,
         opportunity_scanner: IOpportunityScanner,
         lot_opportunity_scanner: ILotOpportunityScanner,
+        catalog_discovery_recorder: ICatalogDiscoveryRecorder | None = None,
+        observation_recorder: IListingObservationRecorder | None = None,
+        unknown_game_resolver: IUnknownGameResolver | None = None,
     ) -> None:
+        self.unknown_game_resolver = unknown_game_resolver
         self.candidate_search = candidate_search
+        self.observation_recorder = (
+            observation_recorder if observation_recorder is not None
+            else NullListingObservationRecorder()
+        )
         self.game_detector = game_detector
         self.candidate_eligibility_policy = candidate_eligibility_policy
         self.opportunity_scanner = opportunity_scanner
         self.lot_opportunity_scanner = lot_opportunity_scanner
+        self.catalog_discovery_recorder = (
+            NullCatalogDiscoveryRecorder()
+            if catalog_discovery_recorder is None
+            else catalog_discovery_recorder
+        )
 
     async def execute(self, plan: SearchPlan) -> SearchOrchestrationResult:
         """Execute one plan sequentially with execution-local state."""
@@ -73,19 +108,47 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
             raise TypeError("plan must be SearchPlan")
 
         start_time = time.perf_counter()
+        run_id = uuid.uuid4().hex
+        query_scans: list[QueryScan] = []
+        routing_failures: list[CandidateRoutingFailure] = []
+        if self.unknown_game_resolver is not None:
+            try:
+                maintenance_failures = await self.unknown_game_resolver.begin_run()
+                routing_failures.extend(CandidateRoutingFailure(
+                    listing_id=listing_id, kind=CandidateRoutingFailureKind.METADATA_RESOLUTION_ERROR,
+                    reason="Scheduled metadata refresh failed; stored observations remain pending",
+                    error_type="MetadataMaintenanceError", error_message="Metadata refresh unavailable",
+                ) for listing_id in maintenance_failures)
+            except Exception as error:
+                routing_failures.append(CandidateRoutingFailure(
+                    listing_id=None, kind=CandidateRoutingFailureKind.METADATA_MAINTENANCE_ERROR,
+                    reason="Metadata maintenance failed; current candidate processing continues",
+                    error_type=type(error).__name__, error_message="Metadata schedule unavailable",
+                ))
         logger.info("Starting search plan with %d queries", len(plan.queries))
 
         unique_queries, duplicate_queries = self._deduplicate_queries(plan)
         candidates_received: list[CandidateListing] = []
+        source_queries: dict[str, str] = {}
         query_failures: list[SearchQueryFailure] = []
         item_failures: list[CandidateItemFailureRecord] = []
         total_items_received = 0
 
         for query_index, query in unique_queries:
+            query_started_at = datetime.now(UTC)
             logger.info("Executing candidate query at index %d", query_index)
             try:
                 search_result = await self.candidate_search.search_candidates(query)
             except Exception as error:
+                coverage = (
+                    error.coverage if isinstance(error, MarketplaceSearchFailure)
+                    else SearchCoverage(stop_reason=SearchStopReason.ERROR)
+                )
+                await self._record_query_scan(
+                    QueryScan(run_id, query_index, query, coverage, query_started_at,
+                              datetime.now(UTC), type(error).__name__),
+                    query_scans, routing_failures,
+                )
                 query_failures.append(
                     self._query_failure(query, query_index, error)
                 )
@@ -97,6 +160,11 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                 continue
 
             if not isinstance(search_result, CandidateSearchResult):
+                await self._record_query_scan(
+                    QueryScan(run_id, query_index, query, SearchCoverage(stop_reason=SearchStopReason.ERROR),
+                              query_started_at, datetime.now(UTC), "TypeError"),
+                    query_scans, routing_failures,
+                )
                 query_failures.append(
                     SearchQueryFailure(
                         query=query,
@@ -118,6 +186,11 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                 continue
 
             if search_result.query != query:
+                await self._record_query_scan(
+                    QueryScan(run_id, query_index, query, SearchCoverage(stop_reason=SearchStopReason.ERROR),
+                              query_started_at, datetime.now(UTC), "ValueError"),
+                    query_scans, routing_failures,
+                )
                 query_failures.append(
                     SearchQueryFailure(
                         query=query,
@@ -134,7 +207,14 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                 continue
 
             total_items_received += search_result.total_items_received
+            await self._record_query_scan(
+                QueryScan(run_id, query_index, query, search_result.coverage,
+                          query_started_at, datetime.now(UTC)),
+                query_scans, routing_failures,
+            )
             candidates_received.extend(search_result.candidates)
+            for candidate in search_result.candidates:
+                source_queries.setdefault(candidate.listing_id, query.keywords)
             item_failures.extend(
                 CandidateItemFailureRecord(
                     query=query,
@@ -154,7 +234,6 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
 
         individual_candidates: list[DetectedCandidate] = []
         lot_candidates: list[DetectedCandidate] = []
-        routing_failures: list[CandidateRoutingFailure] = []
         ignored_candidates: list[CandidateRoutingRecord] = []
         ambiguous_candidates: list[CandidateRoutingRecord] = []
         undetected_candidates = 0
@@ -181,6 +260,9 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                     )
                 )
                 undetected_candidates += 1
+                await self._record_observation(
+                    listing, (), None, source_queries[listing.listing_id], routing_failures, error
+                )
                 logger.warning(
                     "Game detection failed for candidate: type=%s",
                     type(error).__name__,
@@ -206,11 +288,59 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                     )
                 )
                 undetected_candidates += 1
+                await self._record_observation(
+                    listing, detected_candidate.detected_games, None,
+                    source_queries[listing.listing_id], routing_failures, error
+                )
                 logger.warning(
                     "Candidate classification failed: type=%s",
                     type(error).__name__,
                 )
                 continue
+
+            partial_local_identity = (
+                self.unknown_game_resolver is not None
+                and classification.disposition is CandidateDisposition.ELIGIBLE_INDIVIDUAL
+                and self.unknown_game_resolver.needs_resolution(listing, detected_candidate.detected_games)
+            )
+            if partial_local_identity:
+                # A known title can be only the prefix of a newly released sequel.
+                # Provider failure must never restore that unconfirmed shorter identity.
+                classification = CandidateClassification(
+                    CandidateDisposition.AMBIGUOUS,
+                    CandidateClassificationReason.UNCONFIRMED_IDENTITY, (),
+                )
+            if self.unknown_game_resolver is not None and (
+                classification.reason is CandidateClassificationReason.NO_INCLUDED_GAME
+                or classification.disposition is CandidateDisposition.AMBIGUOUS
+            ):
+                try:
+                    if await self.unknown_game_resolver.resolve(listing):
+                        refreshed = tuple(self.game_detector.detect_games(ListingText(listing.title, listing.description)))
+                        classification = self.candidate_eligibility_policy.classify(listing, refreshed)
+                        detected_candidate = DetectedCandidate(listing=listing, detected_games=refreshed)
+                except Exception as error:
+                    routing_failures.append(CandidateRoutingFailure(
+                        listing_id=listing.listing_id,
+                        kind=CandidateRoutingFailureKind.METADATA_RESOLUTION_ERROR,
+                        reason="External identity resolution failed; candidate remains pending",
+                        error_type=type(error).__name__,
+                        error_message=("Metadata query deferred by request budget or active request"
+                                       if isinstance(error, MetadataDeferred)
+                                       else "Metadata provider or local registry unavailable"),
+                    ))
+
+            await self._record_observation(
+                listing, detected_candidate.detected_games, classification,
+                source_queries[listing.listing_id], routing_failures
+            )
+
+            if (
+                classification.disposition is CandidateDisposition.IGNORED
+                and classification.reason
+                is CandidateClassificationReason.NO_INCLUDED_GAME
+            ):
+                await self._record_unrecognized_candidate(listing)
 
             if classification.disposition is CandidateDisposition.IGNORED:
                 ignored_candidates.append(
@@ -235,6 +365,7 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                     DetectedCandidate(
                         listing=listing,
                         detected_games=classification.included_games,
+                        quantities=classification.quantities,
                     )
                 )
             elif classification.disposition is CandidateDisposition.ELIGIBLE_LOT:
@@ -242,6 +373,7 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
                     DetectedCandidate(
                         listing=listing,
                         detected_games=classification.included_games,
+                        quantities=classification.quantities,
                     )
                 )
             else:
@@ -282,7 +414,69 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
             created_at=datetime.now(UTC),
             ignored_candidates=tuple(ignored_candidates),
             ambiguous_candidates=tuple(ambiguous_candidates),
+            query_scans=tuple(query_scans),
         )
+
+    async def _record_query_scan(
+        self, scan: QueryScan, records: list[QueryScan], failures: list[CandidateRoutingFailure]
+    ) -> None:
+        records.append(scan)
+        try:
+            await self.observation_recorder.record_query_scan(scan)
+        except Exception as error:
+            failures.append(self._routing_failure(
+                listing_id=None, kind=CandidateRoutingFailureKind.SCAN_STORAGE_ERROR,
+                reason="Search coverage could not be persisted", error=error,
+            ))
+
+    async def _record_observation(
+        self,
+        listing: CandidateListing,
+        detected_games: tuple[DetectedGame, ...],
+        classification: CandidateClassification | None,
+        source_query: str,
+        failures: list[CandidateRoutingFailure],
+        error: Exception | None = None,
+    ) -> None:
+        status: IdentificationStatus = "error"
+        if classification is not None:
+            if classification.reason is CandidateClassificationReason.NO_INCLUDED_GAME:
+                status = "unknown"
+            elif classification.disposition is CandidateDisposition.AMBIGUOUS:
+                status = "ambiguous"
+            elif classification.disposition is CandidateDisposition.IGNORED:
+                status = "ignored"
+            else:
+                status = "resolved"
+        try:
+            await self.observation_recorder.record_observation(ListingObservation(
+                listing_id=listing.listing_id, title=listing.title,
+                description=listing.description, price=listing.price, currency=listing.currency,
+                observed_at=datetime.now(UTC), status=status,
+                detected_games=detected_games, classification=classification,
+                error_type=type(error).__name__ if error else None, source_query=source_query,
+            ))
+        except Exception as storage_error:
+            failures.append(self._routing_failure(
+                listing_id=listing.listing_id,
+                kind=CandidateRoutingFailureKind.OBSERVATION_STORAGE_ERROR,
+                reason="Listing observation could not be persisted",
+                error=storage_error,
+            ))
+            logger.warning("Listing observation storage failed: type=%s", type(storage_error).__name__)
+
+    async def _record_unrecognized_candidate(self, listing: CandidateListing) -> None:
+        try:
+            await self.catalog_discovery_recorder.record_unrecognized_candidate(
+                listing_id=listing.listing_id,
+                original_title=listing.title,
+                observed_at=datetime.now(UTC),
+            )
+        except Exception as error:
+            logger.warning(
+                "Catalog discovery recorder failed: type=%s",
+                type(error).__name__,
+            )
 
     @staticmethod
     def _query_key(query: SearchQuery) -> _SearchQueryKey:
@@ -292,6 +486,7 @@ class DefaultSearchOrchestrator(ISearchOrchestrator):
             query.latitude,
             query.longitude,
             query.max_results,
+            query.category,
         )
 
     @classmethod

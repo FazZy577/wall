@@ -70,6 +70,34 @@ from infrastructure.statistics.default_price_statistics import (
 
 pytestmark = pytest.mark.integration
 
+
+@pytest.mark.asyncio
+async def test_two_copies_route_as_a_lot_with_one_market_search() -> None:
+    raw = _raw_listing("two-copies", "Dos copias de GTA V PS4", "5")
+    pipeline = _build_pipeline(_responses_with_comparables({"copies": [raw]}))
+    result = await pipeline.orchestrator.execute(SearchPlan((_query("copies"),)))
+    assert result.individual_result is None
+    assert len(result.lot_results) == 1
+    lot = result.lot_results[0]
+    assert lot.total_detected_games == 1
+    assert lot.game_valuations[0].quantity == 2
+    assert lot.opportunity is not None
+    assert lot.opportunity.total_units == 2
+    assert lot.opportunity.reference_market_value == Decimal("40")
+    assert len(pipeline.marketplace.calls) == 2  # discovery + one comparable search
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("description", ["50 € cada uno", "Incluye 3 juegos"])
+async def test_uncertain_lot_never_reaches_valuation(description: str) -> None:
+    raw = _raw_listing("uncertain", "Lote GTA V + RDR2 PS4", "50", description=description)
+    pipeline = _build_pipeline(_responses_with_comparables({"uncertain": [raw]}))
+    result = await pipeline.orchestrator.execute(SearchPlan((_query("uncertain"),)))
+    assert result.individual_result is None
+    assert not result.lot_results
+    assert len(result.ambiguous_candidates) == 1
+    assert len(pipeline.marketplace.calls) == 1
+
 _LATITUDE = 40.4168
 _LONGITUDE = -3.7038
 _MAX_RESULTS = 10
@@ -300,10 +328,9 @@ def _responses_with_comparables(
 ) -> dict[str, Sequence[dict[str, Any]]]:
     rdr2_comparables = _rdr2_comparables()
     responses: dict[str, Sequence[dict[str, Any]]] = {
-        "gta v ps4": _gta_comparables()
+        "grand theft auto v ps4": _gta_comparables()
         if gta_comparables is None
         else gta_comparables,
-        "rdr2 ps4": rdr2_comparables,
         "red dead redemption 2 ps4": rdr2_comparables,
     }
     responses.update(candidate_responses)
@@ -428,7 +455,7 @@ async def test_complete_individual_pipeline_uses_all_productive_components() -> 
         result.lot_candidates,
         result.undetected_candidates,
     ) == (1, 1, 0, 1, 1, 0, 1, 1, 0, 0)
-    assert _executed_keywords(pipeline) == ["individual candidates", "gta v PS4"]
+    assert _executed_keywords(pipeline) == ["individual candidates", "Grand Theft Auto V PS4"]
     assert pipeline.marketplace.calls[0].max_results == _MAX_RESULTS
     assert pipeline.marketplace.calls[1].max_results == 100
 
@@ -476,7 +503,7 @@ async def test_complete_pipeline_uses_injected_catalog_for_detection() -> None:
     assert opportunity.game.platform is Platform.PS4
     assert _executed_keywords(pipeline) == [
         "synthetic candidates",
-        "synthetic test game PS4",
+        "Synthetic Test Game PS4",
     ]
 
 
@@ -526,8 +553,8 @@ async def test_complete_lot_pipeline_keeps_lot_results_separate() -> None:
     ) == (0, 1, 0)
     assert _executed_keywords(pipeline) == [
         "lot candidates",
-        "gta v PS4",
-        "rdr2 PS4",
+        "Grand Theft Auto V PS4",
+        "Red Dead Redemption 2 PS4",
     ]
     assert len(pipeline.candidate_detector.calls) == 1
 
@@ -686,12 +713,12 @@ async def test_real_orchestrator_routes_resolved_multiplatform_lot_to_two_market
                 "10",
             )
         ],
-        "gta v ps4": _platform_comparables(
+        "grand theft auto v ps4": _platform_comparables(
             "gta-ps4",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
         ),
-        "rdr2 ps5": _platform_comparables(
+        "red dead redemption 2 ps5": _platform_comparables(
             "rdr2-ps5",
             "Red Dead Redemption 2 PS5 juego",
             ("24", "25", "26", "27", "28"),
@@ -734,8 +761,8 @@ async def test_real_orchestrator_routes_resolved_multiplatform_lot_to_two_market
     )
     assert _executed_keywords(pipeline) == [
         "multiplatform lot",
-        "gta v PS4",
-        "rdr2 PS5",
+        "Grand Theft Auto V PS4",
+        "Red Dead Redemption 2 PS5",
     ]
 
 
@@ -782,12 +809,12 @@ async def test_same_game_multiplatform_lot_keeps_two_independent_valuations() ->
                     "10",
                 )
             ],
-            "gta v ps4": _platform_comparables(
+            "grand theft auto v ps4": _platform_comparables(
                 "gta-ps4",
                 "GTA V PS4 juego",
                 ("18", "19", "20", "21", "22"),
             ),
-            "gta v ps5": _platform_comparables(
+            "grand theft auto v ps5": _platform_comparables(
                 "gta-ps5",
                 "GTA V PS5 juego",
                 ("30", "31", "32", "33", "34"),
@@ -819,8 +846,8 @@ async def test_same_game_multiplatform_lot_keeps_two_independent_valuations() ->
     assert lot_result.opportunity.reference_market_value == Decimal("52")
     assert _executed_keywords(pipeline) == [
         "same game lot",
-        "gta v PS4",
-        "gta v PS5",
+        "Grand Theft Auto V PS4",
+        "Grand Theft Auto V PS5",
     ]
 
 
@@ -882,9 +909,9 @@ async def test_mixed_pipeline_deduplicates_queries_and_candidates_stably() -> No
     assert _executed_keywords(pipeline) == [
         "mixed first",
         "mixed second",
-        "gta v PS4",
-        "gta v PS4",
-        "rdr2 PS4",
+        "Grand Theft Auto V PS4",
+        "Grand Theft Auto V PS4",
+        "Red Dead Redemption 2 PS4",
     ]
 
 
@@ -929,7 +956,7 @@ async def test_query_failure_preserves_successful_productive_pipeline() -> None:
     assert _executed_keywords(pipeline) == [
         "technical failure",
         "valid after failure",
-        "gta v PS4",
+        "Grand Theft Auto V PS4",
     ]
 
 
@@ -1005,7 +1032,7 @@ async def test_candidate_is_excluded_from_its_own_market_dataset() -> None:
     assert opportunity.listing.listing_id == candidate_id
     assert opportunity.market_price == Decimal("15")
     assert opportunity.market_price != Decimal("14")
-    assert _executed_keywords(pipeline) == ["self exclusion", "gta v PS4"]
+    assert _executed_keywords(pipeline) == ["self exclusion", "Grand Theft Auto V PS4"]
 
 
 @pytest.mark.asyncio
@@ -1033,7 +1060,7 @@ async def test_consecutive_executions_share_no_candidate_or_cache_state() -> Non
     assert len(pipeline.candidate_detector.calls) == 2
     assert _executed_keywords(pipeline) == [
         "repeat candidates",
-        "gta v PS4",
+        "Grand Theft Auto V PS4",
         "repeat candidates",
-        "gta v PS4",
+        "Grand Theft Auto V PS4",
     ]

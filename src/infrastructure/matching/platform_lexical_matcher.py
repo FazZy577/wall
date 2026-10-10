@@ -41,6 +41,7 @@ _PLATFORM_ALIASES: Final[tuple[tuple[Platform, tuple[str, ...]], ...]] = (
     (Platform.WII, ("nintendo wii", "wii")),
     (Platform.WII_U, ("nintendo wii u", "wii u", "wiiu")),
     (Platform.SWITCH, ("nintendo switch", "switch")),
+    (Platform.SWITCH_2, ("nintendo switch 2", "switch 2", "nintendo switch2", "switch2")),
     (Platform.NINTENDO_DS, ("nintendo ds", "nds")),
     (Platform.NINTENDO_3DS, ("nintendo 3ds", "3ds")),
     (Platform.PSP, ("psp", "playstation portable")),

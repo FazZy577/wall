@@ -44,6 +44,8 @@ def test_reasons_have_stable_values() -> None:
         "ambiguous_multiplatform",
         "unsupported_edition",
         "contextual_reference_only",
+        "unresolved_sale_terms",
+        "unconfirmed_identity",
     ]
 
 
@@ -216,6 +218,6 @@ def test_same_name_on_different_platforms_is_not_duplicate() -> None:
 
 def test_classification_has_no_listing_or_free_text_fields() -> None:
     field_names = set(CandidateClassification.__dataclass_fields__)
-    assert field_names == {"disposition", "reason", "included_games"}
+    assert field_names == {"disposition", "reason", "included_games", "quantities"}
     for name in ("listing_id", "raw_listing", "text", "description", "explanation"):
         assert not hasattr(CandidateClassification, name)

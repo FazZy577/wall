@@ -5,6 +5,7 @@ import pytest
 from domain.interfaces.comparable_filter import ComparableFilterInput
 from domain.interfaces.game_detector import DetectedGame, DetectionMethod, Platform
 from infrastructure.filters.rule_based_comparable_filter import RuleBasedComparableFilter
+from tests.game_fixtures import seed_identity
 
 
 @pytest.fixture
@@ -18,6 +19,7 @@ def gta_v_game() -> DetectedGame:
     """Sample GTA V game for testing."""
     return DetectedGame(
         canonical_name="Grand Theft Auto V",
+        release_identity=seed_identity("Grand Theft Auto V", Platform.PS4),
         matched_text="gta v",
         platform=Platform.PS4,
         confidence=1.0,
@@ -30,6 +32,7 @@ def fifa_23_game() -> DetectedGame:
     """Sample FIFA 23 game for testing."""
     return DetectedGame(
         canonical_name="FIFA 23",
+        release_identity=seed_identity("FIFA 23", Platform.PS4),
         matched_text="fifa 23",
         platform=Platform.PS4,
         confidence=1.0,
@@ -42,6 +45,7 @@ def cod_bo6_game() -> DetectedGame:
     """Sample Call of Duty Black Ops 6 game for testing."""
     return DetectedGame(
         canonical_name="Call of Duty: Black Ops 6",
+        release_identity=seed_identity("Call of Duty: Black Ops 6", Platform.PS4),
         matched_text="cod bo6",
         platform=Platform.PS4,
         confidence=1.0,
@@ -87,7 +91,7 @@ class TestValidComparables:
     ) -> None:
         """Valid: Game listing with Spanish accents."""
         listing = ComparableFilterInput(
-            title="GTA V Edición estándar",
+            title="GTA V Edición estándar PS4",
             description="Juego usado en buen estado",
         )
         assert filter_instance.is_valid_comparable(gta_v_game, listing) is True

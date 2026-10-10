@@ -2,7 +2,7 @@
 
 import asyncio
 import inspect
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from unittest.mock import AsyncMock, Mock
 
@@ -14,6 +14,10 @@ from application.interfaces.candidate_search import (
     CandidateSearchResult,
     ICandidateSearch,
     SearchQuery,
+)
+from application.interfaces.catalog_discovery_recorder import (
+    ICatalogDiscoveryRecorder,
+    NullCatalogDiscoveryRecorder,
 )
 from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import (
@@ -158,12 +162,15 @@ def orchestrator() -> tuple[DefaultSearchOrchestrator, dict[str, Mock]]:
     opportunity_scanner.scan_detected_multiple = AsyncMock(return_value=_scan_result())
     lot_scanner = Mock(spec=ILotOpportunityScanner)
     lot_scanner.scan_detected_lot = AsyncMock()
+    discovery_recorder = Mock(spec=ICatalogDiscoveryRecorder)
+    discovery_recorder.record_unrecognized_candidate = AsyncMock()
     dependencies = {
         "search": candidate_search,
         "detector": game_detector,
         "policy": eligibility_policy,
         "individual": opportunity_scanner,
         "lot": lot_scanner,
+        "discovery": discovery_recorder,
     }
     return (
         DefaultSearchOrchestrator(
@@ -172,6 +179,7 @@ def orchestrator() -> tuple[DefaultSearchOrchestrator, dict[str, Mock]]:
             eligibility_policy,
             opportunity_scanner,
             lot_scanner,
+            discovery_recorder,
         ),
         dependencies,
     )
@@ -552,6 +560,106 @@ async def test_policy_receives_original_candidate_and_preliminary_games_once(
     assert batch[0].listing is candidate
     assert batch[0].detected_games == (included_game,)
     dependencies["lot"].scan_detected_lot.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_no_included_game_records_minimal_discovery_observation(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    candidate = _candidate("unknown", title="  Unlisted Game PS5  ")
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (candidate,),
+    )
+    dependencies["detector"].detect_games.return_value = []
+
+    result = await service.execute(SearchPlan((query,)))
+
+    dependencies["discovery"].record_unrecognized_candidate.assert_awaited_once()
+    recorded = dependencies["discovery"].record_unrecognized_candidate.await_args.kwargs
+    assert recorded["listing_id"] == candidate.listing_id
+    assert recorded["original_title"] == candidate.title
+    assert recorded["observed_at"].tzinfo is not None
+    assert recorded["observed_at"].utcoffset() == timedelta(0)
+    assert [item.listing_id for item in result.ignored_candidates] == ["unknown"]
+
+
+@pytest.mark.asyncio
+async def test_discovery_recorder_failure_does_not_interrupt_later_candidates(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    unknown = _candidate("unknown")
+    included = _candidate("included")
+    game = _game()
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (unknown, included),
+    )
+    dependencies["detector"].detect_games.side_effect = [[], [game]]
+    dependencies["discovery"].record_unrecognized_candidate.side_effect = RuntimeError(
+        "recorder unavailable"
+    )
+
+    result = await service.execute(SearchPlan((query,)))
+
+    assert result.routing_failures == ()
+    assert [item.listing_id for item in result.ignored_candidates] == ["unknown"]
+    batch = dependencies["individual"].scan_detected_multiple.await_args.args[0]
+    assert [item.listing for item in batch] == [included]
+
+
+@pytest.mark.asyncio
+async def test_discovery_recorder_ignores_other_classifications(
+    orchestrator: tuple[DefaultSearchOrchestrator, dict[str, Mock]],
+) -> None:
+    service, dependencies = orchestrator
+    query = _query()
+    hardware = _candidate("hardware")
+    ambiguous = _candidate("ambiguous")
+    included = _candidate("included")
+    game = _game()
+    dependencies["search"].search_candidates.return_value = _search_result(
+        query,
+        (hardware, ambiguous, included),
+    )
+    dependencies["detector"].detect_games.return_value = [game]
+    dependencies["policy"].classify.side_effect = [
+        CandidateClassification(
+            CandidateDisposition.IGNORED,
+            CandidateClassificationReason.UNSUPPORTED_HARDWARE,
+            (),
+        ),
+        CandidateClassification(
+            CandidateDisposition.AMBIGUOUS,
+            CandidateClassificationReason.AMBIGUOUS_MULTIPLATFORM,
+            (),
+        ),
+        CandidateClassification(
+            CandidateDisposition.ELIGIBLE_INDIVIDUAL,
+            CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
+            (game,),
+        ),
+    ]
+
+    await service.execute(SearchPlan((query,)))
+
+    dependencies["discovery"].record_unrecognized_candidate.assert_not_awaited()
+
+
+def test_default_discovery_recorder_is_null() -> None:
+    service = DefaultSearchOrchestrator(
+        Mock(spec=ICandidateSearch),
+        Mock(spec=IGameDetector),
+        Mock(spec=ICandidateEligibilityPolicy),
+        Mock(spec=IOpportunityScanner),
+        Mock(spec=ILotOpportunityScanner),
+    )
+
+    assert isinstance(service.catalog_discovery_recorder, NullCatalogDiscoveryRecorder)
 
 
 @pytest.mark.asyncio
@@ -991,6 +1099,9 @@ async def test_orchestrator_does_not_close_dependencies_or_expose_ranker(
         "candidate_eligibility_policy",
         "opportunity_scanner",
         "lot_opportunity_scanner",
+        "catalog_discovery_recorder",
+        "observation_recorder",
+        "unknown_game_resolver",
     ]
     assert all(closer.call_count == 0 for closer in closers)
 

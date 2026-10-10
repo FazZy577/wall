@@ -46,6 +46,39 @@ SHORT_ALIAS_CASES = (
 )
 
 
+@pytest.mark.unit
+def test_exact_title_does_not_disable_fuzzy_detection_of_another_mention() -> None:
+    catalog = _InMemoryGameCatalog((
+        GameCatalogEntry("First Adventure", Platform.PS4, ()),
+        GameCatalogEntry("Synthetic Quest", Platform.PS4, ()),
+    ))
+    games = FuzzyGameDetector(catalog).detect_games(
+        ListingText("First Adventure y Synthetic Ques PS4", "")
+    )
+    assert {game.canonical_name for game in games} == {"First Adventure", "Synthetic Quest"}
+    assert next(game for game in games if game.canonical_name == "Synthetic Quest").detection_method is DetectionMethod.FUZZY_MATCH
+
+
+@pytest.mark.unit
+def test_fuzzy_cannot_join_words_across_an_exact_title() -> None:
+    catalog = _InMemoryGameCatalog((
+        GameCatalogEntry("First Adventure", Platform.PS4, ()),
+        GameCatalogEntry("Synthetic Quest", Platform.PS4, ()),
+    ))
+    games = FuzzyGameDetector(catalog).detect_games(
+        ListingText("Synthetic First Adventure Quest PS4", "")
+    )
+    assert [game.canonical_name for game in games] == ["First Adventure"]
+
+
+@pytest.mark.unit
+def test_platform_alone_cannot_match_catalog_aliases() -> None:
+    catalog = _InMemoryGameCatalog((
+        GameCatalogEntry("Synthetic Quest", Platform.PS4, ("Synthetic Quest PS4",)),
+    ))
+    assert FuzzyGameDetector(catalog).detect_games(ListingText("PS4", "")) == []
+
+
 class _InMemoryGameCatalog(IGameCatalog):
     def __init__(self, entries: tuple[GameCatalogEntry, ...]) -> None:
         self.entries = entries

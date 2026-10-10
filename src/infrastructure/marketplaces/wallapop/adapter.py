@@ -13,6 +13,7 @@ from application.interfaces.candidate_search import (
 )
 from domain.currency import validate_currency_code
 from domain.entities.candidate_listing import CandidateListing
+from domain.entities.search_coverage import MarketplaceSearchBatch
 from domain.interfaces.marketplace_search import IMarketplaceSearch
 from infrastructure.marketplaces.wallapop.listing_id import (
     normalize_wallapop_listing_id,
@@ -32,12 +33,16 @@ class WallapopCandidateSearchAdapter(ICandidateSearch):
 
     async def search_candidates(self, query: SearchQuery) -> CandidateSearchResult:
         """Execute one search and isolate conversion failures by item."""
-        raw_items = await self.marketplace_search.search_listings(
+        batch = await self.marketplace_search.search_with_scope(
             keywords=query.keywords,
             latitude=query.latitude,
             longitude=query.longitude,
             max_results=query.max_results,
+            category=query.category,
         )
+        if not isinstance(batch, MarketplaceSearchBatch):
+            raise TypeError("Marketplace search must return MarketplaceSearchBatch")
+        raw_items = batch.listings
 
         candidates: list[CandidateListing] = []
         failures: list[CandidateItemFailure] = []
@@ -87,6 +92,7 @@ class WallapopCandidateSearchAdapter(ICandidateSearch):
             candidates=tuple(candidates),
             failures=tuple(failures),
             total_items_received=len(raw_items),
+            coverage=batch.coverage,
         )
 
     @staticmethod

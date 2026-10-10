@@ -8,6 +8,10 @@ from typing import get_args, get_type_hints
 from unittest.mock import AsyncMock, Mock
 
 from application.interfaces.candidate_search import ICandidateSearch
+from application.interfaces.catalog_discovery_recorder import (
+    ICatalogDiscoveryRecorder,
+    NullCatalogDiscoveryRecorder,
+)
 from application.interfaces.detected_candidate import DetectedCandidate
 from application.interfaces.lot_opportunity_scanner import ILotOpportunityScanner
 from application.interfaces.opportunity_scanner import IOpportunityScanner, RankingResult
@@ -228,15 +232,39 @@ def test_search_orchestrator_injects_only_application_and_domain_ports() -> None
         "candidate_eligibility_policy",
         "opportunity_scanner",
         "lot_opportunity_scanner",
+        "catalog_discovery_recorder",
+        "observation_recorder",
+        "unknown_game_resolver",
     ]
     assert hints["candidate_search"] is ICandidateSearch
     assert hints["game_detector"] is IGameDetector
     assert hints["candidate_eligibility_policy"] is ICandidateEligibilityPolicy
     assert hints["opportunity_scanner"] is IOpportunityScanner
     assert hints["lot_opportunity_scanner"] is ILotOpportunityScanner
+    assert set(get_args(hints["catalog_discovery_recorder"])) == {
+        ICatalogDiscoveryRecorder,
+        type(None),
+    }
+    required_parameters = tuple(parameters.values())[:-3]
     assert all(
         parameter.default is inspect.Parameter.empty
-        for parameter in parameters.values()
+        for parameter in required_parameters
+    )
+    assert parameters["catalog_discovery_recorder"].default is None
+    assert issubclass(NullCatalogDiscoveryRecorder, ICatalogDiscoveryRecorder)
+
+
+def test_catalog_discovery_recorder_contract_stays_in_application() -> None:
+    contract_path = SRC_ROOT / "application/interfaces/catalog_discovery_recorder.py"
+    contract_source = contract_path.read_text(encoding="utf-8")
+
+    assert ICatalogDiscoveryRecorder.__module__ == (
+        "application.interfaces.catalog_discovery_recorder"
+    )
+    assert "infrastructure" not in contract_source.casefold()
+    assert "sqlite" not in contract_source.casefold()
+    assert inspect.iscoroutinefunction(
+        ICatalogDiscoveryRecorder.record_unrecognized_candidate
     )
 
 
@@ -383,7 +411,8 @@ def test_default_search_plan_generator_respects_application_boundary() -> None:
     assert parameters["game_catalog"].default is inspect.Parameter.empty
     assert not inspect.iscoroutinefunction(DefaultSearchPlanGenerator.generate)
     assert list(SearchPlanGenerationStrategy) == [
-        SearchPlanGenerationStrategy.CANONICAL_ONLY
+        SearchPlanGenerationStrategy.CANONICAL_ONLY,
+        SearchPlanGenerationStrategy.DISCOVERY,
     ]
     assert "IGameCatalog" in implementation_source
     assert "infrastructure" not in implementation_source.casefold()

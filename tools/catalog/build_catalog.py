@@ -21,6 +21,7 @@ if str(SOURCE_ROOT) not in sys.path:
 from domain.entities.detected_game import Platform  # noqa: E402
 from domain.entities.game_catalog_entry import GameCatalogEntry  # noqa: E402
 from domain.entities.game_identity import GameIdentity  # noqa: E402
+from domain.entities.game_record import ReleaseIdentity  # noqa: E402
 
 DEFAULT_CATALOG_ROOT = REPOSITORY_ROOT / "catalog"
 DEFAULT_RUNTIME_CATALOG = (
@@ -196,10 +197,17 @@ def _parse_source(catalog_root: Path, relative_path: Path) -> tuple[_LocatedEntr
                 raise CatalogBuildError(f"{alias_location} must not be empty")
             aliases.append(raw_alias)
 
+        identity = None
+        if "game_id" in game or "release_id" in game:
+            try:
+                identity = ReleaseIdentity(game.get("game_id"), game.get("release_id"), platform)
+            except (TypeError, ValueError) as error:
+                raise CatalogBuildError(f"{location}: invalid stable identity") from error
         entry = GameCatalogEntry(
             canonical_name=canonical_name,
             platform=platform,
             detection_aliases=tuple(aliases),
+            release_identity=identity,
         )
         located_entries.append(_LocatedEntry(entry, relative_path, game_index))
     return tuple(located_entries)
@@ -304,6 +312,8 @@ def render_runtime_catalog(entries: Sequence[GameCatalogEntry]) -> bytes:
             "canonical_name": entry.canonical_name,
             "platform": entry.platform.value,
             "aliases": list(entry.detection_aliases),
+            **({"game_id": entry.release_identity.game_id, "release_id": entry.release_identity.release_id}
+               if entry.release_identity is not None else {}),
         }
         for entry in entries
     ]

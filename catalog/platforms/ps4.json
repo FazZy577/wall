@@ -10,7 +10,9 @@
         "gta5",
         "grand theft auto v",
         "grand theft auto 5"
-      ]
+      ],
+      "game_id": "125ab7e5-0d5e-479d-b7ff-97b40a87da1c",
+      "release_id": "435dd84a-8ce4-410d-837d-7f9efd8854a7"
     },
     {
       "canonical_name": "Red Dead Redemption 2",
@@ -20,7 +22,9 @@
         "red dead 2",
         "red dead redemption 2",
         "red dead redemption ii"
-      ]
+      ],
+      "game_id": "3aaf07ca-50e9-4d58-a770-bde168c954b3",
+      "release_id": "d4ba5c01-ebcf-4620-b06c-46887ac477f8"
     },
     {
       "canonical_name": "EA Sports FC 24",
@@ -31,7 +35,9 @@
         "fifa24",
         "ea fc 24",
         "ea sports fc 24"
-      ]
+      ],
+      "game_id": "70ad02f2-a81a-4a32-8855-6a903e810081",
+      "release_id": "91a6648d-0267-4ca7-acc0-1be7e0c307a2"
     },
     {
       "canonical_name": "EA Sports FC 25",
@@ -42,7 +48,9 @@
         "fifa25",
         "ea fc 25",
         "ea sports fc 25"
-      ]
+      ],
+      "game_id": "ee3cbe89-7499-4401-9726-ec91e9bbcfda",
+      "release_id": "d97b8d22-b3d3-434b-b999-c4c11f56c09f"
     },
     {
       "canonical_name": "FIFA 23",
@@ -50,7 +58,9 @@
         "fifa 23",
         "fifa23",
         "fifa 2023"
-      ]
+      ],
+      "game_id": "2782dd3c-b119-4d90-b39d-cd5cf42126b1",
+      "release_id": "98d20475-f971-48fe-aa0d-496aa772ad56"
     },
     {
       "canonical_name": "FIFA 22",
@@ -58,7 +68,9 @@
         "fifa 22",
         "fifa22",
         "fifa 2022"
-      ]
+      ],
+      "game_id": "4ad8a150-717f-4ac5-ab2a-06028569e833",
+      "release_id": "00966d5c-66b3-4cd2-be89-91b22bb7f0d3"
     },
     {
       "canonical_name": "Call of Duty: Black Ops 6",
@@ -68,7 +80,9 @@
         "black ops 6",
         "bo6",
         "call of duty black ops 6"
-      ]
+      ],
+      "game_id": "65db7e0b-732c-429b-8bde-9f695afc42c1",
+      "release_id": "2ea93091-a979-4f4f-aa07-c00e3aef3f9a"
     },
     {
       "canonical_name": "Call of Duty: Modern Warfare III",
@@ -79,7 +93,9 @@
         "modern warfare iii",
         "mw3",
         "call of duty mw3"
-      ]
+      ],
+      "game_id": "790d29c4-bfaf-43ce-a475-f3151c806994",
+      "release_id": "8db2fb80-7dcf-489d-9c60-950a48e96bf1"
     },
     {
       "canonical_name": "Call of Duty: Modern Warfare II",
@@ -90,7 +106,9 @@
         "modern warfare ii",
         "mw2",
         "call of duty mw2"
-      ]
+      ],
+      "game_id": "b0509b92-acb0-425c-a514-be1150d17140",
+      "release_id": "a2a1bcc9-49df-4c61-96b6-044087f684e7"
     },
     {
       "canonical_name": "The Last of Us Part II",
@@ -101,7 +119,9 @@
         "the last of us part 2",
         "the last of us part ii",
         "last of us 2"
-      ]
+      ],
+      "game_id": "f29479e8-b2a8-4968-9beb-0f6a76d5e9b4",
+      "release_id": "f802eb40-2150-446c-bb59-a109a1914a34"
     },
     {
       "canonical_name": "The Last of Us Remastered",
@@ -110,7 +130,9 @@
         "the last of us",
         "last of us",
         "tlou remastered"
-      ]
+      ],
+      "game_id": "50b7604c-af3b-4e67-953d-9974cb6a5b55",
+      "release_id": "6084223b-54c0-4f13-9a2e-245957a40997"
     },
     {
       "canonical_name": "God of War",
@@ -118,7 +140,9 @@
         "god of war",
         "gow",
         "god of war 2018"
-      ]
+      ],
+      "game_id": "117eaef6-4657-4846-bf30-72e024c4eafb",
+      "release_id": "d25c4474-bb4d-4cd9-87ab-4178a7d2a502"
     },
     {
       "canonical_name": "God of War Ragnarök",
@@ -127,7 +151,9 @@
         "gow ragnarok",
         "ragnarok",
         "god of war ragnarök"
-      ]
+      ],
+      "game_id": "7681bf0e-cb3a-4c13-bcb1-7a257a0cfe95",
+      "release_id": "fdd93cf9-2f0b-48b2-ad9f-17d0e6a4d63c"
     },
     {
       "canonical_name": "Spider-Man",
@@ -137,7 +163,9 @@
         "spider-man",
         "marvel spider man",
         "marvels spider man"
-      ]
+      ],
+      "game_id": "7f96c8ef-56b6-4363-a6ca-c7b19522fa94",
+      "release_id": "0a8584f0-6be2-4422-b860-882e48e24dd7"
     },
     {
       "canonical_name": "Spider-Man: Miles Morales",
@@ -146,7 +174,9 @@
         "spiderman miles morales",
         "miles morales",
         "spider-man miles morales"
-      ]
+      ],
+      "game_id": "4e6b702d-70fa-4ad3-ba3c-bae1f3f9f493",
+      "release_id": "9873542c-b777-449d-8997-beff139f3d71"
     },
     {
       "canonical_name": "Uncharted 4: A Thief's End",
@@ -154,14 +184,18 @@
         "uncharted 4",
         "uncharted iv",
         "uncharted 4 a thiefs end"
-      ]
+      ],
+      "game_id": "dcd8bf44-7fc2-4926-b315-a3a7023a7efc",
+      "release_id": "bc85b41c-6097-4f04-848c-5573aee0e572"
     },
     {
       "canonical_name": "Uncharted: The Lost Legacy",
       "aliases": [
         "uncharted lost legacy",
         "uncharted the lost legacy"
-      ]
+      ],
+      "game_id": "afce218d-e7b8-42be-b8a7-5c619b06aa57",
+      "release_id": "97dfa8cf-42e3-4709-9235-b3ee4ef03c88"
     },
     {
       "canonical_name": "Horizon Zero Dawn",
@@ -169,7 +203,9 @@
         "horizon zero dawn",
         "hzd",
         "horizon"
-      ]
+      ],
+      "game_id": "1788a7ca-1164-4f00-92ec-0eec6975e740",
+      "release_id": "e42d9641-44ad-4035-b6a0-050c2fe48555"
     },
     {
       "canonical_name": "Horizon Forbidden West",
@@ -177,14 +213,18 @@
         "horizon forbidden west",
         "hfw",
         "forbidden west"
-      ]
+      ],
+      "game_id": "31c219b3-07dd-4c8b-8866-a31ca02e1932",
+      "release_id": "53a59a32-b38f-436c-9309-a253dfa1829f"
     },
     {
       "canonical_name": "Bloodborne",
       "aliases": [
         "bloodborne",
         "blood borne"
-      ]
+      ],
+      "game_id": "200934b0-0317-4e96-a179-55e2b6d08c0c",
+      "release_id": "8b645884-e90f-40c2-a9cb-44c69ae0093f"
     },
     {
       "canonical_name": "Ghost of Tsushima",
@@ -192,21 +232,27 @@
         "ghost of tsushima",
         "tsushima",
         "got"
-      ]
+      ],
+      "game_id": "2b9551af-36f3-497f-b42f-10e15f2b96ca",
+      "release_id": "3811f09b-d0f6-4769-9c26-fc6e4aad21c8"
     },
     {
       "canonical_name": "Days Gone",
       "aliases": [
         "days gone",
         "daysgone"
-      ]
+      ],
+      "game_id": "9eeb745b-4c47-4856-82bd-b7b4ee8de0ca",
+      "release_id": "529135ea-e0b5-45fb-a483-c0eaf455bfc5"
     },
     {
       "canonical_name": "Death Stranding",
       "aliases": [
         "death stranding",
         "deathstranding"
-      ]
+      ],
+      "game_id": "031fc68b-7dea-4015-a66c-3fe486b35548",
+      "release_id": "63adad4b-f450-4c06-8e80-06d8240f014a"
     },
     {
       "canonical_name": "Resident Evil 2",
@@ -214,7 +260,9 @@
         "resident evil 2",
         "re2",
         "resident evil 2 remake"
-      ]
+      ],
+      "game_id": "98d96bd1-b6e5-40c9-a1a4-17d7370b3c1e",
+      "release_id": "4118757f-4858-4f0b-a99f-ea696ccf0793"
     },
     {
       "canonical_name": "Resident Evil 3",
@@ -222,7 +270,9 @@
         "resident evil 3",
         "re3",
         "resident evil 3 remake"
-      ]
+      ],
+      "game_id": "27e30761-1a4e-4965-956f-f30fde2d42c0",
+      "release_id": "565ae0ef-99aa-4451-897c-d3808c33f6b9"
     },
     {
       "canonical_name": "Resident Evil Village",
@@ -231,7 +281,9 @@
         "re8",
         "resident evil 8",
         "re village"
-      ]
+      ],
+      "game_id": "02a75c5a-b94c-4bd8-baaa-458d78fe56e9",
+      "release_id": "f695f68b-29dc-47c0-9082-0f2d50c49384"
     },
     {
       "canonical_name": "Assassin's Creed Valhalla",
@@ -239,7 +291,9 @@
         "assassins creed valhalla",
         "ac valhalla",
         "valhalla"
-      ]
+      ],
+      "game_id": "8ce59fb8-0129-47be-92aa-f2aa2781967d",
+      "release_id": "05cafbd6-a17b-4d5b-8e67-0c84a07abc18"
     },
     {
       "canonical_name": "Assassin's Creed Odyssey",
@@ -247,7 +301,9 @@
         "assassins creed odyssey",
         "ac odyssey",
         "odyssey"
-      ]
+      ],
+      "game_id": "c475ea90-d071-411a-a017-1b089eb5a72d",
+      "release_id": "6c3b1f45-96ed-424d-b361-7d45ad94126f"
     },
     {
       "canonical_name": "Assassin's Creed Origins",
@@ -255,7 +311,9 @@
         "assassins creed origins",
         "ac origins",
         "origins"
-      ]
+      ],
+      "game_id": "4e118244-e6c8-472d-b6d6-97b17d7a80cf",
+      "release_id": "eff81622-6498-40ff-a0a2-13a4174badff"
     },
     {
       "canonical_name": "Cyberpunk 2077",
@@ -263,7 +321,9 @@
         "cyberpunk 2077",
         "cyberpunk",
         "cp2077"
-      ]
+      ],
+      "game_id": "47a6e16b-e8e4-4468-b42a-03929b3ab393",
+      "release_id": "6d7db863-75b4-449a-b136-222790adf714"
     },
     {
       "canonical_name": "The Witcher 3: Wild Hunt",
@@ -271,7 +331,9 @@
         "witcher 3",
         "the witcher 3",
         "witcher 3 wild hunt"
-      ]
+      ],
+      "game_id": "a5fe25be-ee3a-43ed-b53f-dea8ec1ce658",
+      "release_id": "76064f64-9166-4d27-9f28-6a2093bc64ce"
     },
     {
       "canonical_name": "Dark Souls III",
@@ -279,21 +341,27 @@
         "dark souls 3",
         "dark souls iii",
         "ds3"
-      ]
+      ],
+      "game_id": "9caef44e-4dd3-49ce-9241-8031790d2196",
+      "release_id": "f7bd920e-0476-4d9b-b5e4-5c899420b821"
     },
     {
       "canonical_name": "Sekiro: Shadows Die Twice",
       "aliases": [
         "sekiro",
         "sekiro shadows die twice"
-      ]
+      ],
+      "game_id": "31d6fd89-cea9-4ad4-81f2-4d8668d1815f",
+      "release_id": "0bb89f44-e815-483b-ab38-efbbbeb005c1"
     },
     {
       "canonical_name": "Elden Ring",
       "aliases": [
         "elden ring",
         "eldenring"
-      ]
+      ],
+      "game_id": "5ca34fc9-8fac-4e76-b1e0-5da9e1bbeb76",
+      "release_id": "91b5d2da-e85b-4ed2-9fd3-2f1d97af2db7"
     },
     {
       "canonical_name": "Gran Turismo Sport",
@@ -301,7 +369,9 @@
         "gran turismo sport",
         "gt sport",
         "gts"
-      ]
+      ],
+      "game_id": "8c444bb4-37a6-44f7-a07a-d607fca6f791",
+      "release_id": "e7351f7b-4491-4771-97f4-2cdb80df9cf6"
     },
     {
       "canonical_name": "Gran Turismo 7",
@@ -309,7 +379,9 @@
         "gran turismo 7",
         "gt7",
         "gt 7"
-      ]
+      ],
+      "game_id": "8f45588d-393c-43c9-b1fb-106c06705247",
+      "release_id": "3873503d-7c01-41ac-a772-88550825eb86"
     },
     {
       "canonical_name": "Battlefield 2042",
@@ -317,7 +389,9 @@
         "battlefield 2042",
         "bf 2042",
         "bf2042"
-      ]
+      ],
+      "game_id": "12d64463-2ddd-4b1c-99cf-77b2fafe2964",
+      "release_id": "0b3df641-aea2-477c-b598-51622012fcb9"
     },
     {
       "canonical_name": "Battlefield V",
@@ -326,7 +400,9 @@
         "battlefield 5",
         "bf5",
         "bfv"
-      ]
+      ],
+      "game_id": "6b77ea3f-1652-41fc-a270-7d452f776830",
+      "release_id": "732ce7ac-eb67-41b2-bbe8-28479089d30e"
     },
     {
       "canonical_name": "Mortal Kombat 11",
@@ -334,7 +410,9 @@
         "mortal kombat 11",
         "mk11",
         "mk 11"
-      ]
+      ],
+      "game_id": "ace4bed9-411f-46cc-b273-8431bdb12cf8",
+      "release_id": "63e07f03-82fb-4b65-a039-5ebc0911ad33"
     },
     {
       "canonical_name": "Street Fighter V",
@@ -343,14 +421,18 @@
         "street fighter 5",
         "sf5",
         "sfv"
-      ]
+      ],
+      "game_id": "b4f977dd-4faf-4512-86c9-907fc3c5b876",
+      "release_id": "8f964556-66e2-47e7-9d98-f7ffd4115517"
     },
     {
       "canonical_name": "Tekken 7",
       "aliases": [
         "tekken 7",
         "tekken vii"
-      ]
+      ],
+      "game_id": "877483eb-2e1c-4f7f-9f69-12b655fcb4b1",
+      "release_id": "2c5e2dce-c429-4179-ba94-62d3a9d31c04"
     },
     {
       "canonical_name": "NBA 2K24",
@@ -358,7 +440,9 @@
         "nba 2k24",
         "nba2k24",
         "nba 2k 24"
-      ]
+      ],
+      "game_id": "3e06b301-183e-4859-be15-163b020030ba",
+      "release_id": "67d5eb10-1429-4039-8458-8b9e611d4cea"
     },
     {
       "canonical_name": "NBA 2K23",
@@ -366,14 +450,18 @@
         "nba 2k23",
         "nba2k23",
         "nba 2k 23"
-      ]
+      ],
+      "game_id": "d2073c05-219b-4ff8-9d7a-1c975c08e786",
+      "release_id": "b2bee2ac-f5a2-4a14-9833-4ff74867598e"
     },
     {
       "canonical_name": "Fallout 4",
       "aliases": [
         "fallout 4",
         "fallout iv"
-      ]
+      ],
+      "game_id": "81c0eb0e-5d4f-447f-b36a-2dae1c462c95",
+      "release_id": "f60c962a-daf3-495d-a228-e62089f8e60f"
     },
     {
       "canonical_name": "Skyrim",
@@ -381,33 +469,43 @@
         "skyrim",
         "elder scrolls skyrim",
         "the elder scrolls v skyrim"
-      ]
+      ],
+      "game_id": "4b51e98d-7465-4092-a0dc-178165c8c3d2",
+      "release_id": "6a62378b-fde4-4f17-b715-04be4935bf69"
     },
     {
       "canonical_name": "Minecraft",
       "aliases": [
         "minecraft"
-      ]
+      ],
+      "game_id": "878cb83c-1f68-44c5-a2d0-6fffdbe2f4fd",
+      "release_id": "efdd08e9-4637-46e1-97ed-d2c8fd95bf16"
     },
     {
       "canonical_name": "Rocket League",
       "aliases": [
         "rocket league",
         "rocketleague"
-      ]
+      ],
+      "game_id": "5d8ab847-8d65-42d3-a833-6069fbbb12b8",
+      "release_id": "c6cb86ad-45cc-4d39-9d73-fd2645adf681"
     },
     {
       "canonical_name": "Fortnite",
       "aliases": [
         "fortnite"
-      ]
+      ],
+      "game_id": "3e6e8642-adf9-4cec-a8e4-0fa6d6927357",
+      "release_id": "56a1be68-0032-4571-8529-580ffa5bbd0a"
     },
     {
       "canonical_name": "Apex Legends",
       "aliases": [
         "apex legends",
         "apex"
-      ]
+      ],
+      "game_id": "cbba648e-639d-48eb-bd21-0e28a45d1a53",
+      "release_id": "646b81dc-37fc-425e-8fa5-285d046175d0"
     },
     {
       "canonical_name": "Overwatch 2",
@@ -415,7 +513,9 @@
         "overwatch 2",
         "overwatch ii",
         "ow2"
-      ]
+      ],
+      "game_id": "aaeb522f-c1a8-4c7f-aff2-01e7d978f584",
+      "release_id": "51b659fb-3cc4-45a4-b680-770687932b71"
     }
   ]
 }

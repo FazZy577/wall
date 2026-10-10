@@ -1,124 +1,970 @@
 {
   "platform": "Nintendo Switch",
   "games": [
-    {"canonical_name": "Mario Kart 8 Deluxe", "aliases": ["mario kart 8 deluxe switch", "mk8 deluxe"]},
-    {"canonical_name": "Animal Crossing: New Horizons", "aliases": ["animal crossing new horizons", "acnh"]},
-    {"canonical_name": "Super Smash Bros. Ultimate", "aliases": ["smash bros ultimate", "smash ultimate"]},
-    {"canonical_name": "The Legend of Zelda: Breath of the Wild", "aliases": ["botw", "zelda breath of the wild"]},
-    {"canonical_name": "The Legend of Zelda: Tears of the Kingdom", "aliases": ["totk", "zelda tears of the kingdom"]},
-    {"canonical_name": "The Legend of Zelda: Skyward Sword HD", "aliases": ["zelda skyward sword hd"]},
-    {"canonical_name": "The Legend of Zelda: Link's Awakening", "aliases": ["zelda links awakening switch"]},
-    {"canonical_name": "Super Mario Odyssey", "aliases": ["mario odyssey"]},
-    {"canonical_name": "Super Mario Party", "aliases": ["mario party switch"]},
-    {"canonical_name": "Mario Party Superstars", "aliases": ["mario party superstars switch"]},
-    {"canonical_name": "Super Mario 3D World + Bowser's Fury", "aliases": ["mario 3d world bowsers fury"]},
-    {"canonical_name": "New Super Mario Bros. U Deluxe", "aliases": ["new super mario bros u deluxe"]},
-    {"canonical_name": "Super Mario Maker 2", "aliases": ["mario maker 2"]},
-    {"canonical_name": "Mario Golf: Super Rush", "aliases": ["mario golf super rush"]},
-    {"canonical_name": "Mario Tennis Aces", "aliases": ["mario tennis aces switch"]},
-    {"canonical_name": "Mario Strikers: Battle League", "aliases": ["mario strikers battle league"]},
-    {"canonical_name": "Paper Mario: The Origami King", "aliases": ["paper mario origami king"]},
-    {"canonical_name": "Luigi's Mansion 3", "aliases": ["luigis mansion 3"]},
-    {"canonical_name": "Ring Fit Adventure", "aliases": ["ring fit adventure switch"]},
-    {"canonical_name": "Nintendo Switch Sports", "aliases": ["switch sports"]},
-    {"canonical_name": "1-2-Switch", "aliases": ["1 2 switch"]},
-    {"canonical_name": "Pokémon Sword", "aliases": ["pokemon espada", "pokemon sword switch"]},
-    {"canonical_name": "Pokémon Shield", "aliases": ["pokemon escudo", "pokemon shield switch"]},
-    {"canonical_name": "Pokémon Scarlet", "aliases": ["pokemon escarlata", "pokemon scarlet switch"]},
-    {"canonical_name": "Pokémon Violet", "aliases": ["pokemon purpura", "pokemon violet switch"]},
-    {"canonical_name": "Pokémon Let's Go, Pikachu!", "aliases": ["pokemon lets go pikachu"]},
-    {"canonical_name": "Pokémon Let's Go, Eevee!", "aliases": ["pokemon lets go eevee"]},
-    {"canonical_name": "Pokémon Brilliant Diamond", "aliases": ["pokemon diamante brillante"]},
-    {"canonical_name": "Pokémon Shining Pearl", "aliases": ["pokemon perla reluciente"]},
-    {"canonical_name": "Pokémon Legends: Arceus", "aliases": ["pokemon legends arceus"]},
-    {"canonical_name": "Detective Pikachu Returns", "aliases": ["detective pikachu returns switch"]},
-    {"canonical_name": "Splatoon 2", "aliases": ["splatoon 2 switch"]},
-    {"canonical_name": "Splatoon 3", "aliases": ["splatoon 3 switch"]},
-    {"canonical_name": "Kirby and the Forgotten Land", "aliases": ["kirby forgotten land"]},
-    {"canonical_name": "Kirby's Return to Dream Land Deluxe", "aliases": ["kirby return to dream land deluxe"]},
-    {"canonical_name": "Kirby Star Allies", "aliases": ["kirby star allies switch"]},
-    {"canonical_name": "Metroid Dread", "aliases": ["metroid dread switch"]},
-    {"canonical_name": "Metroid Prime Remastered", "aliases": ["metroid prime remastered switch"]},
-    {"canonical_name": "Fire Emblem: Three Houses", "aliases": ["fire emblem three houses"]},
-    {"canonical_name": "Fire Emblem Engage", "aliases": ["fire emblem engage switch"]},
-    {"canonical_name": "Xenoblade Chronicles 2", "aliases": ["xenoblade chronicles 2 switch"]},
-    {"canonical_name": "Xenoblade Chronicles 3", "aliases": ["xenoblade chronicles 3 switch"]},
-    {"canonical_name": "Xenoblade Chronicles: Definitive Edition", "aliases": ["xenoblade definitive edition"]},
-    {"canonical_name": "Bayonetta 3", "aliases": ["bayonetta 3 switch"]},
-    {"canonical_name": "Bayonetta 2", "aliases": ["bayonetta 2 switch"]},
-    {"canonical_name": "Pikmin 3 Deluxe", "aliases": ["pikmin 3 deluxe switch"]},
-    {"canonical_name": "Pikmin 4", "aliases": ["pikmin 4 switch"]},
-    {"canonical_name": "Mario + Rabbids Kingdom Battle", "aliases": ["mario rabbids kingdom battle"]},
-    {"canonical_name": "Mario + Rabbids Sparks of Hope", "aliases": ["mario rabbids sparks of hope"]},
-    {"canonical_name": "WarioWare: Get It Together!", "aliases": ["warioware get it together"]},
-    {"canonical_name": "Mario Kart Live: Home Circuit", "aliases": ["mario kart live home circuit"]},
-    {"canonical_name": "Super Mario Bros. Wonder", "aliases": ["mario wonder", "super mario bros wonder"]},
-    {"canonical_name": "Donkey Kong Country: Tropical Freeze", "aliases": ["donkey kong tropical freeze switch"]},
-    {"canonical_name": "Yoshi's Crafted World", "aliases": ["yoshis crafted world"]},
-    {"canonical_name": "Astral Chain", "aliases": ["astral chain switch"]},
-    {"canonical_name": "Fitness Boxing", "aliases": ["fitness boxing switch"]},
-    {"canonical_name": "Just Dance 2023", "aliases": ["just dance 2023 switch"]},
-    {"canonical_name": "Just Dance 2024", "aliases": ["just dance 2024 switch"]},
-    {"canonical_name": "Minecraft", "aliases": ["minecraft switch"]},
-    {"canonical_name": "The Witcher 3: Wild Hunt", "aliases": ["witcher 3 switch"]},
-    {"canonical_name": "The Elder Scrolls V: Skyrim", "aliases": ["skyrim switch"]},
-    {"canonical_name": "Diablo III: Eternal Collection", "aliases": ["diablo 3 eternal collection switch"]},
-    {"canonical_name": "DOOM (2016)", "aliases": ["doom 2016 switch"]},
-    {"canonical_name": "L.A. Noire", "aliases": ["la noire switch"]},
-    {"canonical_name": "Rocket League", "aliases": ["rocket league switch"]},
-    {"canonical_name": "Overcooked! 2", "aliases": ["overcooked 2 switch"]},
-    {"canonical_name": "Stardew Valley", "aliases": ["stardew valley switch"]},
-    {"canonical_name": "Terraria", "aliases": ["terraria switch"]},
-    {"canonical_name": "Hollow Knight", "aliases": ["hollow knight switch"]},
-    {"canonical_name": "Cuphead", "aliases": ["cuphead switch"]},
-    {"canonical_name": "Untitled Goose Game", "aliases": ["untitled goose game switch"]},
-    {"canonical_name": "LEGO Star Wars: The Skywalker Saga", "aliases": ["lego star wars skywalker saga switch"]},
-    {"canonical_name": "Crash Bandicoot 4: It's About Time", "aliases": ["crash 4 switch"]},
-    {"canonical_name": "Crash Team Racing Nitro-Fueled", "aliases": ["crash team racing switch", "ctr nitro fueled"]},
-    {"canonical_name": "Sonic Frontiers", "aliases": ["sonic frontiers switch"]},
-    {"canonical_name": "Sonic Superstars", "aliases": ["sonic superstars switch"]},
-    {"canonical_name": "Mortal Kombat 11", "aliases": ["mk11 switch"]},
-    {"canonical_name": "Street Fighter 6", "aliases": ["sf6 switch"]},
-    {"canonical_name": "EA Sports FC 24 (Legacy Edition)", "aliases": ["fc24 switch legacy edition", "fifa 24 switch"]},
-    {"canonical_name": "FIFA 23 (Legacy Edition)", "aliases": ["fifa 23 switch legacy edition"]},
-    {"canonical_name": "NBA 2K23", "aliases": ["nba 2k23 switch"]},
-    {"canonical_name": "Madden NFL 23", "aliases": ["madden 23 switch"]},
-    {"canonical_name": "Hyrule Warriors: Age of Calamity", "aliases": ["hyrule warriors age of calamity"]},
-    {"canonical_name": "The Legend of Zelda: Echoes of Wisdom", "aliases": ["zelda echoes of wisdom"]},
-    {"canonical_name": "Persona 5 Royal", "aliases": ["persona 5 royal switch"]},
-    {"canonical_name": "Dragon Quest XI S", "aliases": ["dragon quest 11 s switch"]},
-    {"canonical_name": "Dragon Quest Treasures", "aliases": ["dragon quest treasures switch"]},
-    {"canonical_name": "Monster Hunter Rise", "aliases": ["monster hunter rise switch"]},
-    {"canonical_name": "Monster Hunter Generations Ultimate", "aliases": ["mh generations ultimate"]},
-    {"canonical_name": "Octopath Traveler", "aliases": ["octopath traveler switch"]},
-    {"canonical_name": "Octopath Traveler II", "aliases": ["octopath traveler 2"]},
-    {"canonical_name": "Triangle Strategy", "aliases": ["triangle strategy switch"]},
-    {"canonical_name": "Fire Emblem Warriors: Three Hopes", "aliases": ["fire emblem warriors three hopes"]},
-    {"canonical_name": "Xenoblade Chronicles 3: Future Redeemed", "aliases": ["xenoblade 3 future redeemed"]},
-    {"canonical_name": "Advance Wars 1+2: Re-Boot Camp", "aliases": ["advance wars reboot camp"]},
-    {"canonical_name": "Kirby's Dream Buffet", "aliases": ["kirby dream buffet switch"]},
-    {"canonical_name": "Super Kirby Clash", "aliases": ["super kirby clash switch"]},
-    {"canonical_name": "Kirby Fighters 2", "aliases": ["kirby fighters 2 switch"]},
-    {"canonical_name": "New Pokémon Snap", "aliases": ["new pokemon snap"]},
-    {"canonical_name": "Pokémon Mystery Dungeon: Rescue Team DX", "aliases": ["pokemon mystery dungeon rescue team dx"]},
-    {"canonical_name": "Luigi's Mansion 2 HD", "aliases": ["luigis mansion 2 hd"]},
-    {"canonical_name": "Super Mario RPG", "aliases": ["mario rpg switch", "super mario rpg switch"]},
-    {"canonical_name": "Paper Mario: The Thousand-Year Door", "aliases": ["paper mario thousand year door switch"]},
-    {"canonical_name": "Mario vs. Donkey Kong", "aliases": ["mario vs donkey kong switch"]},
-    {"canonical_name": "Princess Peach: Showtime!", "aliases": ["princess peach showtime"]},
-    {"canonical_name": "WarioWare: Move It!", "aliases": ["warioware move it"]},
-    {"canonical_name": "Endless Ocean Luminous", "aliases": ["endless ocean luminous switch"]},
-    {"canonical_name": "Tomodachi Life", "aliases": ["tomodachi life switch"]},
-    {"canonical_name": "Big Brain Academy: Brain vs. Brain", "aliases": ["big brain academy switch"]},
-    {"canonical_name": "Clubhouse Games: 51 Worldwide Classics", "aliases": ["clubhouse games 51"]},
-    {"canonical_name": "Miitopia", "aliases": ["miitopia switch"]},
-    {"canonical_name": "Story of Seasons: A Wonderful Life", "aliases": ["story of seasons wonderful life"]},
-    {"canonical_name": "Assassin's Creed: The Rebel Collection", "aliases": ["ac rebel collection switch"]},
-    {"canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition", "aliases": ["gta trilogy switch"]},
-    {"canonical_name": "Just Cause 3", "aliases": ["just cause 3 switch"]},
-    {"canonical_name": "Wolfenstein II: The New Colossus", "aliases": ["wolfenstein 2 switch"]},
-    {"canonical_name": "Bravely Default II", "aliases": ["bravely default 2"]},
-    {"canonical_name": "Shin Megami Tensei V", "aliases": ["smt5 switch"]},
-    {"canonical_name": "Xenoblade Chronicles X: Definitive Edition", "aliases": ["xenoblade x definitive edition"]}
+    {
+      "canonical_name": "Mario Kart 8 Deluxe",
+      "aliases": [
+        "mario kart 8 deluxe switch",
+        "mk8 deluxe"
+      ],
+      "game_id": "604aa409-e19b-4d71-826a-12c1e85cba12",
+      "release_id": "04912374-4cf6-4b5e-90bd-a84505e3e8c7"
+    },
+    {
+      "canonical_name": "Animal Crossing: New Horizons",
+      "aliases": [
+        "animal crossing new horizons",
+        "acnh"
+      ],
+      "game_id": "88a90ef3-fdcb-45bb-8b64-a9333e5f54a2",
+      "release_id": "6a790c90-c8dc-4841-a63d-65e07cb0b52f"
+    },
+    {
+      "canonical_name": "Super Smash Bros. Ultimate",
+      "aliases": [
+        "smash bros ultimate",
+        "smash ultimate"
+      ],
+      "game_id": "84fc703a-8065-49c5-b537-48d87f7666d0",
+      "release_id": "fb0469bc-b51a-4bab-81a3-799d0b727519"
+    },
+    {
+      "canonical_name": "The Legend of Zelda: Breath of the Wild",
+      "aliases": [
+        "botw",
+        "zelda breath of the wild"
+      ],
+      "game_id": "a37f9420-efbd-40da-a745-96bf99af2d9b",
+      "release_id": "90ff28d9-ac4e-4868-8621-bf3fd90cefc6"
+    },
+    {
+      "canonical_name": "The Legend of Zelda: Tears of the Kingdom",
+      "aliases": [
+        "totk",
+        "zelda tears of the kingdom"
+      ],
+      "game_id": "388e8de0-70cd-4d79-96d1-c5b255ff3d29",
+      "release_id": "651fcb24-f813-4ce6-a695-e5aacfe27c94"
+    },
+    {
+      "canonical_name": "The Legend of Zelda: Skyward Sword HD",
+      "aliases": [
+        "zelda skyward sword hd"
+      ],
+      "game_id": "dcd4e0f5-5637-475e-bd53-8f9760bf9cb9",
+      "release_id": "9e756278-9ffc-4710-bd68-f17a0dec1b13"
+    },
+    {
+      "canonical_name": "The Legend of Zelda: Link's Awakening",
+      "aliases": [
+        "zelda links awakening switch"
+      ],
+      "game_id": "b7ce65e3-7d20-450c-9286-350c1fff2bbd",
+      "release_id": "759d8d4f-0784-4ef8-9979-65fa8169edad"
+    },
+    {
+      "canonical_name": "Super Mario Odyssey",
+      "aliases": [
+        "mario odyssey"
+      ],
+      "game_id": "5cb4a189-af92-4424-a543-e2423265bb11",
+      "release_id": "93c157e6-352f-4779-a9d8-49556499a063"
+    },
+    {
+      "canonical_name": "Super Mario Party",
+      "aliases": [
+        "mario party switch"
+      ],
+      "game_id": "dbe060f7-42d8-4c5e-b316-b74e26850d81",
+      "release_id": "b23b2d65-0423-41ac-a591-28353627066f"
+    },
+    {
+      "canonical_name": "Mario Party Superstars",
+      "aliases": [
+        "mario party superstars switch"
+      ],
+      "game_id": "0a024595-93eb-4406-92a9-db08e712caba",
+      "release_id": "924da2e0-412b-4e92-8c6a-0788129c669e"
+    },
+    {
+      "canonical_name": "Super Mario 3D World + Bowser's Fury",
+      "aliases": [
+        "mario 3d world bowsers fury"
+      ],
+      "game_id": "c4f74010-2354-4041-8cb4-4605b52df237",
+      "release_id": "891d1eed-f2d4-4bd8-ba48-3dfc6191a872"
+    },
+    {
+      "canonical_name": "New Super Mario Bros. U Deluxe",
+      "aliases": [
+        "new super mario bros u deluxe"
+      ],
+      "game_id": "9dcc3315-dbe6-466c-81f6-de841173e114",
+      "release_id": "94095331-5341-4b89-9067-b7672ded450a"
+    },
+    {
+      "canonical_name": "Super Mario Maker 2",
+      "aliases": [
+        "mario maker 2"
+      ],
+      "game_id": "18ada0e3-772f-43d9-86fd-e155efe94450",
+      "release_id": "2e1fcf23-5623-45b8-9a62-e1d0e5554c93"
+    },
+    {
+      "canonical_name": "Mario Golf: Super Rush",
+      "aliases": [
+        "mario golf super rush"
+      ],
+      "game_id": "da090b99-7be9-4011-bec3-0bb56dec1514",
+      "release_id": "f564819c-f796-4bf0-8a16-a5dd7c11b533"
+    },
+    {
+      "canonical_name": "Mario Tennis Aces",
+      "aliases": [
+        "mario tennis aces switch"
+      ],
+      "game_id": "d690b9c7-52f6-444c-aca3-6287ba222173",
+      "release_id": "05a95069-9680-4cb6-87ac-a382acd7457f"
+    },
+    {
+      "canonical_name": "Mario Strikers: Battle League",
+      "aliases": [
+        "mario strikers battle league"
+      ],
+      "game_id": "ffc09b7c-525f-43ed-b6b9-acf443870767",
+      "release_id": "1158cdc8-f834-4908-af5f-04c76490445c"
+    },
+    {
+      "canonical_name": "Paper Mario: The Origami King",
+      "aliases": [
+        "paper mario origami king"
+      ],
+      "game_id": "f87bb076-042e-4f84-bb9e-5ad763692a7f",
+      "release_id": "aec20991-cf72-468c-9452-1352eb6f0079"
+    },
+    {
+      "canonical_name": "Luigi's Mansion 3",
+      "aliases": [
+        "luigis mansion 3"
+      ],
+      "game_id": "196494bc-3aa1-498f-a45b-dc3f82207154",
+      "release_id": "e62adceb-1bb3-480d-afaa-e5a6e51b77f4"
+    },
+    {
+      "canonical_name": "Ring Fit Adventure",
+      "aliases": [
+        "ring fit adventure switch"
+      ],
+      "game_id": "171c084e-9e9a-4b4a-ac7d-02e9be09eff6",
+      "release_id": "ec0add17-d0fc-43a7-988d-c005ab829339"
+    },
+    {
+      "canonical_name": "Nintendo Switch Sports",
+      "aliases": [
+        "switch sports"
+      ],
+      "game_id": "0eaa36ca-2c2a-4d4b-8d52-7118c53b2564",
+      "release_id": "a8b08a1b-71fd-40b9-90da-5d60b1888147"
+    },
+    {
+      "canonical_name": "1-2-Switch",
+      "aliases": [
+        "1 2 switch"
+      ],
+      "game_id": "526d052c-0f57-4335-8920-8b65887ba7f4",
+      "release_id": "8baba372-eaf3-48c9-9a62-5a0b8d729da5"
+    },
+    {
+      "canonical_name": "Pokémon Sword",
+      "aliases": [
+        "pokemon espada",
+        "pokemon sword switch"
+      ],
+      "game_id": "321ed199-def9-4698-be65-d430b6c15955",
+      "release_id": "e3c0ae34-ab29-4bd0-ac22-13d2c28868b3"
+    },
+    {
+      "canonical_name": "Pokémon Shield",
+      "aliases": [
+        "pokemon escudo",
+        "pokemon shield switch"
+      ],
+      "game_id": "5c58d5bd-3bdb-4e19-8bf1-c3dfba2fbd4e",
+      "release_id": "e9cea478-170f-4010-9b36-72576e9a0640"
+    },
+    {
+      "canonical_name": "Pokémon Scarlet",
+      "aliases": [
+        "pokemon escarlata",
+        "pokemon scarlet switch"
+      ],
+      "game_id": "461047f7-81c2-433c-9d3e-4e0b3d45ed01",
+      "release_id": "11ba60c2-4748-4330-8bba-ec024c7e7049"
+    },
+    {
+      "canonical_name": "Pokémon Violet",
+      "aliases": [
+        "pokemon purpura",
+        "pokemon violet switch"
+      ],
+      "game_id": "5dce253d-6c82-4139-8e89-968c092860d0",
+      "release_id": "7675e408-ec5b-46bb-9bd6-eeecf0f6b418"
+    },
+    {
+      "canonical_name": "Pokémon Let's Go, Pikachu!",
+      "aliases": [
+        "pokemon lets go pikachu"
+      ],
+      "game_id": "02473735-2ba9-4813-915e-09b6ae5fe392",
+      "release_id": "99db1cad-85db-4490-93f9-bd9486381952"
+    },
+    {
+      "canonical_name": "Pokémon Let's Go, Eevee!",
+      "aliases": [
+        "pokemon lets go eevee"
+      ],
+      "game_id": "ffb468eb-b838-4768-8e1f-116fb19b8916",
+      "release_id": "8e44eed0-8ecc-46f3-865b-203ebb1a5fbf"
+    },
+    {
+      "canonical_name": "Pokémon Brilliant Diamond",
+      "aliases": [
+        "pokemon diamante brillante"
+      ],
+      "game_id": "7d5ff206-c772-40b3-b64b-216c2881f447",
+      "release_id": "d7e74509-d44f-4a27-865d-488c084e6f51"
+    },
+    {
+      "canonical_name": "Pokémon Shining Pearl",
+      "aliases": [
+        "pokemon perla reluciente"
+      ],
+      "game_id": "8c9d8970-503c-4b5f-a340-cee7e4f70e08",
+      "release_id": "6d2e8b47-108c-4052-9c57-c3a6cea18cf0"
+    },
+    {
+      "canonical_name": "Pokémon Legends: Arceus",
+      "aliases": [
+        "pokemon legends arceus"
+      ],
+      "game_id": "63acce19-e375-4730-bb49-39a14184f98e",
+      "release_id": "b46ee389-f19d-49bd-91b4-dff0ba24b6cf"
+    },
+    {
+      "canonical_name": "Detective Pikachu Returns",
+      "aliases": [
+        "detective pikachu returns switch"
+      ],
+      "game_id": "3487eaf1-f128-414e-abfb-12caeb2f57f1",
+      "release_id": "f219f02f-6d36-4290-b9d7-d452c91b27c0"
+    },
+    {
+      "canonical_name": "Splatoon 2",
+      "aliases": [
+        "splatoon 2 switch"
+      ],
+      "game_id": "59f5e792-3ba0-481f-ae4c-70cf2925fc72",
+      "release_id": "3021e6b8-0290-49b5-a64c-826f544eb40b"
+    },
+    {
+      "canonical_name": "Splatoon 3",
+      "aliases": [
+        "splatoon 3 switch"
+      ],
+      "game_id": "b7665a69-f8ca-4fab-b51c-9db78a36000a",
+      "release_id": "bf808298-0d7e-43d4-9c79-19ed5d452ac4"
+    },
+    {
+      "canonical_name": "Kirby and the Forgotten Land",
+      "aliases": [
+        "kirby forgotten land"
+      ],
+      "game_id": "430af1b9-57eb-489f-93cc-04097017b85e",
+      "release_id": "d5ec8b9d-48b4-4710-9c7f-4ecc391e5ac5"
+    },
+    {
+      "canonical_name": "Kirby's Return to Dream Land Deluxe",
+      "aliases": [
+        "kirby return to dream land deluxe"
+      ],
+      "game_id": "aac32f2f-3d2a-4405-b5fa-5ffd834810c2",
+      "release_id": "aa84ef60-a89c-4929-9d93-2a3e42e27bc7"
+    },
+    {
+      "canonical_name": "Kirby Star Allies",
+      "aliases": [
+        "kirby star allies switch"
+      ],
+      "game_id": "ed77d3aa-0bc1-4cb6-819e-d4db9fad57eb",
+      "release_id": "4c5eef74-677e-4607-b466-b8ab2cb7db39"
+    },
+    {
+      "canonical_name": "Metroid Dread",
+      "aliases": [
+        "metroid dread switch"
+      ],
+      "game_id": "5c5b1c8c-1477-427b-bb2f-e5a5ff1c9eb5",
+      "release_id": "e7ec4389-04ff-4b0e-ac02-75a71416b16c"
+    },
+    {
+      "canonical_name": "Metroid Prime Remastered",
+      "aliases": [
+        "metroid prime remastered switch"
+      ],
+      "game_id": "596cfdbf-2a64-437c-b66e-d911981565eb",
+      "release_id": "8e8f59fb-08e8-4a8a-8892-3f0d22704712"
+    },
+    {
+      "canonical_name": "Fire Emblem: Three Houses",
+      "aliases": [
+        "fire emblem three houses"
+      ],
+      "game_id": "c1bb28d4-e2a4-4552-b486-f816091856e0",
+      "release_id": "f369f8aa-2f15-4c88-a2fb-5122027ce9f8"
+    },
+    {
+      "canonical_name": "Fire Emblem Engage",
+      "aliases": [
+        "fire emblem engage switch"
+      ],
+      "game_id": "97310417-bbfb-446a-8a09-b2e2946231bc",
+      "release_id": "cd6c0f21-f79d-4ae7-931f-f0d4dd435983"
+    },
+    {
+      "canonical_name": "Xenoblade Chronicles 2",
+      "aliases": [
+        "xenoblade chronicles 2 switch"
+      ],
+      "game_id": "19d6273b-f599-4c1f-bb48-d87870e85e34",
+      "release_id": "0e7bbc97-7ea3-4e6d-86bc-b0c9b1eb37f4"
+    },
+    {
+      "canonical_name": "Xenoblade Chronicles 3",
+      "aliases": [
+        "xenoblade chronicles 3 switch"
+      ],
+      "game_id": "93f1fe13-19bf-4451-908d-9fa843c9c97c",
+      "release_id": "0e7aae25-aea6-4d9e-80f3-9bd68b320e1b"
+    },
+    {
+      "canonical_name": "Xenoblade Chronicles: Definitive Edition",
+      "aliases": [
+        "xenoblade definitive edition"
+      ],
+      "game_id": "6bf24857-07a1-4a43-bc9f-fd24a8e11996",
+      "release_id": "21b94d4e-5a6b-4645-88a6-578f8d546acb"
+    },
+    {
+      "canonical_name": "Bayonetta 3",
+      "aliases": [
+        "bayonetta 3 switch"
+      ],
+      "game_id": "d00da0d7-63c0-4954-8126-b2339a7bb7b2",
+      "release_id": "13d7b990-65d8-44dc-b299-040477f3dbe7"
+    },
+    {
+      "canonical_name": "Bayonetta 2",
+      "aliases": [
+        "bayonetta 2 switch"
+      ],
+      "game_id": "e4dfc2e9-b6b0-4b04-b767-62442cd419ee",
+      "release_id": "f9cb48b3-b42b-42b9-970a-5fb18a553a3d"
+    },
+    {
+      "canonical_name": "Pikmin 3 Deluxe",
+      "aliases": [
+        "pikmin 3 deluxe switch"
+      ],
+      "game_id": "e421f775-a7ea-4379-9aef-e9264a8087ef",
+      "release_id": "66e1fb3a-21ed-452e-8245-08a839360e7c"
+    },
+    {
+      "canonical_name": "Pikmin 4",
+      "aliases": [
+        "pikmin 4 switch"
+      ],
+      "game_id": "795dd43f-69aa-4c45-9910-10bc1c58573c",
+      "release_id": "b296fb3e-dad0-4d7e-9c7a-105aeaf56936"
+    },
+    {
+      "canonical_name": "Mario + Rabbids Kingdom Battle",
+      "aliases": [
+        "mario rabbids kingdom battle"
+      ],
+      "game_id": "3e3b425d-338f-45cc-8082-bdd7a0234efe",
+      "release_id": "90376a92-0958-46fe-a96e-ab84c29a7176"
+    },
+    {
+      "canonical_name": "Mario + Rabbids Sparks of Hope",
+      "aliases": [
+        "mario rabbids sparks of hope"
+      ],
+      "game_id": "396de070-8881-415e-be30-e851fbf0995a",
+      "release_id": "dd20afe1-a848-4cc8-beb3-d8e2e7b71c7d"
+    },
+    {
+      "canonical_name": "WarioWare: Get It Together!",
+      "aliases": [
+        "warioware get it together"
+      ],
+      "game_id": "867436f4-c285-48a1-ba37-febb23b30ac2",
+      "release_id": "0b684a91-105d-4b5c-832d-b7ce12d2f6f9"
+    },
+    {
+      "canonical_name": "Mario Kart Live: Home Circuit",
+      "aliases": [
+        "mario kart live home circuit"
+      ],
+      "game_id": "e8b545c4-482a-4ecb-ae89-a2141a1da27c",
+      "release_id": "e6825562-80fa-408b-8c5b-b88ad58c440d"
+    },
+    {
+      "canonical_name": "Super Mario Bros. Wonder",
+      "aliases": [
+        "mario wonder",
+        "super mario bros wonder"
+      ],
+      "game_id": "4c4bc054-9ae3-43b3-a353-7009634c1ca4",
+      "release_id": "3a6f37e2-dfb2-4389-9aab-fc97d5603a09"
+    },
+    {
+      "canonical_name": "Donkey Kong Country: Tropical Freeze",
+      "aliases": [
+        "donkey kong tropical freeze switch"
+      ],
+      "game_id": "25675da9-ccf6-4988-bf19-564b839ad41a",
+      "release_id": "26b9a3ac-e8c8-42ab-b65e-ef940748e60f"
+    },
+    {
+      "canonical_name": "Yoshi's Crafted World",
+      "aliases": [
+        "yoshis crafted world"
+      ],
+      "game_id": "99de6f05-88ee-4e1f-afec-c04f64279fe0",
+      "release_id": "2cc05378-d061-4ac9-8236-c42b8ca4c386"
+    },
+    {
+      "canonical_name": "Astral Chain",
+      "aliases": [
+        "astral chain switch"
+      ],
+      "game_id": "fb509131-d6d8-4993-ad3b-39ed727acdd6",
+      "release_id": "63e5a687-362c-450e-a8f2-b091cb82ecaa"
+    },
+    {
+      "canonical_name": "Fitness Boxing",
+      "aliases": [
+        "fitness boxing switch"
+      ],
+      "game_id": "4da6248c-a343-4e0f-8b26-d74732f7c588",
+      "release_id": "49d02ddb-9ea3-490c-8ccb-ce3c46b5d19b"
+    },
+    {
+      "canonical_name": "Just Dance 2023",
+      "aliases": [
+        "just dance 2023 switch"
+      ],
+      "game_id": "aa433c8d-a86f-463f-af00-58da4a76caf9",
+      "release_id": "f8b98d37-4420-4d15-b860-38b627727e9a"
+    },
+    {
+      "canonical_name": "Just Dance 2024",
+      "aliases": [
+        "just dance 2024 switch"
+      ],
+      "game_id": "efee8105-e111-4267-851c-68977fa6a66e",
+      "release_id": "009c2163-4301-4519-8298-8ee43952c1e2"
+    },
+    {
+      "canonical_name": "Minecraft",
+      "aliases": [
+        "minecraft switch"
+      ],
+      "game_id": "878cb83c-1f68-44c5-a2d0-6fffdbe2f4fd",
+      "release_id": "0f48b9e9-f5e0-4a50-853f-d6640904af51"
+    },
+    {
+      "canonical_name": "The Witcher 3: Wild Hunt",
+      "aliases": [
+        "witcher 3 switch"
+      ],
+      "game_id": "a5fe25be-ee3a-43ed-b53f-dea8ec1ce658",
+      "release_id": "2f36c411-1dd2-4d50-83e1-67f805e8ce5a"
+    },
+    {
+      "canonical_name": "The Elder Scrolls V: Skyrim",
+      "aliases": [
+        "skyrim switch"
+      ],
+      "game_id": "88bf1976-be5e-45e5-a23d-304548f56ba8",
+      "release_id": "478ec7df-8fee-4b56-9a6e-2919ef9c36d2"
+    },
+    {
+      "canonical_name": "Diablo III: Eternal Collection",
+      "aliases": [
+        "diablo 3 eternal collection switch"
+      ],
+      "game_id": "f6bd6d66-edcf-40cf-8d3e-ca554c6cd865",
+      "release_id": "36cbfec0-3d33-44fa-9c59-7dae3f11afb1"
+    },
+    {
+      "canonical_name": "DOOM (2016)",
+      "aliases": [
+        "doom 2016 switch"
+      ],
+      "game_id": "3e8b0b1a-0eb5-4ed3-9da9-8bbd1f5a085c",
+      "release_id": "7f990faf-a918-42c9-baa5-bb13d36b58f0"
+    },
+    {
+      "canonical_name": "L.A. Noire",
+      "aliases": [
+        "la noire switch"
+      ],
+      "game_id": "da7b06e9-1532-4190-bd93-7e5ccc20bc28",
+      "release_id": "3efdd863-cde5-4fff-aa86-52607e19fa3d"
+    },
+    {
+      "canonical_name": "Rocket League",
+      "aliases": [
+        "rocket league switch"
+      ],
+      "game_id": "5d8ab847-8d65-42d3-a833-6069fbbb12b8",
+      "release_id": "56492fc7-565d-42e9-a876-738ee60dcced"
+    },
+    {
+      "canonical_name": "Overcooked! 2",
+      "aliases": [
+        "overcooked 2 switch"
+      ],
+      "game_id": "f5c9ef17-a3ee-4a68-81a3-7a00050b9617",
+      "release_id": "1396e512-806d-4310-99b2-a31dc9cd4a5f"
+    },
+    {
+      "canonical_name": "Stardew Valley",
+      "aliases": [
+        "stardew valley switch"
+      ],
+      "game_id": "904bb00b-c8d9-48d4-9327-2a376998f9d7",
+      "release_id": "afd8e360-390a-48c2-b87d-9e60123468b3"
+    },
+    {
+      "canonical_name": "Terraria",
+      "aliases": [
+        "terraria switch"
+      ],
+      "game_id": "09546f98-f671-4570-8865-f5e233025c85",
+      "release_id": "9108068a-e97c-40fe-bb7f-cc14cc932458"
+    },
+    {
+      "canonical_name": "Hollow Knight",
+      "aliases": [
+        "hollow knight switch"
+      ],
+      "game_id": "bcfa4154-0f80-4217-a7cd-ffa915232d0e",
+      "release_id": "cd3945b7-d841-473a-958d-26191dcf70d4"
+    },
+    {
+      "canonical_name": "Cuphead",
+      "aliases": [
+        "cuphead switch"
+      ],
+      "game_id": "da560308-8f26-4f17-9719-3d361ff876d1",
+      "release_id": "0d4879aa-e245-4f1d-bb8b-fa825f816670"
+    },
+    {
+      "canonical_name": "Untitled Goose Game",
+      "aliases": [
+        "untitled goose game switch"
+      ],
+      "game_id": "a221cfa1-b710-45c9-be8a-ede48f5930ef",
+      "release_id": "71d31c97-e33a-46a5-a415-423949fe21e3"
+    },
+    {
+      "canonical_name": "LEGO Star Wars: The Skywalker Saga",
+      "aliases": [
+        "lego star wars skywalker saga switch"
+      ],
+      "game_id": "68a52710-5491-4696-87b3-d7e2c279367f",
+      "release_id": "d8d571db-c16e-47bc-8543-481789632e77"
+    },
+    {
+      "canonical_name": "Crash Bandicoot 4: It's About Time",
+      "aliases": [
+        "crash 4 switch"
+      ],
+      "game_id": "95f58263-fe94-46a9-9cb2-17398c22b0d0",
+      "release_id": "ad1134d1-59be-49e1-ac38-b67ceba178d6"
+    },
+    {
+      "canonical_name": "Crash Team Racing Nitro-Fueled",
+      "aliases": [
+        "crash team racing switch",
+        "ctr nitro fueled"
+      ],
+      "game_id": "4666bff4-1761-417d-80da-a10a73f2c71a",
+      "release_id": "dcf8f1f9-aba1-408d-be92-de32a23c4e08"
+    },
+    {
+      "canonical_name": "Sonic Frontiers",
+      "aliases": [
+        "sonic frontiers switch"
+      ],
+      "game_id": "8cb4d3a5-c3d8-49b4-99f6-f78100b1ffe7",
+      "release_id": "75b7aa39-8adf-44c2-be0c-2e83864237dc"
+    },
+    {
+      "canonical_name": "Sonic Superstars",
+      "aliases": [
+        "sonic superstars switch"
+      ],
+      "game_id": "46643bad-c1d2-4130-8fdc-aada6a582af6",
+      "release_id": "ad5d60ef-2907-4316-b579-cc21ce09f8b9"
+    },
+    {
+      "canonical_name": "Mortal Kombat 11",
+      "aliases": [
+        "mk11 switch"
+      ],
+      "game_id": "ace4bed9-411f-46cc-b273-8431bdb12cf8",
+      "release_id": "ecf83a52-ada2-48c0-8ae6-98cee969c8a0"
+    },
+    {
+      "canonical_name": "Street Fighter 6",
+      "aliases": [
+        "sf6 switch"
+      ],
+      "game_id": "2826d761-6ce7-4ed4-adcc-c87d32f98e97",
+      "release_id": "0b2ddff5-497d-4319-8959-07e489858a03"
+    },
+    {
+      "canonical_name": "EA Sports FC 24 (Legacy Edition)",
+      "aliases": [
+        "fc24 switch legacy edition",
+        "fifa 24 switch"
+      ],
+      "game_id": "45ce3e18-a7f4-4272-8243-d21de5836c76",
+      "release_id": "202d27c4-abbd-4988-992f-d5dfd501fe90"
+    },
+    {
+      "canonical_name": "FIFA 23 (Legacy Edition)",
+      "aliases": [
+        "fifa 23 switch legacy edition"
+      ],
+      "game_id": "71188f4e-20c3-482d-9964-982f544d8098",
+      "release_id": "b0cccc13-5ca1-48c7-b93c-d196119531f0"
+    },
+    {
+      "canonical_name": "NBA 2K23",
+      "aliases": [
+        "nba 2k23 switch"
+      ],
+      "game_id": "d2073c05-219b-4ff8-9d7a-1c975c08e786",
+      "release_id": "e757e182-e6dc-4931-aedd-1da7189934f2"
+    },
+    {
+      "canonical_name": "Madden NFL 23",
+      "aliases": [
+        "madden 23 switch"
+      ],
+      "game_id": "79575b75-6013-47a3-bcdf-c479899b0e4d",
+      "release_id": "03c8245a-5ece-443f-b510-cb559e8e7d57"
+    },
+    {
+      "canonical_name": "Hyrule Warriors: Age of Calamity",
+      "aliases": [
+        "hyrule warriors age of calamity"
+      ],
+      "game_id": "9eff64c9-dafe-4921-b8a8-e59d0a553daf",
+      "release_id": "6a326516-c5e9-4522-a476-793413155a65"
+    },
+    {
+      "canonical_name": "The Legend of Zelda: Echoes of Wisdom",
+      "aliases": [
+        "zelda echoes of wisdom"
+      ],
+      "game_id": "6459f4c7-dea4-47af-bffe-76f78a6908e6",
+      "release_id": "6563759d-f2a8-40cf-897c-63a883165ac3"
+    },
+    {
+      "canonical_name": "Persona 5 Royal",
+      "aliases": [
+        "persona 5 royal switch"
+      ],
+      "game_id": "35fcac79-65a2-4a72-a584-09199016bd22",
+      "release_id": "1a607902-178a-47a7-a875-faf170871aca"
+    },
+    {
+      "canonical_name": "Dragon Quest XI S",
+      "aliases": [
+        "dragon quest 11 s switch"
+      ],
+      "game_id": "230fc5a1-e769-42ee-81fd-801478bd882d",
+      "release_id": "3958dd50-f69a-4f23-97e2-4c4937599c23"
+    },
+    {
+      "canonical_name": "Dragon Quest Treasures",
+      "aliases": [
+        "dragon quest treasures switch"
+      ],
+      "game_id": "2d9c4af2-6976-48cd-ad31-c8cd66436a6a",
+      "release_id": "92be5886-e18a-461d-aedb-3459581a80f8"
+    },
+    {
+      "canonical_name": "Monster Hunter Rise",
+      "aliases": [
+        "monster hunter rise switch"
+      ],
+      "game_id": "e3cfadf1-cd95-466b-89a4-4fd3fff31f40",
+      "release_id": "ff78d518-055d-4379-ba6c-01799b8aff3f"
+    },
+    {
+      "canonical_name": "Monster Hunter Generations Ultimate",
+      "aliases": [
+        "mh generations ultimate"
+      ],
+      "game_id": "8efa182e-d885-43d1-ab74-289c31219342",
+      "release_id": "71f888b4-dd32-4cf3-852b-37731b2b3663"
+    },
+    {
+      "canonical_name": "Octopath Traveler",
+      "aliases": [
+        "octopath traveler switch"
+      ],
+      "game_id": "b66e2030-22f8-4e96-af94-f8db88624561",
+      "release_id": "033649c1-7350-4819-9c89-f25d48952ca7"
+    },
+    {
+      "canonical_name": "Octopath Traveler II",
+      "aliases": [
+        "octopath traveler 2"
+      ],
+      "game_id": "debbb7eb-58a0-422f-a0f6-2cb31ed8cacb",
+      "release_id": "2e86a94b-9fb4-4422-9ed4-8ace6994bacd"
+    },
+    {
+      "canonical_name": "Triangle Strategy",
+      "aliases": [
+        "triangle strategy switch"
+      ],
+      "game_id": "a1d70649-8b91-4ad5-9fb3-2183dff36389",
+      "release_id": "943159d6-af8e-4b0c-a769-5515c255577a"
+    },
+    {
+      "canonical_name": "Fire Emblem Warriors: Three Hopes",
+      "aliases": [
+        "fire emblem warriors three hopes"
+      ],
+      "game_id": "cef5ee38-3ba8-467b-b85a-405b6dfb9906",
+      "release_id": "da4ad8cc-0dc8-4aaa-9c18-55eb9b0a29a9"
+    },
+    {
+      "canonical_name": "Xenoblade Chronicles 3: Future Redeemed",
+      "aliases": [
+        "xenoblade 3 future redeemed"
+      ],
+      "game_id": "b6b8c6b2-1f6f-46cd-b5cc-885ac22697cd",
+      "release_id": "0e69a563-615a-4beb-9b6a-9d180a52385d"
+    },
+    {
+      "canonical_name": "Advance Wars 1+2: Re-Boot Camp",
+      "aliases": [
+        "advance wars reboot camp"
+      ],
+      "game_id": "6871e396-e1ee-4d2c-b77f-87cca5e70e21",
+      "release_id": "0f53c66a-9c28-4873-ba71-2eca9c6b578c"
+    },
+    {
+      "canonical_name": "Kirby's Dream Buffet",
+      "aliases": [
+        "kirby dream buffet switch"
+      ],
+      "game_id": "84ec24d0-7a02-440d-aad9-d737369c44eb",
+      "release_id": "240d9a77-8b2f-4507-9884-dfa90536c29a"
+    },
+    {
+      "canonical_name": "Super Kirby Clash",
+      "aliases": [
+        "super kirby clash switch"
+      ],
+      "game_id": "96a5bc0d-a47e-4ff9-be01-d77b72b5fe8f",
+      "release_id": "9ce7240b-b7dd-4900-a0a5-08b1cf653dd0"
+    },
+    {
+      "canonical_name": "Kirby Fighters 2",
+      "aliases": [
+        "kirby fighters 2 switch"
+      ],
+      "game_id": "34fde490-b3b1-4e15-9ea5-9d980bf0396c",
+      "release_id": "e848e261-87db-469f-bda4-30484816272c"
+    },
+    {
+      "canonical_name": "New Pokémon Snap",
+      "aliases": [
+        "new pokemon snap"
+      ],
+      "game_id": "7949e9eb-72a9-428c-9bab-324d90673b93",
+      "release_id": "43386643-e5d9-4688-bf21-052a148a162c"
+    },
+    {
+      "canonical_name": "Pokémon Mystery Dungeon: Rescue Team DX",
+      "aliases": [
+        "pokemon mystery dungeon rescue team dx"
+      ],
+      "game_id": "de2191d1-2bc4-4d5c-bf8e-b1bf22fe47c6",
+      "release_id": "5425c62e-6ec1-409d-805e-4826c006e2ee"
+    },
+    {
+      "canonical_name": "Luigi's Mansion 2 HD",
+      "aliases": [
+        "luigis mansion 2 hd"
+      ],
+      "game_id": "862b57ac-3d79-43cd-a0b8-f929d30a0018",
+      "release_id": "d4c852d2-ad7b-48b1-9ff2-6720ddd01171"
+    },
+    {
+      "canonical_name": "Super Mario RPG",
+      "aliases": [
+        "mario rpg switch",
+        "super mario rpg switch"
+      ],
+      "game_id": "cb17e51e-dbab-4f4e-9c8d-84ca52194642",
+      "release_id": "b7f5ed50-c491-40a1-96cd-cc4baea05240"
+    },
+    {
+      "canonical_name": "Paper Mario: The Thousand-Year Door",
+      "aliases": [
+        "paper mario thousand year door switch"
+      ],
+      "game_id": "e3d5699c-7fd6-466e-bde7-a30f2be4377d",
+      "release_id": "6bbf276c-5677-4e5c-94e6-a642ef541134"
+    },
+    {
+      "canonical_name": "Mario vs. Donkey Kong",
+      "aliases": [
+        "mario vs donkey kong switch"
+      ],
+      "game_id": "ccff9c26-fc9b-43da-a88d-81f928c8d00d",
+      "release_id": "8de05663-4f31-4784-89e5-316940213160"
+    },
+    {
+      "canonical_name": "Princess Peach: Showtime!",
+      "aliases": [
+        "princess peach showtime"
+      ],
+      "game_id": "9965fd0e-f5d2-486a-a756-5d17415bee46",
+      "release_id": "ac39efb1-2a33-45fd-a068-a0daced420a5"
+    },
+    {
+      "canonical_name": "WarioWare: Move It!",
+      "aliases": [
+        "warioware move it"
+      ],
+      "game_id": "8ded5068-1494-4445-8730-eabfb937c594",
+      "release_id": "aa05cdf4-544b-497c-b291-e702781ebb29"
+    },
+    {
+      "canonical_name": "Endless Ocean Luminous",
+      "aliases": [
+        "endless ocean luminous switch"
+      ],
+      "game_id": "9926be2c-0613-411f-b028-2bbcd40449c2",
+      "release_id": "86c3fd53-0502-489c-b34d-d8cd478ca5a9"
+    },
+    {
+      "canonical_name": "Tomodachi Life",
+      "aliases": [
+        "tomodachi life switch"
+      ],
+      "game_id": "df578a9d-1147-4b02-9bc7-12c4068c4db2",
+      "release_id": "eb713867-2a3e-4a5a-907d-a041002a6ea6"
+    },
+    {
+      "canonical_name": "Big Brain Academy: Brain vs. Brain",
+      "aliases": [
+        "big brain academy switch"
+      ],
+      "game_id": "a6b364ce-5d94-4e45-ae31-f6705880d7f8",
+      "release_id": "6cb53fc6-2620-4e74-8cca-6367f558b1e6"
+    },
+    {
+      "canonical_name": "Clubhouse Games: 51 Worldwide Classics",
+      "aliases": [
+        "clubhouse games 51"
+      ],
+      "game_id": "f463e77d-4d85-4264-a373-561db80df946",
+      "release_id": "718380d8-7d33-433e-b1f2-2a9e2b80d5db"
+    },
+    {
+      "canonical_name": "Miitopia",
+      "aliases": [
+        "miitopia switch"
+      ],
+      "game_id": "14e0aec1-2d20-4424-b8c3-82312be92af6",
+      "release_id": "30c1059a-2618-44a9-bedd-49ff8288834b"
+    },
+    {
+      "canonical_name": "Story of Seasons: A Wonderful Life",
+      "aliases": [
+        "story of seasons wonderful life"
+      ],
+      "game_id": "6aceff76-e636-4227-a9ff-97e4b87c61d4",
+      "release_id": "19513d44-47aa-4c2c-996c-a2415116641d"
+    },
+    {
+      "canonical_name": "Assassin's Creed: The Rebel Collection",
+      "aliases": [
+        "ac rebel collection switch"
+      ],
+      "game_id": "4d89e361-5745-4162-8279-35187a9012f9",
+      "release_id": "676e141a-fd92-4111-9835-3cb9511684f7"
+    },
+    {
+      "canonical_name": "Grand Theft Auto: The Trilogy - The Definitive Edition",
+      "aliases": [
+        "gta trilogy switch"
+      ],
+      "game_id": "b6baf737-e261-4e33-a511-e232ee505238",
+      "release_id": "ba025fcb-4cf4-4640-8708-f033a99a9e31"
+    },
+    {
+      "canonical_name": "Just Cause 3",
+      "aliases": [
+        "just cause 3 switch"
+      ],
+      "game_id": "c6925e77-b5f6-4b45-bc81-f8ab96b13bb0",
+      "release_id": "f92a3cff-393c-4b21-8002-67dca6d2955e"
+    },
+    {
+      "canonical_name": "Wolfenstein II: The New Colossus",
+      "aliases": [
+        "wolfenstein 2 switch"
+      ],
+      "game_id": "f5e31c58-80be-4e8f-8414-95600adbf6a4",
+      "release_id": "6b9684ff-ad86-4ac9-9efa-7a3e361b6c07"
+    },
+    {
+      "canonical_name": "Bravely Default II",
+      "aliases": [
+        "bravely default 2"
+      ],
+      "game_id": "f954d7a6-1c7f-45f5-9761-e0543ad9c634",
+      "release_id": "24555140-b287-452b-898e-24e5ab88320f"
+    },
+    {
+      "canonical_name": "Shin Megami Tensei V",
+      "aliases": [
+        "smt5 switch"
+      ],
+      "game_id": "ce833ba5-cc5c-41d8-9eb2-ca1a3dfcd909",
+      "release_id": "147ed869-7446-4d11-916b-5d8b137b81b3"
+    },
+    {
+      "canonical_name": "Xenoblade Chronicles X: Definitive Edition",
+      "aliases": [
+        "xenoblade x definitive edition"
+      ],
+      "game_id": "89ea9893-fce0-45a0-9bd5-c74c58606744",
+      "release_id": "253019e4-c0c2-454d-8903-dcb1f5d341d2"
+    }
   ]
 }

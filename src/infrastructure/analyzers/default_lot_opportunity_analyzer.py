@@ -17,6 +17,7 @@ from domain.entities.candidate_listing import CandidateListing
 from domain.entities.game_valuation import GameValuation
 from domain.entities.lot_opportunity import LotOpportunity, LotReasonCode
 from domain.entities.resale_economics import ResaleEconomicPolicy
+from domain.entities.sale_terms import PriceBasis, assess_sale_terms
 from domain.interfaces.arbitrage_opportunity_detector import Recommendation
 from domain.interfaces.lot_opportunity_analyzer import ILotOpportunityAnalyzer
 
@@ -101,6 +102,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
     """
 
         for valuation in game_valuations:
+            from domain.entities.game_identity import GameIdentity
+            GameIdentity.from_game(valuation.game)
             if valuation.currency != listing.currency:
                 raise CurrencyMismatchError(
                     listing.currency,
@@ -108,10 +111,16 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
                     "LotOpportunityAnalyzer",
                 )
 
+        terms = assess_sale_terms(listing, tuple(v.game for v in game_valuations))
+        if listing.price > 0 and terms.price_basis is not PriceBasis.TOTAL:
+            raise ValueError("Unresolved total purchase price; valuation is not safe")
+
         # Compute aggregate metrics
         economic_breakdown = self.economic_policy.calculate(
             reference_item_prices=[
-                valuation.estimated_market_value for valuation in game_valuations
+                valuation.estimated_market_value
+                for valuation in game_valuations
+                for _ in range(valuation.quantity)
             ],
             acquisition_price=listing.price,
             currency=listing.currency,
@@ -135,6 +144,10 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             min_net_profit=min_net_profit,
         )
 
+        unresolved = not terms.resolved or terms.quantities != tuple(v.quantity for v in game_valuations)
+        if unresolved and recommendation is not Recommendation.SKIP:
+            recommendation, reason = Recommendation.SKIP, LotReasonCode.UNRESOLVED_SALE_TERMS
+
         # Calculate opportunity score
         opportunity_score = self._calculate_opportunity_score(
             net_profit_margin=net_profit_margin,
@@ -144,6 +157,8 @@ class DefaultLotOpportunityAnalyzer(ILotOpportunityAnalyzer):
             valued_count=valued_count,
         )
 
+        if unresolved and reason is LotReasonCode.UNRESOLVED_SALE_TERMS:
+            opportunity_score = 0.0
         return LotOpportunity.from_valuations(
             listing=listing,
             game_valuations=game_valuations,

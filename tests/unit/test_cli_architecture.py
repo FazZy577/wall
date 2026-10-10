@@ -287,13 +287,15 @@ def test_only_operational_console_script_is_registered() -> None:
     }
 
 
-def test_cli_does_not_introduce_persistence_or_scheduling() -> None:
+def test_cli_delegates_storage_and_does_not_introduce_scheduling() -> None:
     cli_source = "\n".join(
         path.read_text(encoding="utf-8")
         for path in (SRC_ROOT / "presentation/cli").glob("*.py")
     ).casefold()
 
-    assert "sqlite" not in cli_source
+    assert "import sqlite3" not in cli_source
+    assert "from sqlite3" not in cli_source
+    assert "create table" not in cli_source
     assert "scheduler" not in cli_source
     assert "apscheduler" not in cli_source
     assert "cron" not in cli_source

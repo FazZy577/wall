@@ -16,6 +16,8 @@ from application.interfaces.search_plan_generator import (
 )
 from domain.entities.detected_game import Platform
 from domain.entities.game_catalog_entry import GameCatalogEntry
+from domain.entities.game_record import MediaFormat
+from domain.entities.search_coverage import MarketplaceCategory
 from domain.interfaces.game_catalog import IGameCatalog
 
 
@@ -34,7 +36,7 @@ class _SearchQueryKey:
 
 
 class DefaultSearchPlanGenerator(ISearchPlanGenerator):
-    """Generate one deterministic plan using canonical catalog names only."""
+    """Generate canonical-title plans or category discovery without catalog lookup."""
 
     def __init__(self, game_catalog: IGameCatalog) -> None:
         if not isinstance(game_catalog, IGameCatalog):
@@ -48,6 +50,8 @@ class DefaultSearchPlanGenerator(ISearchPlanGenerator):
         """Resolve every target and return an atomic canonical query plan."""
         if not isinstance(request, SearchPlanGenerationRequest):
             raise TypeError("request must be SearchPlanGenerationRequest")
+        if request.strategy is SearchPlanGenerationStrategy.DISCOVERY:
+            return self._generate_discovery(request)
         if request.strategy is not SearchPlanGenerationStrategy.CANONICAL_ONLY:
             raise SearchPlanGenerationError(
                 f"Unsupported search plan generation strategy: {request.strategy!r}"
@@ -86,6 +90,22 @@ class DefaultSearchPlanGenerator(ISearchPlanGenerator):
         )
 
     @staticmethod
+    def _generate_discovery(request: SearchPlanGenerationRequest) -> SearchPlanGenerationResult:
+        # Empty platforms means one category-wide search, with no game-name requirement.
+        keywords = [platform.value for platform in request.discovery_platforms] or [""]
+        unique_keywords = tuple(dict.fromkeys(keywords))
+        if len(unique_keywords) > request.max_queries:
+            raise SearchPlanLimitExceededError("Discovery queries exceed max_queries")
+        queries = tuple(SearchQuery(
+            keywords=keyword, latitude=request.latitude, longitude=request.longitude,
+            max_results=request.max_results, category=MarketplaceCategory.CONSOLES_AND_VIDEO_GAMES,
+        ) for keyword in unique_keywords)
+        return SearchPlanGenerationResult(
+            plan=SearchPlan(queries), targets_received=len(keywords),
+            queries_generated=len(queries), duplicate_queries_removed=len(keywords) - len(queries),
+        )
+
+    @staticmethod
     def _build_catalog_index(
         catalog_entries: object,
     ) -> dict[_CatalogIdentity, GameCatalogEntry]:
@@ -100,6 +120,11 @@ class DefaultSearchPlanGenerator(ISearchPlanGenerator):
                 raise SearchPlanGenerationError(
                     f"game catalog entry at index {index} must be GameCatalogEntry"
                 )
+            if entry.release_identity is not None and (
+                entry.release_identity.edition != "standard"
+                or entry.release_identity.media_format is not MediaFormat.PHYSICAL
+            ):
+                continue
             identity = _CatalogIdentity(
                 canonical_name=DefaultSearchPlanGenerator._normalize_name(
                     entry.canonical_name

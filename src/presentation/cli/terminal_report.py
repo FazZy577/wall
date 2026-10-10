@@ -80,6 +80,9 @@ def _render_generation(
         lines.append("No queries.")
         return
     for position, query in enumerate(generation.plan.queries, 1):
+        if query.category is not None:
+            lines.append(f"   Discovery category: {query.category.value}")
+            lines.append(f"   Platform keyword: {query.keywords or 'all platforms'}")
         lines.extend(
             (
                 f"{position}. {_one_line(query.keywords)}",
@@ -110,6 +113,16 @@ def _render_execution(
             f"Processing time: {execution.processing_time:.6f} seconds",
         )
     )
+    for scan in execution.query_scans:
+        pages = scan.coverage.pages_received
+        limit = scan.coverage.max_pages
+        lines.append(
+            f"Query {scan.query_index + 1} coverage: pages={pages if pages is not None else 'unknown'}, "
+            f"page limit={limit if limit is not None else 'unknown'}, "
+            f"result limit={scan.query.max_results}, stop={scan.coverage.stop_reason.value}"
+        )
+    if execution.query_scans:
+        lines.append("Coverage applies only to each requested search, not the entire marketplace.")
 
 
 def _render_individual_opportunity(
@@ -161,6 +174,7 @@ def _render_game_valuation(lines: list[str], valuation: GameValuation) -> None:
         "   - "
         f"{_one_line(valuation.game.canonical_name)} / "
         f"{valuation.game.platform.value}: "
+        f"{valuation.quantity} unit(s), "
         f"{_money(valuation.estimated_market_value, valuation.currency)}, "
         f"confidence {valuation.confidence_score:.2f}, "
         f"observations {valuation.observations_used}, "

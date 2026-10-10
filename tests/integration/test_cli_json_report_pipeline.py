@@ -37,10 +37,10 @@ _CANDIDATE_QUERY = "Grand Theft Auto V PS4"
 
 
 class _FakeMarketplaceSearch(IMarketplaceSearch):
-    def __init__(self, responses: Mapping[str, Sequence[dict[str, Any]]]) -> None:
+    def __init__(self, responses: Mapping[tuple[str, int], Sequence[dict[str, Any]]]) -> None:
         self._responses = {
-            self._normalize(key): tuple(deepcopy(list(items)))
-            for key, items in responses.items()
+            (self._normalize(key), limit): tuple(deepcopy(list(items)))
+            for (key, limit), items in responses.items()
         }
         self.calls: list[str] = []
 
@@ -54,7 +54,7 @@ class _FakeMarketplaceSearch(IMarketplaceSearch):
         del latitude, longitude
         self.calls.append(keywords)
         return deepcopy(
-            list(self._responses.get(self._normalize(keywords), ()))
+            list(self._responses.get((self._normalize(keywords), max_results), ()))
         )[:max_results]
 
     @staticmethod
@@ -130,9 +130,9 @@ def _config() -> AppConfig:
     )
 
 
-def _responses() -> dict[str, Sequence[dict[str, Any]]]:
+def _responses() -> dict[tuple[str, int], Sequence[dict[str, Any]]]:
     return {
-        _CANDIDATE_QUERY: (
+        (_CANDIDATE_QUERY, 10): (
             _raw(
                 "json-hardware",
                 "PS4 Negra + 3 Juegos + 1 mando",
@@ -145,12 +145,12 @@ def _responses() -> dict[str, Sequence[dict[str, Any]]]:
             _raw("json-individual", "GTA V PS4 juego individual", "5.00"),
             _raw("json-lot", "Lote GTA V RDR2 PS4", "20.00"),
         ),
-        "gta v ps4": _comparables(
+        ("grand theft auto v ps4", 100): _comparables(
             "json-gta",
             "GTA V PS4 juego",
             ("18", "19", "20", "21", "22"),
         ),
-        "rdr2 ps4": _comparables(
+        ("red dead redemption 2 ps4", 100): _comparables(
             "json-rdr2",
             "RDR2 PS4 juego",
             ("24", "25", "26", "27", "28"),

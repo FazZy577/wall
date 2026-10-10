@@ -1,7 +1,6 @@
 """Deterministic candidate eligibility policy."""
 
 import re
-import unicodedata
 from collections.abc import Sequence
 from typing import Final
 
@@ -13,9 +12,12 @@ from domain.entities.candidate_classification import (
 from domain.entities.candidate_listing import CandidateListing
 from domain.entities.detected_game import DetectedGame, Platform
 from domain.entities.game_identity import GameIdentity
+from domain.entities.game_record import IdentityStatus, MediaFormat
+from domain.entities.sale_terms import assess_sale_terms
 from domain.interfaces.candidate_eligibility_policy import (
     ICandidateEligibilityPolicy,
 )
+from infrastructure.matching.game_text import split_game_text
 from infrastructure.matching.platform_lexical_matcher import (
     PlatformLexicalMatcher,
     PlatformMention,
@@ -47,13 +49,18 @@ _ACCESSORY_TERM = (
     r"headset|headsets|auricular|auriculares|accesorio|accesorios)"
 )
 _ACCESSORY_PATTERN: Final[re.Pattern[str]] = re.compile(rf"\b{_ACCESSORY_TERM}\b")
-_ACCESSORY_NEGATION_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
-    re.compile(pattern)
-    for pattern in (
-        rf"\bsin\s+(?:(?:el|la|los|las|ningun|ninguna)\s+)?{_ACCESSORY_TERM}\b",
-        rf"\bno\s+incluye(?:n)?\s+(?:(?:el|la|los|las|ningun|ninguna)\s+)?{_ACCESSORY_TERM}\b",
-        rf"\b{_ACCESSORY_TERM}\s+no\s+incluid[oa]s?\b",
-    )
+_PRODUCT_CONTEXT_PREFIX: Final[re.Pattern[str]] = re.compile(
+    r"\b(?:sin|no incluye[n]?|no viene con|para|compatible con|"
+    r"probado en|probados en|funciona en|busco|buscando|cambio por|"
+    r"tambien vendo|vendo por separado)\s+"
+    r"(?:(?:el|la|los|las|un|una|ningun|ninguna)\s+)?$"
+)
+_PRODUCT_CONTEXT_SUFFIX: Final[re.Pattern[str]] = re.compile(
+    r"^(?:no incluid[oa]s?|no se incluye[n]?|(?:disponible|vendido) por separado|por separado)\b"
+)
+_HARDWARE_PRODUCT_PREFIX: Final[re.Pattern[str]] = re.compile(
+    r"(?:^|\b(?:con|incluye|y)\s+)(?:(?:vendo|incluye|incluye una|incluye la|vendo una|vendo la)\s+)?"
+    r"(?:(?:pack|lote|bundle)(?: de)?\s+)?$"
 )
 _CENTERED_CABLE_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"^(?:vendo\s+)?(?:cable|cables|cargador|cargadores|charger|chargers)\b"
@@ -83,7 +90,7 @@ _UNSUPPORTED_VARIANT_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
         r"\bcontenido adicional\b",
         r"\b(?:incluye|con) (?:una )?expansion\b",
         r"\bexpansion incluid[ao]\b",
-        r"\bsin (?:el )?(?:mapa|manual|caratula|disco)\b",
+        r"\bsin (?:(?:el|la) )?(?:mapa|manual|caratula|disco|caja)\b",
         r"\bsolo (?:el )?(?:disco|caja)\b",
         r"\bdisco suelto\b",
         r"\bcaja vacia\b",
@@ -152,13 +159,24 @@ _CONTEXT_SCOPE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = tuple(
 )
 
 
-def _normalise_clauses(text: str) -> tuple[str, ...]:
+def _normalise_clauses(
+    text: str, games: tuple[DetectedGame, ...] = (),
+) -> tuple[str, ...]:
     """Return independently normalised clauses without joining boundaries."""
-    return tuple(
-        clause
-        for raw_clause in _CLAUSE_SEPARATOR_PATTERN.split(text)
-        if (clause := RuleBasedCandidateEligibilityPolicy._normalize_text(raw_clause))
+    # A colon after an exclusion/search marker introduces its object; it must
+    # not detach the game from "Busco:" or "No incluye:".
+    text = re.sub(
+        r"\b(busco|buscando|no incluye|no viene con|cambio por|compatible con|"
+        r"también vendo|tambien vendo|vendo por separado)\s*:\s*",
+        r"\1 ", text, flags=re.IGNORECASE,
     )
+    normalized = PlatformLexicalMatcher.normalize_text(text)
+    protected_spans = tuple(
+        span
+        for game in games
+        for span in RuleBasedCandidateEligibilityPolicy._game_occurrences(game, normalized)
+    )
+    return split_game_text(text, _CLAUSE_SEPARATOR_PATTERN, protected_spans)
 
 
 def _is_contextual_occurrence(clause: str, start: int, end: int) -> bool:
@@ -199,19 +217,30 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         games = tuple(detected_games)
         if any(not isinstance(game, DetectedGame) for game in games):
             raise TypeError("detected_games must contain only DetectedGame")
+        if any(game.release_identity is not None and game.release_identity.status is not IdentityStatus.CONFIRMED
+               for game in games):
+            return CandidateClassification(
+                CandidateDisposition.AMBIGUOUS,
+                CandidateClassificationReason.UNCONFIRMED_IDENTITY, (),
+            )
 
-        normalized_title = self._normalize_text(listing.title)
         normalized_text = self._normalize_text(
             f"{listing.title} {listing.description}"
         )
+        if any(game.release_identity is not None and (
+            game.release_identity.edition != "standard"
+            or game.release_identity.media_format is not MediaFormat.PHYSICAL
+        ) for game in games):
+            return CandidateClassification(CandidateDisposition.AMBIGUOUS,
+                CandidateClassificationReason.UNSUPPORTED_EDITION, ())
 
-        if self._is_hardware(normalized_title, normalized_text):
+        if self._is_hardware(listing.title, listing.description):
             return CandidateClassification(
                 CandidateDisposition.IGNORED,
                 CandidateClassificationReason.UNSUPPORTED_HARDWARE,
                 (),
             )
-        if self._has_included_accessory(normalized_title, normalized_text):
+        if self._has_included_accessory(listing.title, listing.description):
             return CandidateClassification(
                 CandidateDisposition.IGNORED,
                 CandidateClassificationReason.ACCESSORY_OR_CONTROLLER,
@@ -230,6 +259,7 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             listing.title,
             listing.description,
             included_games,
+            games,
         ):
             return CandidateClassification(
                 CandidateDisposition.AMBIGUOUS,
@@ -256,7 +286,14 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
                 else CandidateDisposition.AMBIGUOUS
             )
             return CandidateClassification(disposition, reason, ())
-        if len(included_games) == 1:
+        terms = assess_sale_terms(listing, included_games)
+        if not terms.resolved or has_unresolved:
+            return CandidateClassification(
+                CandidateDisposition.AMBIGUOUS,
+                CandidateClassificationReason.UNRESOLVED_SALE_TERMS,
+                (),
+            )
+        if terms.total_units == 1:
             return CandidateClassification(
                 CandidateDisposition.ELIGIBLE_INDIVIDUAL,
                 CandidateClassificationReason.ELIGIBLE_SINGLE_GAME,
@@ -266,6 +303,7 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             CandidateDisposition.ELIGIBLE_LOT,
             CandidateClassificationReason.ELIGIBLE_MULTI_GAME_LOT,
             included_games,
+            terms.quantities,
         )
 
     @staticmethod
@@ -279,7 +317,7 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
             if game.platform is Platform.UNKNOWN:
                 identity = (normalized_name, game.platform)
             else:
-                identity = GameIdentity(game.canonical_name, game.platform)
+                identity = GameIdentity.from_game(game)
             if identity in identities:
                 raise ValueError("detected_games contains duplicate game identity")
             identities.add(identity)
@@ -290,8 +328,8 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         description: str,
         games: tuple[DetectedGame, ...],
     ) -> tuple[tuple[DetectedGame, ...], bool, bool]:
-        title_clauses = _normalise_clauses(title)
-        description_clauses = _normalise_clauses(description)
+        title_clauses = _normalise_clauses(title, games)
+        description_clauses = _normalise_clauses(description, games)
         positive_lot = any(
             pattern.search(clause)
             for pattern in _POSITIVE_LOT_PATTERNS
@@ -304,11 +342,12 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         unresolved_indices: set[int] = set()
 
         for index, game in enumerate(games):
-            title_occurrences = self._locate_game(game, title_clauses, "title")
+            title_occurrences = self._locate_game(game, title_clauses, "title", games)
             description_occurrences = self._locate_game(
                 game,
                 description_clauses,
                 "description",
+                games,
             )
             all_occurrences = (*title_occurrences, *description_occurrences)
             if not all_occurrences:
@@ -363,42 +402,75 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         game: DetectedGame,
         clauses: tuple[str, ...],
         source: str,
+        games: tuple[DetectedGame, ...] = (),
     ) -> tuple[tuple[str, str, int, int], ...]:
-        variants: list[str] = []
-        for value in (game.matched_text, game.canonical_name):
-            normalized = cls._normalize_text(value)
-            if normalized and normalized not in variants:
-                variants.append(normalized)
         occurrences: list[tuple[str, str, int, int]] = []
         for clause in clauses:
-            for variant in variants:
-                pattern = re.compile(rf"(?<![a-z0-9]){re.escape(variant)}(?![a-z0-9])")
-                occurrences.extend(
-                    (source, clause, match.start(), match.end())
-                    for match in pattern.finditer(clause)
-                )
+            spans = cls._game_occurrences(game, clause)
+            competing_spans = {
+                span
+                for other in (games or (game,))
+                for span in cls._game_occurrences(other, clause)
+            }
+            for start, end in spans:
+                if any(
+                    left <= start and end <= right and (left, right) != (start, end)
+                    for left, right in competing_spans
+                ):
+                    continue
+                occurrences.append((source, clause, start, end))
         return tuple(occurrences)
 
     @staticmethod
     def _normalize_text(text: str) -> str:
-        normalized = unicodedata.normalize("NFKD", text.casefold())
-        without_accents = "".join(
-            character
-            for character in normalized
-            if not unicodedata.combining(character)
-        )
-        alphanumeric = re.sub(r"[^a-z0-9\s]", " ", without_accents)
-        return " ".join(alphanumeric.split())
+        return PlatformLexicalMatcher.normalize_text(text)
 
-    def _is_hardware(self, title: str, text: str) -> bool:
-        if any(pattern.search(text) for pattern in _EXPLICIT_HARDWARE_PATTERNS):
+    def _product_clauses(self, title: str, description: str) -> tuple[str, ...]:
+        # Keep list punctuation inside the clause so exclusion and inclusion
+        # context survives "sin consola ni mando" and "PS4 + juegos".
+        return tuple(
+            normalized
+            for section in (title, description)
+            for clause in re.split(r"[.;\n]", section)
+            if (normalized := self._normalize_text(clause.replace("+", " y ")))
+        )
+
+    def _is_contextual_product(self, clause: str, start: int, end: int) -> bool:
+        before = clause[:start]
+        # Carry exclusions through an explicit coordinated list, not through
+        # a new inclusion such as "sin mando pero incluye consola".
+        before = re.sub(
+            rf"(?:consola|videoconsola|console|{_ACCESSORY_TERM})\s+ni\s+",
+            "", before,
+        )
+        if _PRODUCT_CONTEXT_PREFIX.search(before):
             return True
-        mentions = self._platform_matcher.find_mentions(title)
-        if not mentions:
-            return False
-        if _HARDWARE_UNIT_SIGNAL.search(title) is not None:
-            return True
-        return any(self._has_hardware_variant(title, mention) for mention in mentions)
+        after = clause[end:].strip()
+        platforms = self._platform_matcher.find_mentions(after)
+        if platforms and platforms[0].start == 0:
+            after = after[platforms[0].end:].strip()
+        return _PRODUCT_CONTEXT_SUFFIX.match(after) is not None
+
+    def _is_hardware(self, title: str, description: str) -> bool:
+        for clause in self._product_clauses(title, description):
+            for pattern in _EXPLICIT_HARDWARE_PATTERNS:
+                if any(
+                    not self._is_contextual_product(clause, match.start(), match.end())
+                    for match in pattern.finditer(clause)
+                ):
+                    return True
+            for mention in self._platform_matcher.find_mentions(clause):
+                if not _HARDWARE_PRODUCT_PREFIX.search(clause[:mention.start]):
+                    continue
+                if self._is_contextual_product(clause, mention.start, mention.end):
+                    continue
+                suffix = clause[mention.end:].lstrip()
+                suffix = re.sub(r"^y\s+", "", suffix)
+                if _HARDWARE_UNIT_SIGNAL.match(suffix) or self._has_hardware_variant(
+                    clause, mention
+                ):
+                    return True
+        return False
 
     @staticmethod
     def _has_hardware_variant(title: str, mention: PlatformMention) -> bool:
@@ -427,23 +499,29 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
 
         return variant_present and _HARDWARE_VARIANT_SUPPORT.search(title) is not None
 
-    @staticmethod
-    def _has_included_accessory(title: str, text: str) -> bool:
-        positive_text = text
-        for pattern in _ACCESSORY_NEGATION_PATTERNS:
-            positive_text = pattern.sub(" ", positive_text)
-        return (
-            _ACCESSORY_PATTERN.search(positive_text) is not None
-            or _CENTERED_CABLE_PATTERN.search(title) is not None
-        )
+    def _has_included_accessory(self, title: str, description: str) -> bool:
+        for clause in self._product_clauses(title, description):
+            if any(
+                not self._is_contextual_product(clause, match.start(), match.end())
+                for match in _ACCESSORY_PATTERN.finditer(clause)
+            ):
+                return True
+            if _CENTERED_CABLE_PATTERN.search(clause):
+                return True
+        return False
 
     def _has_unresolved_multiplatform(
         self,
         title: str,
         description: str,
         included_games: tuple[DetectedGame, ...],
+        mentioned_games: tuple[DetectedGame, ...] = (),
     ) -> bool:
-        clauses = (*_normalise_clauses(title), *_normalise_clauses(description))
+        protected_games = mentioned_games or included_games
+        clauses = (
+            *_normalise_clauses(title, protected_games),
+            *_normalise_clauses(description, protected_games),
+        )
         mentions_by_clause = tuple(
             (
                 clause,
@@ -474,7 +552,7 @@ class RuleBasedCandidateEligibilityPolicy(ICandidateEligibilityPolicy):
         ):
             return True
         if len(product_platforms) <= 1 and len(included_platforms) <= 1:
-            return False
+            return bool(product_platforms and included_platforms and product_platforms != included_platforms)
         if not included_games:
             return True
         if any(game.platform is Platform.UNKNOWN for game in included_games):

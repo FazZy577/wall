@@ -80,7 +80,7 @@ class TestSearchQueryGeneration:
     """Test search query generation from game."""
 
     def test_gta_v_canonical_name(self, price_collector: WallapopPriceCollector) -> None:
-        """Should convert 'Grand Theft Auto V' to 'GTA V'."""
+        """Should preserve the complete canonical name."""
         game = DetectedGame(
             canonical_name="Grand Theft Auto V",
             matched_text="grand theft auto v ps4",
@@ -89,10 +89,10 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "GTA V PS4"
+        assert query == "Grand Theft Auto V PS4"
 
     def test_gta_5_with_number(self, price_collector: WallapopPriceCollector) -> None:
-        """Should convert 'Grand Theft Auto 5' to 'GTA 5'."""
+        """Should preserve the numeric delivery in the canonical name."""
         game = DetectedGame(
             canonical_name="Grand Theft Auto 5",
             matched_text="grand theft auto 5",
@@ -101,10 +101,10 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "GTA 5 PS4"
+        assert query == "Grand Theft Auto 5 PS4"
 
     def test_short_matched_text(self, price_collector: WallapopPriceCollector) -> None:
-        """Should use short matched_text directly."""
+        """Should ignore seller matched_text when generating queries."""
         game = DetectedGame(
             canonical_name="Grand Theft Auto V",
             matched_text="gta v",
@@ -113,10 +113,10 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "gta v PS4"
+        assert query == "Grand Theft Auto V PS4"
 
     def test_call_of_duty(self, price_collector: WallapopPriceCollector) -> None:
-        """Should convert 'Call of Duty: Black Ops 6' to 'COD black ops 6'."""
+        """Should preserve the canonical franchise and subtitle."""
         game = DetectedGame(
             canonical_name="Call of Duty: Black Ops 6",
             matched_text="call of duty black ops 6",
@@ -125,7 +125,7 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "COD black ops 6 PS4"
+        assert query == "Call of Duty: Black Ops 6 PS4"
 
     def test_fifa_with_year(self, price_collector: WallapopPriceCollector) -> None:
         """Should convert 'FIFA 23' to 'FIFA 23'."""
@@ -137,10 +137,10 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "fifa 23 PS4"
+        assert query == "FIFA 23 PS4"
 
     def test_ea_sports_fc(self, price_collector: WallapopPriceCollector) -> None:
-        """Should convert 'EA Sports FC 24' to 'FC 24'."""
+        """Should preserve the complete canonical sports title."""
         game = DetectedGame(
             canonical_name="EA Sports FC 24",
             matched_text="ea sports fc 24",
@@ -149,7 +149,7 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
         query = price_collector._generate_search_query(game)
-        assert query == "FC 24 PS4"
+        assert query == "EA Sports FC 24 PS4"
 
     def test_red_dead_redemption(self, price_collector: WallapopPriceCollector) -> None:
         """Should use canonical name + platform for uncommon games."""
@@ -191,7 +191,7 @@ class TestSearchQueryGeneration:
 
         query = price_collector._generate_search_query(game)
 
-        assert query == f"example {expected_suffix}"
+        assert query == f"Example Game {expected_suffix}"
 
     def test_existing_canonical_platform_is_not_duplicated(
         self,
@@ -205,7 +205,7 @@ class TestSearchQueryGeneration:
             detection_method=DetectionMethod.EXACT_MATCH,
         )
 
-        assert price_collector._generate_search_query(game) == "halo Xbox 360"
+        assert price_collector._generate_search_query(game) == "Halo Test Xbox 360"
 
     def test_unknown_platform_cannot_generate_a_market_query(
         self,
@@ -1144,6 +1144,6 @@ class TestCollectComparables:
         # Verify search query
         mock_wallapop_client.search_listings.assert_called_once()
         call_args = mock_wallapop_client.search_listings.call_args
-        assert call_args.kwargs["keywords"] == "gta v PS4"
+        assert call_args.kwargs["keywords"] == "Grand Theft Auto V PS4"
         assert call_args.kwargs["latitude"] == 40.4168
         assert call_args.kwargs["longitude"] == -3.7038

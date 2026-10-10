@@ -1,146 +1,1148 @@
 {
   "platform": "PS3",
   "games": [
-    {"canonical_name": "Grand Theft Auto V", "aliases": ["gta 5 ps3", "gta v ps3", "gta5 ps3"]},
-    {"canonical_name": "Grand Theft Auto IV", "aliases": ["gta 4 ps3", "gta iv ps3"]},
-    {"canonical_name": "Grand Theft Auto: San Andreas", "aliases": ["gta san andreas ps3"]},
-    {"canonical_name": "Red Dead Redemption", "aliases": ["rdr1 ps3", "red dead redemption ps3"]},
-    {"canonical_name": "Gran Turismo 5", "aliases": ["gt5 ps3"]},
-    {"canonical_name": "Gran Turismo 6", "aliases": ["gt6 ps3"]},
-    {"canonical_name": "Uncharted: Drake's Fortune", "aliases": ["uncharted 1 ps3"]},
-    {"canonical_name": "Uncharted 2: Among Thieves", "aliases": ["uncharted 2 ps3"]},
-    {"canonical_name": "Uncharted 3: Drake's Deception", "aliases": ["uncharted 3 ps3"]},
-    {"canonical_name": "The Last of Us", "aliases": ["tlou ps3", "the last of us ps3"]},
-    {"canonical_name": "God of War III", "aliases": ["god of war 3 ps3"]},
-    {"canonical_name": "God of War: Ascension", "aliases": ["god of war ascension ps3"]},
-    {"canonical_name": "God of War Collection", "aliases": ["god of war collection ps3"]},
-    {"canonical_name": "LittleBigPlanet", "aliases": ["littlebigplanet 1 ps3"]},
-    {"canonical_name": "LittleBigPlanet 2", "aliases": ["littlebigplanet 2 ps3"]},
-    {"canonical_name": "LittleBigPlanet 3", "aliases": ["littlebigplanet 3 ps3"]},
-    {"canonical_name": "Killzone 2", "aliases": ["killzone 2 ps3"]},
-    {"canonical_name": "Killzone 3", "aliases": ["killzone 3 ps3"]},
-    {"canonical_name": "Resistance: Fall of Man", "aliases": ["resistance 1 ps3"]},
-    {"canonical_name": "Resistance 2", "aliases": ["resistance 2 ps3"]},
-    {"canonical_name": "Resistance 3", "aliases": ["resistance 3 ps3"]},
-    {"canonical_name": "inFamous", "aliases": ["infamous 1 ps3"]},
-    {"canonical_name": "inFamous 2", "aliases": ["infamous 2 ps3"]},
-    {"canonical_name": "Heavy Rain", "aliases": ["heavy rain ps3"]},
-    {"canonical_name": "Beyond: Two Souls", "aliases": ["beyond two souls ps3"]},
-    {"canonical_name": "Ratchet & Clank Future: Tools of Destruction", "aliases": ["ratchet clank tools of destruction"]},
-    {"canonical_name": "Ratchet & Clank: A Crack in Time", "aliases": ["ratchet clank crack in time"]},
-    {"canonical_name": "Ratchet & Clank: All 4 One", "aliases": ["ratchet clank all 4 one"]},
-    {"canonical_name": "MotorStorm", "aliases": ["motorstorm ps3"]},
-    {"canonical_name": "Twisted Metal", "aliases": ["twisted metal ps3"]},
-    {"canonical_name": "Journey", "aliases": ["journey ps3"]},
-    {"canonical_name": "Demon's Souls", "aliases": ["demons souls ps3"]},
-    {"canonical_name": "Metal Gear Solid 4: Guns of the Patriots", "aliases": ["mgs4 ps3", "metal gear solid 4"]},
-    {"canonical_name": "Metal Gear Solid: Peace Walker HD Edition", "aliases": ["mgs peace walker hd"]},
-    {"canonical_name": "Metal Gear Solid HD Collection", "aliases": ["mgs hd collection"]},
-    {"canonical_name": "Call of Duty 4: Modern Warfare", "aliases": ["cod4 mw ps3"]},
-    {"canonical_name": "Call of Duty: Modern Warfare 2", "aliases": ["cod mw2 ps3"]},
-    {"canonical_name": "Call of Duty: Modern Warfare 3", "aliases": ["cod mw3 ps3"]},
-    {"canonical_name": "Call of Duty: Black Ops", "aliases": ["cod black ops 1 ps3"]},
-    {"canonical_name": "Call of Duty: Black Ops II", "aliases": ["cod black ops 2 ps3"]},
-    {"canonical_name": "Call of Duty: Ghosts", "aliases": ["cod ghosts ps3"]},
-    {"canonical_name": "Call of Duty: World at War", "aliases": ["cod world at war ps3"]},
-    {"canonical_name": "Battlefield 3", "aliases": ["bf3 ps3"]},
-    {"canonical_name": "Battlefield 4", "aliases": ["bf4 ps3"]},
-    {"canonical_name": "Battlefield: Bad Company 2", "aliases": ["bad company 2 ps3"]},
-    {"canonical_name": "Assassin's Creed", "aliases": ["ac 1 ps3", "assassins creed 1 ps3"]},
-    {"canonical_name": "Assassin's Creed II", "aliases": ["ac 2 ps3", "assassins creed 2 ps3"]},
-    {"canonical_name": "Assassin's Creed: Brotherhood", "aliases": ["ac brotherhood ps3"]},
-    {"canonical_name": "Assassin's Creed: Revelations", "aliases": ["ac revelations ps3"]},
-    {"canonical_name": "Assassin's Creed III", "aliases": ["ac 3 ps3", "assassins creed 3 ps3"]},
-    {"canonical_name": "Assassin's Creed IV: Black Flag", "aliases": ["ac black flag ps3", "assassins creed 4 ps3"]},
-    {"canonical_name": "FIFA 14", "aliases": ["fifa 14 ps3"]},
-    {"canonical_name": "FIFA 15", "aliases": ["fifa 15 ps3"]},
-    {"canonical_name": "FIFA 16", "aliases": ["fifa 16 ps3"]},
-    {"canonical_name": "FIFA 17", "aliases": ["fifa 17 ps3"]},
-    {"canonical_name": "PES 2013", "aliases": ["pes 2013 ps3", "pro evolution soccer 2013"]},
-    {"canonical_name": "The Elder Scrolls V: Skyrim", "aliases": ["skyrim ps3"]},
-    {"canonical_name": "Fallout 3", "aliases": ["fallout 3 ps3"]},
-    {"canonical_name": "Fallout: New Vegas", "aliases": ["fallout new vegas ps3"]},
-    {"canonical_name": "Mass Effect 2", "aliases": ["mass effect 2 ps3"]},
-    {"canonical_name": "Mass Effect 3", "aliases": ["mass effect 3 ps3"]},
-    {"canonical_name": "Dead Space", "aliases": ["dead space 1 ps3"]},
-    {"canonical_name": "Dead Space 2", "aliases": ["dead space 2 ps3"]},
-    {"canonical_name": "Dead Space 3", "aliases": ["dead space 3 ps3"]},
-    {"canonical_name": "Batman: Arkham Asylum", "aliases": ["arkham asylum ps3"]},
-    {"canonical_name": "Batman: Arkham City", "aliases": ["arkham city ps3"]},
-    {"canonical_name": "Batman: Arkham Origins", "aliases": ["arkham origins ps3"]},
-    {"canonical_name": "Mortal Kombat", "aliases": ["mortal kombat 2011 ps3", "mk 2011 ps3"]},
-    {"canonical_name": "Street Fighter IV", "aliases": ["street fighter 4 ps3", "sf4 ps3"]},
-    {"canonical_name": "Tekken 6", "aliases": ["tekken 6 ps3"]},
-    {"canonical_name": "Dark Souls", "aliases": ["dark souls 1 ps3"]},
-    {"canonical_name": "Dark Souls II", "aliases": ["dark souls 2 ps3"]},
-    {"canonical_name": "BioShock", "aliases": ["bioshock 1 ps3"]},
-    {"canonical_name": "BioShock 2", "aliases": ["bioshock 2 ps3"]},
-    {"canonical_name": "BioShock Infinite", "aliases": ["bioshock infinite ps3"]},
-    {"canonical_name": "Portal 2", "aliases": ["portal 2 ps3"]},
-    {"canonical_name": "Borderlands", "aliases": ["borderlands 1 ps3"]},
-    {"canonical_name": "Borderlands 2", "aliases": ["borderlands 2 ps3"]},
-    {"canonical_name": "Far Cry 3", "aliases": ["far cry 3 ps3"]},
-    {"canonical_name": "Just Cause 2", "aliases": ["just cause 2 ps3"]},
-    {"canonical_name": "Saints Row 2", "aliases": ["saints row 2 ps3"]},
-    {"canonical_name": "Saints Row: The Third", "aliases": ["saints row 3 ps3"]},
-    {"canonical_name": "Saints Row IV", "aliases": ["saints row 4 ps3"]},
-    {"canonical_name": "LEGO Star Wars: The Complete Saga", "aliases": ["lego star wars complete saga ps3"]},
-    {"canonical_name": "LEGO Batman 2: DC Super Heroes", "aliases": ["lego batman 2 ps3"]},
-    {"canonical_name": "LEGO Marvel Super Heroes", "aliases": ["lego marvel super heroes ps3"]},
-    {"canonical_name": "Minecraft: PlayStation 3 Edition", "aliases": ["minecraft ps3"]},
-    {"canonical_name": "WWE 2K14", "aliases": ["wwe 2k14 ps3"]},
-    {"canonical_name": "WWE '13", "aliases": ["wwe 13 ps3"]},
-    {"canonical_name": "NBA 2K13", "aliases": ["nba 2k13 ps3"]},
-    {"canonical_name": "NBA 2K14", "aliases": ["nba 2k14 ps3"]},
-    {"canonical_name": "Guitar Hero III: Legends of Rock", "aliases": ["guitar hero 3 ps3"]},
-    {"canonical_name": "Guitar Hero World Tour", "aliases": ["guitar hero world tour ps3"]},
-    {"canonical_name": "Rock Band", "aliases": ["rock band 1 ps3"]},
-    {"canonical_name": "Rock Band 2", "aliases": ["rock band 2 ps3"]},
-    {"canonical_name": "Rock Band 3", "aliases": ["rock band 3 ps3"]},
-    {"canonical_name": "Dragon Age: Origins", "aliases": ["dragon age origins ps3"]},
-    {"canonical_name": "Dragon Age II", "aliases": ["dragon age 2 ps3"]},
-    {"canonical_name": "Final Fantasy XIII", "aliases": ["ff13 ps3"]},
-    {"canonical_name": "Final Fantasy XIII-2", "aliases": ["ff13-2 ps3"]},
-    {"canonical_name": "Final Fantasy XIV: A Realm Reborn", "aliases": ["ff14 realm reborn ps3"]},
-    {"canonical_name": "Naruto Shippuden: Ultimate Ninja Storm 3", "aliases": ["naruto ultimate ninja storm 3"]},
-    {"canonical_name": "Naruto Shippuden: Ultimate Ninja Storm Revolution", "aliases": ["naruto ninja storm revolution"]},
-    {"canonical_name": "Dragon Ball Z: Budokai Tenkaichi 3", "aliases": ["dbz budokai tenkaichi 3"]},
-    {"canonical_name": "Persona 5", "aliases": ["persona 5 ps3"]},
-    {"canonical_name": "Persona 4 Arena", "aliases": ["persona 4 arena ps3"]},
-    {"canonical_name": "Catherine", "aliases": ["catherine ps3"]},
-    {"canonical_name": "Yakuza 5", "aliases": ["yakuza 5 ps3"]},
-    {"canonical_name": "Yakuza 3", "aliases": ["yakuza 3 ps3"]},
-    {"canonical_name": "Resident Evil 5", "aliases": ["re5 ps3", "resident evil 5 ps3"]},
-    {"canonical_name": "Resident Evil 6", "aliases": ["re6 ps3", "resident evil 6 ps3"]},
-    {"canonical_name": "Silent Hill: Homecoming", "aliases": ["silent hill homecoming ps3"]},
-    {"canonical_name": "Silent Hill: Downpour", "aliases": ["silent hill downpour ps3"]},
-    {"canonical_name": "Devil May Cry 4", "aliases": ["dmc4 ps3"]},
-    {"canonical_name": "DmC: Devil May Cry", "aliases": ["dmc devil may cry ps3"]},
-    {"canonical_name": "Bayonetta", "aliases": ["bayonetta ps3"]},
-    {"canonical_name": "Vanquish", "aliases": ["vanquish ps3"]},
-    {"canonical_name": "Sleeping Dogs", "aliases": ["sleeping dogs ps3"]},
-    {"canonical_name": "Watch Dogs", "aliases": ["watch dogs 1 ps3"]},
-    {"canonical_name": "Tomb Raider (2013)", "aliases": ["tomb raider 2013 ps3"]},
-    {"canonical_name": "Sly Cooper: Thieves in Time", "aliases": ["sly cooper thieves in time"]},
-    {"canonical_name": "Sly 3: Honor Among Thieves", "aliases": ["sly 3 ps3"]},
-    {"canonical_name": "Jak and Daxter Collection", "aliases": ["jak and daxter collection ps3"]},
-    {"canonical_name": "God Hand", "aliases": ["god hand ps3"]},
-    {"canonical_name": "Ni No Kuni: Wrath of the White Witch", "aliases": ["ni no kuni ps3"]},
-    {"canonical_name": "Tales of Xillia", "aliases": ["tales of xillia ps3"]},
-    {"canonical_name": "Tales of Graces f", "aliases": ["tales of graces f ps3"]},
-    {"canonical_name": "Disgaea 4: A Promise Unforgotten", "aliases": ["disgaea 4 ps3"]},
-    {"canonical_name": "Puppeteer", "aliases": ["puppeteer ps3"]},
-    {"canonical_name": "Beyond Good & Evil HD", "aliases": ["beyond good and evil hd ps3"]},
-    {"canonical_name": "The Walking Dead: The Game", "aliases": ["walking dead telltale ps3"]},
-    {"canonical_name": "Tales from the Borderlands", "aliases": ["tales from the borderlands ps3"]},
-    {"canonical_name": "Diablo III", "aliases": ["diablo 3 ps3"]},
-    {"canonical_name": "Rayman Origins", "aliases": ["rayman origins ps3"]},
-    {"canonical_name": "Rayman Legends", "aliases": ["rayman legends ps3"]},
-    {"canonical_name": "Far Cry 2", "aliases": ["far cry 2 ps3"]},
-    {"canonical_name": "Prototype", "aliases": ["prototype 1 ps3"]},
-    {"canonical_name": "Prototype 2", "aliases": ["prototype 2 ps3"]},
-    {"canonical_name": "Star Wars: The Force Unleashed", "aliases": ["star wars force unleashed ps3"]},
-    {"canonical_name": "Star Wars: The Force Unleashed II", "aliases": ["star wars force unleashed 2 ps3"]},
-    {"canonical_name": "F1 2013", "aliases": ["f1 2013 ps3"]}
+    {
+      "canonical_name": "Grand Theft Auto V",
+      "aliases": [
+        "gta 5 ps3",
+        "gta v ps3",
+        "gta5 ps3"
+      ],
+      "game_id": "125ab7e5-0d5e-479d-b7ff-97b40a87da1c",
+      "release_id": "589fe193-57b6-4574-beb5-2d2616810971"
+    },
+    {
+      "canonical_name": "Grand Theft Auto IV",
+      "aliases": [
+        "gta 4 ps3",
+        "gta iv ps3"
+      ],
+      "game_id": "f69ca494-e583-4f09-ba7c-6b48d4c4d635",
+      "release_id": "25b5128c-f7fd-4d84-9d72-9c9ee76c0531"
+    },
+    {
+      "canonical_name": "Grand Theft Auto: San Andreas",
+      "aliases": [
+        "gta san andreas ps3"
+      ],
+      "game_id": "b3c48dcc-9e97-45e9-8593-5d7f7d52047d",
+      "release_id": "a833e7dd-e00d-4620-9b51-2a28dfa3dfce"
+    },
+    {
+      "canonical_name": "Red Dead Redemption",
+      "aliases": [
+        "rdr1 ps3",
+        "red dead redemption ps3"
+      ],
+      "game_id": "e60cc17c-884e-42a1-8055-bad7b0d31a20",
+      "release_id": "08ba1db9-bad5-4f6c-9ed6-5f8191af33f7"
+    },
+    {
+      "canonical_name": "Gran Turismo 5",
+      "aliases": [
+        "gt5 ps3"
+      ],
+      "game_id": "cc03f5a6-8aa0-4665-9eaf-4e159e73faa8",
+      "release_id": "b698d45d-7049-4b4a-93c6-95dcf1d48c93"
+    },
+    {
+      "canonical_name": "Gran Turismo 6",
+      "aliases": [
+        "gt6 ps3"
+      ],
+      "game_id": "5618451e-cde4-4c12-9a51-a836608326ea",
+      "release_id": "18a3b780-4dd5-4a90-ac2a-106ddb37ab01"
+    },
+    {
+      "canonical_name": "Uncharted: Drake's Fortune",
+      "aliases": [
+        "uncharted 1 ps3"
+      ],
+      "game_id": "22f05f50-2205-49dd-82b8-aae7c8e8f32d",
+      "release_id": "d1c5d031-3f93-4096-b0b2-32e01d49680b"
+    },
+    {
+      "canonical_name": "Uncharted 2: Among Thieves",
+      "aliases": [
+        "uncharted 2 ps3"
+      ],
+      "game_id": "9614b0ff-dbf6-4e02-8246-ed2a95dc75db",
+      "release_id": "1a6843f7-2898-4cbe-9e75-9f852242d0f9"
+    },
+    {
+      "canonical_name": "Uncharted 3: Drake's Deception",
+      "aliases": [
+        "uncharted 3 ps3"
+      ],
+      "game_id": "ae3cfc61-531e-408d-9ac9-b25e16b74cb8",
+      "release_id": "3509aa0e-70ba-4a8f-b61e-24c8b73ae414"
+    },
+    {
+      "canonical_name": "The Last of Us",
+      "aliases": [
+        "tlou ps3",
+        "the last of us ps3"
+      ],
+      "game_id": "ef73780a-093d-436b-abdd-fa3847707fc2",
+      "release_id": "d0c83d83-69d5-444c-bb56-aa8f107c798a"
+    },
+    {
+      "canonical_name": "God of War III",
+      "aliases": [
+        "god of war 3 ps3"
+      ],
+      "game_id": "290ee71c-0d18-4e46-83fe-5c92d020e45b",
+      "release_id": "7b4a3e51-6bd2-4809-a157-03ec34720163"
+    },
+    {
+      "canonical_name": "God of War: Ascension",
+      "aliases": [
+        "god of war ascension ps3"
+      ],
+      "game_id": "db549fc7-2eda-40fa-b591-f41b28877ae4",
+      "release_id": "0dd17426-6d53-47de-bf8e-e298a8173d01"
+    },
+    {
+      "canonical_name": "God of War Collection",
+      "aliases": [
+        "god of war collection ps3"
+      ],
+      "game_id": "c7e0036e-e06f-4092-a83c-9066a3355e8e",
+      "release_id": "67863537-f485-428d-864b-fc2c8d744afc"
+    },
+    {
+      "canonical_name": "LittleBigPlanet",
+      "aliases": [
+        "littlebigplanet 1 ps3"
+      ],
+      "game_id": "d2004e0e-34dd-4920-9d40-5fb918a4549e",
+      "release_id": "955aa62d-a380-4a4f-b886-edca70d488eb"
+    },
+    {
+      "canonical_name": "LittleBigPlanet 2",
+      "aliases": [
+        "littlebigplanet 2 ps3"
+      ],
+      "game_id": "aabc36ce-491e-4ca2-a559-2b2ecf6661df",
+      "release_id": "3f1cdb08-45c8-43e6-9eea-d98f557b6087"
+    },
+    {
+      "canonical_name": "LittleBigPlanet 3",
+      "aliases": [
+        "littlebigplanet 3 ps3"
+      ],
+      "game_id": "29280365-a2a4-4bba-ab8f-d9b8a3285ba8",
+      "release_id": "8475e12f-b36f-4c12-a7b0-c596e55507d6"
+    },
+    {
+      "canonical_name": "Killzone 2",
+      "aliases": [
+        "killzone 2 ps3"
+      ],
+      "game_id": "2ac0c13a-9008-4c05-aa9b-30e30c837987",
+      "release_id": "c6fa0876-2354-497b-99ed-75dcacca7428"
+    },
+    {
+      "canonical_name": "Killzone 3",
+      "aliases": [
+        "killzone 3 ps3"
+      ],
+      "game_id": "a887dc96-83ad-4883-965b-1c30724a8210",
+      "release_id": "d32327ab-1d09-4ee4-a454-8080c701d15c"
+    },
+    {
+      "canonical_name": "Resistance: Fall of Man",
+      "aliases": [
+        "resistance 1 ps3"
+      ],
+      "game_id": "967324a5-99b2-4563-9da8-0e3c213b40e2",
+      "release_id": "913c9a66-96fd-40ec-a5fc-a045a8fbde90"
+    },
+    {
+      "canonical_name": "Resistance 2",
+      "aliases": [
+        "resistance 2 ps3"
+      ],
+      "game_id": "1205f1f2-0ae1-493f-b0ac-98b032286c29",
+      "release_id": "2945f10e-49d0-41d8-b08a-f064dab5adf1"
+    },
+    {
+      "canonical_name": "Resistance 3",
+      "aliases": [
+        "resistance 3 ps3"
+      ],
+      "game_id": "55a7266b-962a-4e43-a716-8c3bba049c82",
+      "release_id": "8e91bf2f-d063-4beb-8cea-63834c092378"
+    },
+    {
+      "canonical_name": "inFamous",
+      "aliases": [
+        "infamous 1 ps3"
+      ],
+      "game_id": "d9d7d425-87fe-4a52-b5f7-7e3dd96ebba3",
+      "release_id": "3f2b5932-1aa7-4d19-a62c-445e5ab51511"
+    },
+    {
+      "canonical_name": "inFamous 2",
+      "aliases": [
+        "infamous 2 ps3"
+      ],
+      "game_id": "b76dc7a8-34ce-4194-87d8-6ed4c51f8c59",
+      "release_id": "601ed433-6f2a-4c1e-a8b0-b6bdae1b0a6d"
+    },
+    {
+      "canonical_name": "Heavy Rain",
+      "aliases": [
+        "heavy rain ps3"
+      ],
+      "game_id": "3016cd74-e114-47ba-8e96-bb3dd58d330e",
+      "release_id": "a8a1bf2b-3ed7-48fa-9d1d-d2913539ad9d"
+    },
+    {
+      "canonical_name": "Beyond: Two Souls",
+      "aliases": [
+        "beyond two souls ps3"
+      ],
+      "game_id": "20050ce7-3f1e-4215-b4d1-59a54bf4ebf8",
+      "release_id": "a7faced1-1cd5-45f3-a139-64b79a5049ea"
+    },
+    {
+      "canonical_name": "Ratchet & Clank Future: Tools of Destruction",
+      "aliases": [
+        "ratchet clank tools of destruction"
+      ],
+      "game_id": "923cf5e1-4c6c-4131-b0de-10f76e61a651",
+      "release_id": "3ad18baf-4335-41c3-9dfa-371b3182a3cb"
+    },
+    {
+      "canonical_name": "Ratchet & Clank: A Crack in Time",
+      "aliases": [
+        "ratchet clank crack in time"
+      ],
+      "game_id": "c3a26cef-a993-4270-a822-f02399ac520f",
+      "release_id": "3156bbcf-e420-4838-b230-9e907064897c"
+    },
+    {
+      "canonical_name": "Ratchet & Clank: All 4 One",
+      "aliases": [
+        "ratchet clank all 4 one"
+      ],
+      "game_id": "a7bfb056-bb79-4ed7-b62e-2b6f8d3c368d",
+      "release_id": "0ea89739-e0ed-46d2-a699-07ead880ee74"
+    },
+    {
+      "canonical_name": "MotorStorm",
+      "aliases": [
+        "motorstorm ps3"
+      ],
+      "game_id": "a53630e7-fdaf-474f-a179-61d71fc2112e",
+      "release_id": "10945042-2764-48dc-a62c-b7e82d97937b"
+    },
+    {
+      "canonical_name": "Twisted Metal",
+      "aliases": [
+        "twisted metal ps3"
+      ],
+      "game_id": "af07bf47-96f5-40f4-a709-51012d4f78eb",
+      "release_id": "645a828b-7c32-4e2e-b1d9-ae4503861b0f"
+    },
+    {
+      "canonical_name": "Journey",
+      "aliases": [
+        "journey ps3"
+      ],
+      "game_id": "8635aef5-259b-45a9-ab38-9fc195f7cb78",
+      "release_id": "445f872d-96f7-48ce-890c-d8f027364d04"
+    },
+    {
+      "canonical_name": "Demon's Souls",
+      "aliases": [
+        "demons souls ps3"
+      ],
+      "game_id": "84099669-923d-4ca1-9aa9-70d79d08601d",
+      "release_id": "a81729ee-f52d-4032-b144-92ec1de8f281"
+    },
+    {
+      "canonical_name": "Metal Gear Solid 4: Guns of the Patriots",
+      "aliases": [
+        "mgs4 ps3",
+        "metal gear solid 4"
+      ],
+      "game_id": "546488e7-35c5-47dd-9ead-81c4732d2922",
+      "release_id": "03eefe33-ea35-47bd-885e-4248261bf2d9"
+    },
+    {
+      "canonical_name": "Metal Gear Solid: Peace Walker HD Edition",
+      "aliases": [
+        "mgs peace walker hd"
+      ],
+      "game_id": "211cb3ca-b275-4d21-9bfa-b72e3974f8a1",
+      "release_id": "31f4dd05-df86-453e-9942-4e2e486a240c"
+    },
+    {
+      "canonical_name": "Metal Gear Solid HD Collection",
+      "aliases": [
+        "mgs hd collection"
+      ],
+      "game_id": "66cff3fa-44b9-4c19-ac19-92563f9d484d",
+      "release_id": "af5cefc2-e6ff-4fa6-a9dc-848d5c9a6f14"
+    },
+    {
+      "canonical_name": "Call of Duty 4: Modern Warfare",
+      "aliases": [
+        "cod4 mw ps3"
+      ],
+      "game_id": "f077a928-1d83-48de-b044-a9c45debf0c6",
+      "release_id": "2566a1f1-f5ea-4deb-af08-f25a3390b776"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare 2",
+      "aliases": [
+        "cod mw2 ps3"
+      ],
+      "game_id": "9ed35f06-0182-4a81-9756-e2ece7ef48f9",
+      "release_id": "e41127c3-1732-4ae4-b4c6-9071c208b36f"
+    },
+    {
+      "canonical_name": "Call of Duty: Modern Warfare 3",
+      "aliases": [
+        "cod mw3 ps3"
+      ],
+      "game_id": "0f078724-1c03-421f-87e7-82a7c1c32c5c",
+      "release_id": "e937c583-31ff-497f-b632-9ef10b7eb016"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops",
+      "aliases": [
+        "cod black ops 1 ps3"
+      ],
+      "game_id": "a70ab025-7413-472c-8f37-aae1e82d0866",
+      "release_id": "c2cab902-de84-4773-9e2d-624b4e451a4e"
+    },
+    {
+      "canonical_name": "Call of Duty: Black Ops II",
+      "aliases": [
+        "cod black ops 2 ps3"
+      ],
+      "game_id": "14d6db37-ea91-466a-b543-c2239c9052af",
+      "release_id": "b8a52461-504a-4f2a-ae1f-fecca9db4758"
+    },
+    {
+      "canonical_name": "Call of Duty: Ghosts",
+      "aliases": [
+        "cod ghosts ps3"
+      ],
+      "game_id": "742ca913-7029-4b93-a0f4-cd5c8d48b334",
+      "release_id": "9382831d-6111-49dc-a49d-8de36aa55a67"
+    },
+    {
+      "canonical_name": "Call of Duty: World at War",
+      "aliases": [
+        "cod world at war ps3"
+      ],
+      "game_id": "92d07326-434d-46b8-95e6-a611a9a3b985",
+      "release_id": "5d10330c-659a-426c-885d-e317a7c69717"
+    },
+    {
+      "canonical_name": "Battlefield 3",
+      "aliases": [
+        "bf3 ps3"
+      ],
+      "game_id": "71818d60-097c-44b9-8631-f9f420f338a2",
+      "release_id": "5755dede-3aaa-481e-9d9a-6cea8ea0d78c"
+    },
+    {
+      "canonical_name": "Battlefield 4",
+      "aliases": [
+        "bf4 ps3"
+      ],
+      "game_id": "b0f249ff-ef8f-42a6-a914-40d30aa7651e",
+      "release_id": "f7b6468c-4462-4ed5-b125-0650d43fd264"
+    },
+    {
+      "canonical_name": "Battlefield: Bad Company 2",
+      "aliases": [
+        "bad company 2 ps3"
+      ],
+      "game_id": "83a51d72-852f-4baa-ad99-8a48202aa319",
+      "release_id": "98b99f50-08ae-4713-88b8-eb07847cf950"
+    },
+    {
+      "canonical_name": "Assassin's Creed",
+      "aliases": [
+        "ac 1 ps3",
+        "assassins creed 1 ps3"
+      ],
+      "game_id": "c9bdd8fb-0cce-42ad-99cd-824f02b174ed",
+      "release_id": "1d1eb50a-234f-405f-a8e0-1c18b5aacbd6"
+    },
+    {
+      "canonical_name": "Assassin's Creed II",
+      "aliases": [
+        "ac 2 ps3",
+        "assassins creed 2 ps3"
+      ],
+      "game_id": "ff39a5dc-d5c9-49ff-a80f-1c1d492a29fd",
+      "release_id": "cb120afe-f83e-4904-bd9c-6a639cbdb7dc"
+    },
+    {
+      "canonical_name": "Assassin's Creed: Brotherhood",
+      "aliases": [
+        "ac brotherhood ps3"
+      ],
+      "game_id": "544be90c-c4e3-4860-a153-396c58ca3f7f",
+      "release_id": "b1ab9707-7052-45a4-b09c-e7512acbfd23"
+    },
+    {
+      "canonical_name": "Assassin's Creed: Revelations",
+      "aliases": [
+        "ac revelations ps3"
+      ],
+      "game_id": "4c71db90-07a2-4e9b-b262-e724e014fb05",
+      "release_id": "4161041b-54e5-4e77-9161-b6026adf6bde"
+    },
+    {
+      "canonical_name": "Assassin's Creed III",
+      "aliases": [
+        "ac 3 ps3",
+        "assassins creed 3 ps3"
+      ],
+      "game_id": "0159bdc4-422f-4481-be26-ca1a57f560c2",
+      "release_id": "8a018fa2-ad9a-4af8-b8a4-a592e9c56908"
+    },
+    {
+      "canonical_name": "Assassin's Creed IV: Black Flag",
+      "aliases": [
+        "ac black flag ps3",
+        "assassins creed 4 ps3"
+      ],
+      "game_id": "908d0831-23e0-4b0c-b95f-72e468a5a5de",
+      "release_id": "1006be7c-0fd4-4676-aa26-0c0d15e99770"
+    },
+    {
+      "canonical_name": "FIFA 14",
+      "aliases": [
+        "fifa 14 ps3"
+      ],
+      "game_id": "94c811f9-aa61-4e2c-b0e2-5e4770e933d8",
+      "release_id": "227090c6-02a0-4bc1-bf62-9b7ecf2bbc1b"
+    },
+    {
+      "canonical_name": "FIFA 15",
+      "aliases": [
+        "fifa 15 ps3"
+      ],
+      "game_id": "c3f1026d-8822-47c5-9113-60184a08fe9d",
+      "release_id": "93e46232-a90e-4c62-ab16-52d88cbd05d6"
+    },
+    {
+      "canonical_name": "FIFA 16",
+      "aliases": [
+        "fifa 16 ps3"
+      ],
+      "game_id": "0da83a05-aced-4482-9963-f823a0e4db6c",
+      "release_id": "ade8a550-711f-4457-bbcf-e66f303b57a0"
+    },
+    {
+      "canonical_name": "FIFA 17",
+      "aliases": [
+        "fifa 17 ps3"
+      ],
+      "game_id": "defc2c75-a87d-4a03-a601-0a38924a63c7",
+      "release_id": "b0de6d91-df27-4ae2-ab36-d8366f8c0899"
+    },
+    {
+      "canonical_name": "PES 2013",
+      "aliases": [
+        "pes 2013 ps3",
+        "pro evolution soccer 2013"
+      ],
+      "game_id": "2c4ebdb0-56ec-4fc8-8ab7-323ef2fc7beb",
+      "release_id": "173b4b70-8b7d-40f1-8923-7e6fc4cb45cc"
+    },
+    {
+      "canonical_name": "The Elder Scrolls V: Skyrim",
+      "aliases": [
+        "skyrim ps3"
+      ],
+      "game_id": "88bf1976-be5e-45e5-a23d-304548f56ba8",
+      "release_id": "da394afa-1ea9-4dbe-ae56-776aa334abcf"
+    },
+    {
+      "canonical_name": "Fallout 3",
+      "aliases": [
+        "fallout 3 ps3"
+      ],
+      "game_id": "ad8badd3-839a-48d7-80b1-b6a2e384bd42",
+      "release_id": "61c04819-fd52-4062-b9c5-5ec1b6fbd5ba"
+    },
+    {
+      "canonical_name": "Fallout: New Vegas",
+      "aliases": [
+        "fallout new vegas ps3"
+      ],
+      "game_id": "836f3d6a-4fa7-47ba-b5a9-f8040680e938",
+      "release_id": "2ae77a27-6413-46a5-8e47-12f3c4c69a1f"
+    },
+    {
+      "canonical_name": "Mass Effect 2",
+      "aliases": [
+        "mass effect 2 ps3"
+      ],
+      "game_id": "ed58f857-1216-45b3-9f40-d405fc049bcc",
+      "release_id": "b28aa284-8229-4fd6-af57-baec2f2f618f"
+    },
+    {
+      "canonical_name": "Mass Effect 3",
+      "aliases": [
+        "mass effect 3 ps3"
+      ],
+      "game_id": "00d088e4-55a0-4833-93fb-b3cf457698ac",
+      "release_id": "76fa49fb-c8f2-4185-85d2-5e9a37089c76"
+    },
+    {
+      "canonical_name": "Dead Space",
+      "aliases": [
+        "dead space 1 ps3"
+      ],
+      "game_id": "1f1ead01-99d4-4008-b013-a4f9bd15299e",
+      "release_id": "f3e7dcf4-4d80-4d33-b489-4d63939593af"
+    },
+    {
+      "canonical_name": "Dead Space 2",
+      "aliases": [
+        "dead space 2 ps3"
+      ],
+      "game_id": "f6c3e048-9f1a-4863-be76-76aaa276a4a3",
+      "release_id": "ec2efed8-4019-4720-b9c2-1e854dd72de5"
+    },
+    {
+      "canonical_name": "Dead Space 3",
+      "aliases": [
+        "dead space 3 ps3"
+      ],
+      "game_id": "1c5af2e0-c33d-40fc-bab0-4f12d681d31d",
+      "release_id": "a4d9c138-a19c-41e0-bdd3-c77bd4fcf1e4"
+    },
+    {
+      "canonical_name": "Batman: Arkham Asylum",
+      "aliases": [
+        "arkham asylum ps3"
+      ],
+      "game_id": "234cde75-18d0-4135-ac1a-c9eb0d62f998",
+      "release_id": "b0883d4b-8a66-4cfd-9e20-cd265bf827e8"
+    },
+    {
+      "canonical_name": "Batman: Arkham City",
+      "aliases": [
+        "arkham city ps3"
+      ],
+      "game_id": "617469de-ae7b-4aef-9be7-6cc65666a8ce",
+      "release_id": "1543f31d-cc8c-4d77-8050-49206a608bde"
+    },
+    {
+      "canonical_name": "Batman: Arkham Origins",
+      "aliases": [
+        "arkham origins ps3"
+      ],
+      "game_id": "92d2ef8c-7b57-45dc-89b1-52fa409bbe1b",
+      "release_id": "346ecb18-4688-4022-b458-498694f49960"
+    },
+    {
+      "canonical_name": "Mortal Kombat",
+      "aliases": [
+        "mortal kombat 2011 ps3",
+        "mk 2011 ps3"
+      ],
+      "game_id": "73c5f0d2-7c13-489b-92f4-6ed146d6115f",
+      "release_id": "f534baa4-459e-431d-abbc-50314c2178d8"
+    },
+    {
+      "canonical_name": "Street Fighter IV",
+      "aliases": [
+        "street fighter 4 ps3",
+        "sf4 ps3"
+      ],
+      "game_id": "9b11339e-a581-4087-8e38-1ca59c8d92a1",
+      "release_id": "4ff6a153-8dda-496a-aa66-c3e73308d237"
+    },
+    {
+      "canonical_name": "Tekken 6",
+      "aliases": [
+        "tekken 6 ps3"
+      ],
+      "game_id": "ca36c60a-57f3-46b8-ad9a-6cb55f2505ee",
+      "release_id": "c7afe75f-46d7-43ca-8537-38659a1794cd"
+    },
+    {
+      "canonical_name": "Dark Souls",
+      "aliases": [
+        "dark souls 1 ps3"
+      ],
+      "game_id": "41383a69-70b7-4b0f-ade6-cfbcf8a14702",
+      "release_id": "0e3fc9ac-b263-4b1b-b9e4-ddbed8d73462"
+    },
+    {
+      "canonical_name": "Dark Souls II",
+      "aliases": [
+        "dark souls 2 ps3"
+      ],
+      "game_id": "0e661fed-f0db-46a7-9ab5-94305f2ab375",
+      "release_id": "bb76a4a3-f3c5-4a23-a199-c784724a3713"
+    },
+    {
+      "canonical_name": "BioShock",
+      "aliases": [
+        "bioshock 1 ps3"
+      ],
+      "game_id": "73200162-6051-48d0-92c3-a165e29eeab5",
+      "release_id": "dc55768c-5996-48b0-950b-4036c4b6f4e0"
+    },
+    {
+      "canonical_name": "BioShock 2",
+      "aliases": [
+        "bioshock 2 ps3"
+      ],
+      "game_id": "722b55a5-f59a-4cba-a206-ab6a83122f00",
+      "release_id": "31e0dcf6-64ae-46a3-b66d-ef066e789fbf"
+    },
+    {
+      "canonical_name": "BioShock Infinite",
+      "aliases": [
+        "bioshock infinite ps3"
+      ],
+      "game_id": "791ec99d-dcf9-4e62-b4c3-1047baa44b24",
+      "release_id": "1dc02f59-b6dd-4a38-96aa-52c113bc8cdc"
+    },
+    {
+      "canonical_name": "Portal 2",
+      "aliases": [
+        "portal 2 ps3"
+      ],
+      "game_id": "e02498a6-cab0-461a-8296-5b3413865a0a",
+      "release_id": "f9a356a2-ce08-4c6d-9ef6-13484cda7d40"
+    },
+    {
+      "canonical_name": "Borderlands",
+      "aliases": [
+        "borderlands 1 ps3"
+      ],
+      "game_id": "2547ea0d-1548-4157-92bc-59788f01a8ab",
+      "release_id": "9b34a33d-315f-4a1d-bbf6-8f1c5a756674"
+    },
+    {
+      "canonical_name": "Borderlands 2",
+      "aliases": [
+        "borderlands 2 ps3"
+      ],
+      "game_id": "dc50153d-cb8b-4607-a7d8-08cebba886ec",
+      "release_id": "41955092-d6ac-4e55-9fbd-21d4b3acbb7a"
+    },
+    {
+      "canonical_name": "Far Cry 3",
+      "aliases": [
+        "far cry 3 ps3"
+      ],
+      "game_id": "d41203a5-13b7-401b-8c68-0fa006a9fce7",
+      "release_id": "abed935f-4a83-4beb-98b3-5a005cd9e830"
+    },
+    {
+      "canonical_name": "Just Cause 2",
+      "aliases": [
+        "just cause 2 ps3"
+      ],
+      "game_id": "8d75e1da-07fd-49dc-abc1-66a701e85a30",
+      "release_id": "c9859f3f-4ad6-43ec-8234-81cea2b809d8"
+    },
+    {
+      "canonical_name": "Saints Row 2",
+      "aliases": [
+        "saints row 2 ps3"
+      ],
+      "game_id": "867def43-2935-43f9-aa5f-b6e1935bca48",
+      "release_id": "972feaa4-451a-4100-9e00-e5e8be49184f"
+    },
+    {
+      "canonical_name": "Saints Row: The Third",
+      "aliases": [
+        "saints row 3 ps3"
+      ],
+      "game_id": "0d34c30b-21c5-478f-a18b-66a914783e1e",
+      "release_id": "73d72fc7-667b-4b76-b9db-31f635861b87"
+    },
+    {
+      "canonical_name": "Saints Row IV",
+      "aliases": [
+        "saints row 4 ps3"
+      ],
+      "game_id": "5c226f8a-a889-4d70-9c4a-ee15a71b0008",
+      "release_id": "cac6b528-a6b0-4ea9-bc19-df6858df5306"
+    },
+    {
+      "canonical_name": "LEGO Star Wars: The Complete Saga",
+      "aliases": [
+        "lego star wars complete saga ps3"
+      ],
+      "game_id": "c5a13888-2994-4900-bc61-c1170335df98",
+      "release_id": "37ff8b33-f7d4-4a3f-bc02-ba547a923b41"
+    },
+    {
+      "canonical_name": "LEGO Batman 2: DC Super Heroes",
+      "aliases": [
+        "lego batman 2 ps3"
+      ],
+      "game_id": "62320e0a-f0d5-473f-9567-6d50722b72a5",
+      "release_id": "6a4e1af9-bc8f-4135-b902-d7a5bca9b01f"
+    },
+    {
+      "canonical_name": "LEGO Marvel Super Heroes",
+      "aliases": [
+        "lego marvel super heroes ps3"
+      ],
+      "game_id": "5891def2-6659-48b3-8f1e-4fd386be8306",
+      "release_id": "d0684950-2788-4c9c-9e30-e0fc74eb46af"
+    },
+    {
+      "canonical_name": "Minecraft: PlayStation 3 Edition",
+      "aliases": [
+        "minecraft ps3"
+      ],
+      "game_id": "6f02158a-665b-4bb5-afb4-1c71226d1935",
+      "release_id": "18003d4c-42da-4634-8521-62320a7208aa"
+    },
+    {
+      "canonical_name": "WWE 2K14",
+      "aliases": [
+        "wwe 2k14 ps3"
+      ],
+      "game_id": "ceba50bb-436a-47e2-a9c9-1e308cb2637a",
+      "release_id": "c601b585-ccbf-4cb2-9e7a-7284b1452abb"
+    },
+    {
+      "canonical_name": "WWE '13",
+      "aliases": [
+        "wwe 13 ps3"
+      ],
+      "game_id": "87885612-058d-4aff-a3fa-ac502f5bce44",
+      "release_id": "a8dc6cc3-0364-43b5-a1e6-ce61a8c16533"
+    },
+    {
+      "canonical_name": "NBA 2K13",
+      "aliases": [
+        "nba 2k13 ps3"
+      ],
+      "game_id": "383c00fd-426d-40e7-a1ae-77690a279477",
+      "release_id": "1eeb8fb8-a07a-4b2c-9c85-29580ebb12e7"
+    },
+    {
+      "canonical_name": "NBA 2K14",
+      "aliases": [
+        "nba 2k14 ps3"
+      ],
+      "game_id": "f39ec989-f325-4973-825f-89769bd2baea",
+      "release_id": "b5f6b0f2-d3dc-49a7-bbfc-b4ad8fbea6e0"
+    },
+    {
+      "canonical_name": "Guitar Hero III: Legends of Rock",
+      "aliases": [
+        "guitar hero 3 ps3"
+      ],
+      "game_id": "63dd30fe-63a6-4b3f-b52e-ea0a0db0909e",
+      "release_id": "a87f2138-a371-4a80-92d1-97f94e5dd9d3"
+    },
+    {
+      "canonical_name": "Guitar Hero World Tour",
+      "aliases": [
+        "guitar hero world tour ps3"
+      ],
+      "game_id": "553ce020-2032-4fe0-9a19-4fbbb1c9adfa",
+      "release_id": "2772e1c2-8db4-42a3-b576-8d12cc9aa81a"
+    },
+    {
+      "canonical_name": "Rock Band",
+      "aliases": [
+        "rock band 1 ps3"
+      ],
+      "game_id": "4fbb7e31-c93c-43dc-ac5c-92eb0db5e025",
+      "release_id": "2853ea2d-e91a-4fb2-9526-6c58d5320cdf"
+    },
+    {
+      "canonical_name": "Rock Band 2",
+      "aliases": [
+        "rock band 2 ps3"
+      ],
+      "game_id": "c8ad14b0-aff0-4f95-842a-7eb4063baffe",
+      "release_id": "17dede61-ea8d-4408-af7f-9a1a601ec52b"
+    },
+    {
+      "canonical_name": "Rock Band 3",
+      "aliases": [
+        "rock band 3 ps3"
+      ],
+      "game_id": "cdded71e-d5e2-401f-abca-c8667120c7ad",
+      "release_id": "b418c99c-ac25-46a3-a954-0a1b63c2f8a2"
+    },
+    {
+      "canonical_name": "Dragon Age: Origins",
+      "aliases": [
+        "dragon age origins ps3"
+      ],
+      "game_id": "3e7cd7d1-ad4c-4cc5-ab61-7918b97ca484",
+      "release_id": "e737dd83-f38e-42fe-a25f-1a2bddec2115"
+    },
+    {
+      "canonical_name": "Dragon Age II",
+      "aliases": [
+        "dragon age 2 ps3"
+      ],
+      "game_id": "fb8e4a36-8409-480f-abd9-78894d97f01f",
+      "release_id": "d613483c-2024-46c4-b7b8-e87d1837b204"
+    },
+    {
+      "canonical_name": "Final Fantasy XIII",
+      "aliases": [
+        "ff13 ps3"
+      ],
+      "game_id": "27d51f4b-5be9-4622-9c29-6dcc0b9ab17c",
+      "release_id": "d1535c74-3894-45db-bce9-329d64241667"
+    },
+    {
+      "canonical_name": "Final Fantasy XIII-2",
+      "aliases": [
+        "ff13-2 ps3"
+      ],
+      "game_id": "01b2af56-3600-43a9-b5d9-d3daaafaa093",
+      "release_id": "f58f6cfe-6cf9-48b9-8aa4-2344034ad22f"
+    },
+    {
+      "canonical_name": "Final Fantasy XIV: A Realm Reborn",
+      "aliases": [
+        "ff14 realm reborn ps3"
+      ],
+      "game_id": "50e5daa0-1417-4ef5-9ffe-94087ad68ce6",
+      "release_id": "e03bb218-83ba-4a2b-8b94-a394cdcbc0a1"
+    },
+    {
+      "canonical_name": "Naruto Shippuden: Ultimate Ninja Storm 3",
+      "aliases": [
+        "naruto ultimate ninja storm 3"
+      ],
+      "game_id": "816ab463-d54f-4f3f-b6f2-f9f9702be070",
+      "release_id": "dbf18705-af56-4f5f-935e-6302e0bb9d06"
+    },
+    {
+      "canonical_name": "Naruto Shippuden: Ultimate Ninja Storm Revolution",
+      "aliases": [
+        "naruto ninja storm revolution"
+      ],
+      "game_id": "cde242e2-0c94-475a-a5b6-7fea83acb92b",
+      "release_id": "fffbdad0-5e18-4c83-8c11-014a225f908e"
+    },
+    {
+      "canonical_name": "Dragon Ball Z: Budokai Tenkaichi 3",
+      "aliases": [
+        "dbz budokai tenkaichi 3"
+      ],
+      "game_id": "65395c34-6696-4fef-b970-534a082c57f0",
+      "release_id": "3850df40-5e6c-4669-89ca-a2e358158338"
+    },
+    {
+      "canonical_name": "Persona 5",
+      "aliases": [
+        "persona 5 ps3"
+      ],
+      "game_id": "8c633c62-ff5b-4d07-8f19-bc038cf2c575",
+      "release_id": "2937aa84-22fe-4cc8-8aba-99c70848aa6e"
+    },
+    {
+      "canonical_name": "Persona 4 Arena",
+      "aliases": [
+        "persona 4 arena ps3"
+      ],
+      "game_id": "381550aa-031b-4ce1-87ea-896d6e88d9e5",
+      "release_id": "268ae083-23f7-4217-b793-ad38edb5bca1"
+    },
+    {
+      "canonical_name": "Catherine",
+      "aliases": [
+        "catherine ps3"
+      ],
+      "game_id": "9e122e41-95c6-4d9d-8ba0-efe1a6c0b733",
+      "release_id": "cd776147-3b72-4a7a-982f-1d5dfa080f56"
+    },
+    {
+      "canonical_name": "Yakuza 5",
+      "aliases": [
+        "yakuza 5 ps3"
+      ],
+      "game_id": "14844ad2-7b65-4b0f-838a-33ba9b0461e1",
+      "release_id": "98281f02-69ff-491e-b7d8-55929ac3e0c5"
+    },
+    {
+      "canonical_name": "Yakuza 3",
+      "aliases": [
+        "yakuza 3 ps3"
+      ],
+      "game_id": "2ed04d11-d8c1-4648-bedb-3131f3c9a185",
+      "release_id": "dd974a7e-f4e3-4fa6-b5c7-8480527ba8a5"
+    },
+    {
+      "canonical_name": "Resident Evil 5",
+      "aliases": [
+        "re5 ps3",
+        "resident evil 5 ps3"
+      ],
+      "game_id": "0ad91149-311a-487a-a0d5-99c957060d1b",
+      "release_id": "7bc44b7d-4efc-44f3-9f21-f10df7fa0b03"
+    },
+    {
+      "canonical_name": "Resident Evil 6",
+      "aliases": [
+        "re6 ps3",
+        "resident evil 6 ps3"
+      ],
+      "game_id": "153a0b54-248f-45f5-8d32-f58ccaa701a9",
+      "release_id": "f86bbaa5-38bf-4609-a1a0-0bc4314819b1"
+    },
+    {
+      "canonical_name": "Silent Hill: Homecoming",
+      "aliases": [
+        "silent hill homecoming ps3"
+      ],
+      "game_id": "95a7aef0-6d67-416e-ba9e-6fde892386ee",
+      "release_id": "1c9fbaf1-30a5-4fdf-872b-8777cd668dc7"
+    },
+    {
+      "canonical_name": "Silent Hill: Downpour",
+      "aliases": [
+        "silent hill downpour ps3"
+      ],
+      "game_id": "a9010f1d-a325-4bcf-ab99-23434075216b",
+      "release_id": "7f62fa5b-d8cd-42dc-a6fe-0afcab650c7e"
+    },
+    {
+      "canonical_name": "Devil May Cry 4",
+      "aliases": [
+        "dmc4 ps3"
+      ],
+      "game_id": "072143e3-17ea-4ff6-b3ff-5102d00df1d6",
+      "release_id": "f725fe37-2b5e-41d8-98e2-4ef95d859707"
+    },
+    {
+      "canonical_name": "DmC: Devil May Cry",
+      "aliases": [
+        "dmc devil may cry ps3"
+      ],
+      "game_id": "e75bf206-57bc-413e-828e-ca5a66c54ccb",
+      "release_id": "39582c5c-a709-48f9-9ba9-768c288a9b48"
+    },
+    {
+      "canonical_name": "Bayonetta",
+      "aliases": [
+        "bayonetta ps3"
+      ],
+      "game_id": "8ed13721-0c76-4be0-8e71-4d9d1139b12d",
+      "release_id": "b5ccff35-44fb-4057-b127-463c6d7200ec"
+    },
+    {
+      "canonical_name": "Vanquish",
+      "aliases": [
+        "vanquish ps3"
+      ],
+      "game_id": "df7ff7d7-363b-4c12-938c-e1e0f85701c3",
+      "release_id": "147defaa-c013-4031-b28d-b63898e29271"
+    },
+    {
+      "canonical_name": "Sleeping Dogs",
+      "aliases": [
+        "sleeping dogs ps3"
+      ],
+      "game_id": "b28a2ade-f354-4a16-834f-900ab082835b",
+      "release_id": "5d58f35c-3fff-4d3c-909c-0b0aad3c6b0f"
+    },
+    {
+      "canonical_name": "Watch Dogs",
+      "aliases": [
+        "watch dogs 1 ps3"
+      ],
+      "game_id": "35a39415-e022-4720-b879-9504f718dec6",
+      "release_id": "c6c4bc1b-535b-48f6-8920-c8ebfa1a4c8b"
+    },
+    {
+      "canonical_name": "Tomb Raider (2013)",
+      "aliases": [
+        "tomb raider 2013 ps3"
+      ],
+      "game_id": "671a0b0d-8805-4e82-8474-a86eab2c9753",
+      "release_id": "7259855c-27ec-4069-aaa5-6408ba68c9bc"
+    },
+    {
+      "canonical_name": "Sly Cooper: Thieves in Time",
+      "aliases": [
+        "sly cooper thieves in time"
+      ],
+      "game_id": "f0b09749-771e-4b5f-9a47-97676505860c",
+      "release_id": "4835fe33-c753-46bb-85e1-0518bb7762dd"
+    },
+    {
+      "canonical_name": "Sly 3: Honor Among Thieves",
+      "aliases": [
+        "sly 3 ps3"
+      ],
+      "game_id": "e9f2aa9d-d2ed-45f3-9132-e3c1d8277479",
+      "release_id": "2713a913-3d4a-461c-9a54-ad14d466c549"
+    },
+    {
+      "canonical_name": "Jak and Daxter Collection",
+      "aliases": [
+        "jak and daxter collection ps3"
+      ],
+      "game_id": "257d4fbb-067a-4bdc-aa15-ee3b3af85c41",
+      "release_id": "05c6618e-808f-4456-b42a-b1a4650c8775"
+    },
+    {
+      "canonical_name": "God Hand",
+      "aliases": [
+        "god hand ps3"
+      ],
+      "game_id": "c4d1d36a-c7da-4052-87d7-4f2b82488332",
+      "release_id": "b7b7cbb3-fbc6-4e66-92dc-e98b67766126"
+    },
+    {
+      "canonical_name": "Ni No Kuni: Wrath of the White Witch",
+      "aliases": [
+        "ni no kuni ps3"
+      ],
+      "game_id": "ba680f57-4913-4d45-9ebc-f906aff6881e",
+      "release_id": "2c4aaac4-7ff2-41ac-990d-5912b93eec4f"
+    },
+    {
+      "canonical_name": "Tales of Xillia",
+      "aliases": [
+        "tales of xillia ps3"
+      ],
+      "game_id": "b8d2b395-b7d1-411f-be59-6956106a248e",
+      "release_id": "d1b5ee45-7464-4cc4-a82f-50af659bd2f7"
+    },
+    {
+      "canonical_name": "Tales of Graces f",
+      "aliases": [
+        "tales of graces f ps3"
+      ],
+      "game_id": "b91ed3e2-d5f1-4eb7-9bfd-6424527e6a09",
+      "release_id": "6ef5cbe7-6a9e-42b7-ac61-9f34e06dfc32"
+    },
+    {
+      "canonical_name": "Disgaea 4: A Promise Unforgotten",
+      "aliases": [
+        "disgaea 4 ps3"
+      ],
+      "game_id": "180f7a65-5b44-4380-9467-b51d923a2d59",
+      "release_id": "ee8855dc-ac8a-4a43-94b7-bf589b7f5b7b"
+    },
+    {
+      "canonical_name": "Puppeteer",
+      "aliases": [
+        "puppeteer ps3"
+      ],
+      "game_id": "1bae6ec9-e16c-4753-b143-11b669273eed",
+      "release_id": "490931e2-0ba6-42b1-93a8-0faa1ab3e82d"
+    },
+    {
+      "canonical_name": "Beyond Good & Evil HD",
+      "aliases": [
+        "beyond good and evil hd ps3"
+      ],
+      "game_id": "ff616cca-e625-40eb-b333-d22dcd3b1df0",
+      "release_id": "a2447255-ea12-491c-b56d-1f602ad01c92"
+    },
+    {
+      "canonical_name": "The Walking Dead: The Game",
+      "aliases": [
+        "walking dead telltale ps3"
+      ],
+      "game_id": "2801b2fa-4b71-4ee8-ace0-a47969acf858",
+      "release_id": "30f421ce-ef5f-41c0-a80e-1774e69a54bc"
+    },
+    {
+      "canonical_name": "Tales from the Borderlands",
+      "aliases": [
+        "tales from the borderlands ps3"
+      ],
+      "game_id": "af9876b7-4127-4ded-9661-e369a1c3e2b6",
+      "release_id": "0e02e8c4-2b58-4b51-be7f-09e228361999"
+    },
+    {
+      "canonical_name": "Diablo III",
+      "aliases": [
+        "diablo 3 ps3"
+      ],
+      "game_id": "865221e9-99b3-4dad-9442-3053e1a55ef9",
+      "release_id": "0e8773be-c012-4e41-b6ba-adca26ed9f6d"
+    },
+    {
+      "canonical_name": "Rayman Origins",
+      "aliases": [
+        "rayman origins ps3"
+      ],
+      "game_id": "687e7849-0ff0-4d70-bb4a-933ce4545139",
+      "release_id": "c25b07e9-71ec-4bb4-b476-2d0c725d4322"
+    },
+    {
+      "canonical_name": "Rayman Legends",
+      "aliases": [
+        "rayman legends ps3"
+      ],
+      "game_id": "e1ba0f0b-5925-4c74-b4fa-c72ea5011e23",
+      "release_id": "f076b350-1c31-4236-a07e-7814c9f6f063"
+    },
+    {
+      "canonical_name": "Far Cry 2",
+      "aliases": [
+        "far cry 2 ps3"
+      ],
+      "game_id": "3b83ed89-54a4-4554-b71e-0cc8eac230e3",
+      "release_id": "0dae9e07-4916-4320-874c-4213cfc3b4c3"
+    },
+    {
+      "canonical_name": "Prototype",
+      "aliases": [
+        "prototype 1 ps3"
+      ],
+      "game_id": "4df500b0-b358-4d12-909f-19012e418a19",
+      "release_id": "3f10b88d-3ced-4256-bbcb-39d7822c0db6"
+    },
+    {
+      "canonical_name": "Prototype 2",
+      "aliases": [
+        "prototype 2 ps3"
+      ],
+      "game_id": "6928a499-6541-4366-8ff5-68c931254754",
+      "release_id": "79df5f8d-ac00-4514-9ae0-2a5c5be40087"
+    },
+    {
+      "canonical_name": "Star Wars: The Force Unleashed",
+      "aliases": [
+        "star wars force unleashed ps3"
+      ],
+      "game_id": "cb48c6b7-8faa-430c-8af5-b666ecfbc797",
+      "release_id": "98cf3de1-48aa-4084-9d06-1aef6bf842e8"
+    },
+    {
+      "canonical_name": "Star Wars: The Force Unleashed II",
+      "aliases": [
+        "star wars force unleashed 2 ps3"
+      ],
+      "game_id": "8f3e4a0f-4b83-4d0d-ab4b-0cfe847dad05",
+      "release_id": "b569164a-e253-4f7c-b7e0-c7562fc1cd17"
+    },
+    {
+      "canonical_name": "F1 2013",
+      "aliases": [
+        "f1 2013 ps3"
+      ],
+      "game_id": "f63abf48-e6e6-4839-ac92-0d14bec789aa",
+      "release_id": "88c8ccd7-e0e0-4030-82f1-940e6c6863d4"
+    }
   ]
 }

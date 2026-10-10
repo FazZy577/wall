@@ -12,8 +12,15 @@ class DetectedCandidate:
 
     listing: CandidateListing
     detected_games: tuple[DetectedGame, ...]
+    quantities: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.listing, CandidateListing):
             raise TypeError("listing must be CandidateListing")
         object.__setattr__(self, "detected_games", tuple(self.detected_games))
+        if self.quantities and (
+            type(self.quantities) is not tuple
+            or len(self.quantities) != len(self.detected_games)
+            or any(type(quantity) is not int or quantity < 1 for quantity in self.quantities)
+        ):
+            raise ValueError("quantities must contain one positive integer per detected game")

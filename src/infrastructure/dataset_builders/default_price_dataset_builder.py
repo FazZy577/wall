@@ -132,10 +132,7 @@ class DefaultPriceDatasetBuilder(IPriceDatasetBuilder):
                 continue
             try:
                 identities.append(
-                    GameIdentity(
-                        detected_game.canonical_name,
-                        detected_game.platform,
-                    )
+                    GameIdentity.from_game(detected_game)
                 )
             except (AttributeError, TypeError, ValueError) as error:
                 raise ValueError(
